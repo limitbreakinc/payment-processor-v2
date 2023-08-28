@@ -1876,8 +1876,8 @@
       }
     },
     "src/DataTypes.sol": {
-      "lastModificationDate": 1693245406299,
-      "contentHash": "db385b2d175cbdaf0a67570515ec1f08",
+      "lastModificationDate": 1693255362293,
+      "contentHash": "7a19b43ca7ee1ae8f1941ad354ec1cc1",
       "sourceName": "src/DataTypes.sol",
       "solcConfig": {
         "settings": {
@@ -1915,6 +1915,47 @@
       "artifacts": {
         "DataTypes": {
           "0.8.19+commit.7dd6d404.Darwin.appleclang": "DataTypes.sol/DataTypes.json"
+        }
+      }
+    },
+    "src/Errors.sol": {
+      "lastModificationDate": 1693256838179,
+      "contentHash": "8cfc4d1212e2650c40389214d7d4555c",
+      "sourceName": "src/Errors.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 30000
+          },
+          "metadata": {
+            "useLiteralContent": false,
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "paris",
+          "libraries": {}
+        }
+      },
+      "imports": [],
+      "versionRequirement": "=0.8.19",
+      "artifacts": {
+        "Errors": {
+          "0.8.19+commit.7dd6d404.Darwin.appleclang": "Errors.sol/Errors.json"
         }
       }
     },
@@ -1960,8 +2001,8 @@
       }
     },
     "src/PaymentProcessorV2.sol": {
-      "lastModificationDate": 1693246226627,
-      "contentHash": "0ef306c7e223d8c4c45eba2da962b07c",
+      "lastModificationDate": 1693258783163,
+      "contentHash": "b6067b84e00f28349cc82dce535a265e",
       "sourceName": "src/PaymentProcessorV2.sol",
       "solcConfig": {
         "settings": {
@@ -2015,12 +2056,70 @@
         "lib/openzeppelin-contracts/contracts/utils/math/Math.sol",
         "lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol",
         "src/DataTypes.sol",
-        "src/IOwnable.sol"
+        "src/Errors.sol",
+        "src/IOwnable.sol",
+        "src/modules/ModuleBuyListing.sol"
       ],
       "versionRequirement": "=0.8.19",
       "artifacts": {
         "PaymentProcessorV2": {
           "0.8.19+commit.7dd6d404.Darwin.appleclang": "PaymentProcessorV2.sol/PaymentProcessorV2.json"
+        }
+      }
+    },
+    "src/modules/ModuleBuyListing.sol": {
+      "lastModificationDate": 1693258830523,
+      "contentHash": "a51271962d2e78e6a30396b275bf1217",
+      "sourceName": "src/modules/ModuleBuyListing.sol",
+      "solcConfig": {
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 30000
+          },
+          "metadata": {
+            "useLiteralContent": false,
+            "bytecodeHash": "ipfs",
+            "appendCBOR": true
+          },
+          "outputSelection": {
+            "*": {
+              "": [
+                "ast"
+              ],
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ]
+            }
+          },
+          "evmVersion": "paris",
+          "libraries": {}
+        }
+      },
+      "imports": [
+        "lib/openzeppelin-contracts/contracts/interfaces/IERC2981.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC1155/IERC1155.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/extensions/IERC20Permit.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol",
+        "lib/openzeppelin-contracts/contracts/token/ERC721/IERC721.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Address.sol",
+        "lib/openzeppelin-contracts/contracts/utils/Strings.sol",
+        "lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol",
+        "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/Math.sol",
+        "lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol",
+        "src/DataTypes.sol",
+        "src/Errors.sol"
+      ],
+      "versionRequirement": "=0.8.19",
+      "artifacts": {
+        "ModuleBuyListing": {
+          "0.8.19+commit.7dd6d404.Darwin.appleclang": "ModuleBuyListing.sol/ModuleBuyListing.json"
         }
       }
     },
@@ -2102,8 +2201,10 @@
         "lib/solmate/src/tokens/ERC20.sol",
         "lib/solmate/src/tokens/ERC721.sol",
         "src/DataTypes.sol",
+        "src/Errors.sol",
         "src/IOwnable.sol",
         "src/PaymentProcessorV2.sol",
+        "src/modules/ModuleBuyListing.sol",
         "test/mocks/SeaportTestERC1155.sol",
         "test/mocks/SeaportTestERC20.sol",
         "test/mocks/SeaportTestERC721.sol",

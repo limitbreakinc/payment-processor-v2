@@ -130,3 +130,14 @@ struct PayoutsAccumulator {
     uint256 accumulatedMarketplaceProceeds;
     uint256 accumulatedRoyaltyProceeds;
 }
+
+struct PaymentProcessorStorage {
+    uint88 lastPaymentMethodWhitelistId;
+    mapping(address => uint256) masterNonces;
+    mapping(address => mapping(uint256 => uint256)) invalidatedSignatures;
+    mapping (address => CollectionPaymentSettings) collectionPaymentSettings;
+    mapping (uint88 => address) paymentMethodWhitelistOwners;
+    mapping (uint88 => mapping (address => bool)) collectionPaymentMethodWhitelists;
+    mapping (address => PricingBounds) collectionPricingBounds;
+    mapping (address => mapping (uint256 => PricingBounds)) tokenPricingBounds;
+}

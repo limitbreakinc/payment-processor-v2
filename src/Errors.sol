@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.19;
+
+error PaymentProcessor__AmountForERC721SalesMustEqualOne();
+error PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
+error PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+error PaymentProcessor__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+error PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
+error PaymentProcessor__CoinDoesNotImplementDecimalsAndLikelyIsNotAnERC20Token();
+error PaymentProcessor__CoinIsNotApproved();
+error PaymentProcessor__DispensingTokenWasUnsuccessful();
+error PaymentProcessor__FailedToTransferProceeds();
+error PaymentProcessor__InputArrayLengthCannotBeZero();
+error PaymentProcessor__InputArrayLengthMismatch();
+error PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+error PaymentProcessor__OfferPriceMustEqualSalePrice();
+error PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
+error PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+error PaymentProcessor__PricingBoundsAreImmutable();
+error PaymentProcessor__SalePriceAboveMaximumCeiling();
+error PaymentProcessor__SalePriceBelowMinimumFloor();
+error PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
+error PaymentProcessor__SignatureAlreadyUsedOrRevoked();
+error PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
+error PaymentProcessor__PaymentMethodIsAlreadyApproved();
+error PaymentProcessor__BuyerMustBeCallerAndTransactionOrigin();
+error PaymentProcessor__OrderHasExpired();
+error PaymentProcessor__UnauthorizeSale();
+error PaymentProcessor__BadPaymentMethod();
+error PaymentProcessor__SellerMustBeCallerAndTransactionOrigin();
+error PaymentProcessor__RanOutOfNativeFunds();
+error PaymentProcessor__OverpaidNativeFunds();

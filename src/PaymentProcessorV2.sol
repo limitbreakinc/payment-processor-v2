@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "./IOwnable.sol";
 import "./DataTypes.sol";
+import "./Errors.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,38 +16,23 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
+import "./modules/ModuleBuyListing.sol";
+
+// ------------- storage
+
+bytes32 constant DIAMOND_STORAGE_PAYMENT_PROCESSOR = 
+    keccak256("diamond.storage.payment.processor");
+
+function sPaymentProcessor() pure returns (PaymentProcessorStorage storage diamondStorage) {
+    bytes32 slot = DIAMOND_STORAGE_PAYMENT_PROCESSOR;
+    assembly {
+        diamondStorage.slot := slot
+    }
+}
+
 contract PaymentProcessorV2 is Context, EIP712 {
 
-    error PaymentProcessor__AmountForERC721SalesMustEqualOne();
-    error PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
-    error PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
-    error PaymentProcessor__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
-    error PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
-    error PaymentProcessor__CoinDoesNotImplementDecimalsAndLikelyIsNotAnERC20Token();
-    error PaymentProcessor__CoinIsNotApproved();
-    error PaymentProcessor__DispensingTokenWasUnsuccessful();
-    error PaymentProcessor__FailedToTransferProceeds();
-    error PaymentProcessor__InputArrayLengthCannotBeZero();
-    error PaymentProcessor__InputArrayLengthMismatch();
-    error PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
-    error PaymentProcessor__OfferPriceMustEqualSalePrice();
-    error PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
-    error PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
-    error PaymentProcessor__PricingBoundsAreImmutable();
-    error PaymentProcessor__SalePriceAboveMaximumCeiling();
-    error PaymentProcessor__SalePriceBelowMinimumFloor();
-    error PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
-    error PaymentProcessor__SignatureAlreadyUsedOrRevoked();
-    error PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
-    error PaymentProcessor__PaymentMethodIsAlreadyApproved();
-    error PaymentProcessor__BuyerMustBeCallerAndTransactionOrigin();
-    error PaymentProcessor__OrderHasExpired();
-    error PaymentProcessor__UnauthorizeSale();
-    error PaymentProcessor__BadPaymentMethod();
-    error PaymentProcessor__SellerMustBeCallerAndTransactionOrigin();
-
-    error PaymentProcessor__RanOutOfNativeFunds();
-    error PaymentProcessor__OverpaidNativeFunds();
+    using ModuleBuyListing for PaymentProcessorStorage;
 
     /// @dev Convenience to avoid magic number in bitmask get/set logic.
     uint256 private constant ONE = uint256(1);
@@ -74,8 +60,12 @@ contract PaymentProcessorV2 is Context, EIP712 {
     address private immutable usdt;
     address private immutable dai;
 
+    function masterNonces(address account) public view returns (uint256) {
+        return sPaymentProcessor().masterNonces[account];
+    }
+
     /// @dev Tracks the most recently created security profile id
-    uint88 private lastPaymentMethodWhitelistId;
+    //uint88 private lastPaymentMethodWhitelistId;
 
     /**
      * @notice User-specific master nonce that allows buyers and sellers to efficiently cancel all listings or offers
@@ -85,7 +75,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
      * @dev    When prompting sellers to sign a listing or offer, marketplaces must query the current master nonce of
      *         the user and include it in the listing/offer signature data.
      */
-    mapping(address => uint256) public masterNonces;
+    //mapping(address => uint256) public masterNonces;
 
     /**
      * @dev The mapping key is the keccak256 hash of marketplace address and user address.
@@ -104,23 +94,23 @@ contract PaymentProcessorV2 is Context, EIP712 {
      * @dev ```slot = nonce / 256;```
      * @dev ```offset = nonce % 256;```
      */
-    mapping(address => mapping(uint256 => uint256)) private invalidatedSignatures;
+    //mapping(address => mapping(uint256 => uint256)) private invalidatedSignatures;
 
-    mapping (address => CollectionPaymentSettings) public collectionPaymentSettings;
+    //mapping (address => CollectionPaymentSettings) public collectionPaymentSettings;
 
-    mapping (uint88 => address) public paymentMethodWhitelistOwners;
+    //mapping (uint88 => address) public paymentMethodWhitelistOwners;
 
-    mapping (uint88 => mapping (address => bool)) public collectionPaymentMethodWhitelists;
+    //mapping (uint88 => mapping (address => bool)) public collectionPaymentMethodWhitelists;
 
     /**
      * @dev Mapping of token contract addresses to the collection-level pricing boundaries (floor and ceiling price).
      */
-    mapping (address => PricingBounds) private collectionPricingBounds;
+    //mapping (address => PricingBounds) private collectionPricingBounds;
 
     /**
      * @dev Mapping of token contract addresses to the token-level pricing boundaries (floor and ceiling price).
      */
-    mapping (address => mapping (uint256 => PricingBounds)) private tokenPricingBounds;
+    //mapping (address => mapping (uint256 => PricingBounds)) private tokenPricingBounds;
 
     /// @notice Emitted when a bundle of ERC-721 tokens is successfully purchased using `buyBundledListing`
     event BuyBundledListingERC721(
@@ -261,10 +251,10 @@ contract PaymentProcessorV2 is Context, EIP712 {
 
     function createPaymentMethodWhitelist(string calldata whitelistName) external returns (uint88 paymentMethodWhitelistId) {
         unchecked {
-            paymentMethodWhitelistId = ++lastPaymentMethodWhitelistId;
+            paymentMethodWhitelistId = ++sPaymentProcessor().lastPaymentMethodWhitelistId;
         }
 
-        paymentMethodWhitelistOwners[paymentMethodWhitelistId] = _msgSender();
+        sPaymentProcessor().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = _msgSender();
 
         emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, _msgSender(), whitelistName);
     }
@@ -276,7 +266,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
             _requireCoinImplementsValidDecimals(paymentMethod);
         }
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
+        mapping (address => bool) storage ptrPaymentMethodWhitelist = sPaymentProcessor().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (ptrPaymentMethodWhitelist[paymentMethod]) {
             revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
@@ -289,7 +279,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
     function unwhitelistPaymentMethod(uint88 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
+        mapping (address => bool) storage ptrPaymentMethodWhitelist = sPaymentProcessor().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (!ptrPaymentMethodWhitelist[paymentMethod]) {
             revert PaymentProcessor__CoinIsNotApproved();
@@ -318,7 +308,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
                 paymentMethodWhitelistId = 0;
             }
 
-            if (paymentMethodWhitelistId > lastPaymentMethodWhitelistId) {
+            if (paymentMethodWhitelistId > sPaymentProcessor().lastPaymentMethodWhitelistId) {
                 revert PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
             }
 
@@ -326,7 +316,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
                 _requireCoinImplementsValidDecimals(constrainedPricingPaymentMethod);
             }
 
-            collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
+            sPaymentProcessor().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
                 paymentSettings,
                 paymentMethodWhitelistId,
                 constrainedPricingPaymentMethod);
@@ -341,7 +331,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
     function setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds) external {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
-        if(collectionPricingBounds[tokenAddress].isImmutable) {
+        if(sPaymentProcessor().collectionPricingBounds[tokenAddress].isImmutable) {
             revert PaymentProcessor__PricingBoundsAreImmutable();
         }
 
@@ -349,7 +339,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
             revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
         }
         
-        collectionPricingBounds[tokenAddress] = pricingBounds;
+        sPaymentProcessor().collectionPricingBounds[tokenAddress] = pricingBounds;
         
         emit UpdatedCollectionLevelPricingBoundaries(
             tokenAddress, 
@@ -371,7 +361,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
             revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
-        mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = tokenPricingBounds[tokenAddress];
+        mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = sPaymentProcessor().tokenPricingBounds[tokenAddress];
 
         uint256 tokenId;
         for(uint256 i = 0; i < tokenIds.length;) {
@@ -401,10 +391,10 @@ contract PaymentProcessorV2 is Context, EIP712 {
     }
 
     function revokeMasterNonce() external {
-        emit MasterNonceInvalidated(masterNonces[_msgSender()], _msgSender());
+        emit MasterNonceInvalidated(sPaymentProcessor().masterNonces[_msgSender()], _msgSender());
 
         unchecked {
-            ++masterNonces[_msgSender()];
+            ++sPaymentProcessor().masterNonces[_msgSender()];
         }
     }
 
@@ -412,6 +402,12 @@ contract PaymentProcessorV2 is Context, EIP712 {
         _checkAndInvalidateNonce(_msgSender(), nonce, true);
     }
 
+    function buyListing(Order memory saleDetails, SignatureECDSA memory signature) external payable {
+        sPaymentProcessor().buyListing(getDomainSeparator(), saleDetails, signature);
+
+    }
+
+    /*
     function buyListing(Order memory saleDetails, SignatureECDSA memory signature) external payable {
         if (saleDetails.paymentMethod == address(0)) {
             if (saleDetails.itemPrice != msg.value) {
@@ -430,6 +426,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
             revert PaymentProcessor__DispensingTokenWasUnsuccessful();
         }
     }
+    */
 
     function acceptOffer(bool isCollectionLevelOffer, Order memory saleDetails, SignatureECDSA memory signature) external {
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
@@ -660,7 +657,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
     /**
      * @notice Returns the EIP-712 domain separator for this contract.
      */
-    function getDomainSeparator() external view returns (bytes32) {
+    function getDomainSeparator() public view returns (bytes32) {
         return _domainSeparatorV4();
     }
 
@@ -670,7 +667,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
      * @return True if the floor and ceiling price for the specified token contract has been set immutably, false otherwise.
      */
     function isCollectionPricingImmutable(address tokenAddress) external view returns (bool) {
-        return collectionPricingBounds[tokenAddress].isImmutable;
+        return sPaymentProcessor().collectionPricingBounds[tokenAddress].isImmutable;
     }
 
     /**
@@ -680,7 +677,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
      * @return True if the floor and ceiling price for the specified token contract and tokenId has been set immutably, false otherwise.
      */
     function isTokenPricingImmutable(address tokenAddress, uint256 tokenId) external view returns (bool) {
-        return tokenPricingBounds[tokenAddress][tokenId].isImmutable;
+        return sPaymentProcessor().tokenPricingBounds[tokenAddress][tokenId].isImmutable;
     }
 
     /**
@@ -796,14 +793,14 @@ contract PaymentProcessorV2 is Context, EIP712 {
             revert PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = collectionPaymentSettings[saleDetails.tokenAddress];
+        CollectionPaymentSettings memory paymentSettingsForCollection = sPaymentProcessor().collectionPaymentSettings[saleDetails.tokenAddress];
         
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+            if (!sPaymentProcessor().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
@@ -857,14 +854,14 @@ contract PaymentProcessorV2 is Context, EIP712 {
         SignatureECDSA[] memory signatures) 
         private returns (Accumulator memory accumulator, Order[] memory saleDetailsBatch) {
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = collectionPaymentSettings[bundleDetails.bundleBase.tokenAddress];
+        CollectionPaymentSettings memory paymentSettingsForCollection = sPaymentProcessor().collectionPaymentSettings[bundleDetails.bundleBase.tokenAddress];
 
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(bundleDetails.bundleBase.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
+            if (!sPaymentProcessor().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
@@ -1094,7 +1091,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
         uint256 nonce, 
         bool wasCancellation) private returns (uint256) {
 
-        mapping(uint256 => uint256) storage ptrInvalidatedSignatureBitmap = invalidatedSignatures[account];
+        mapping(uint256 => uint256) storage ptrInvalidatedSignatureBitmap = sPaymentProcessor().invalidatedSignatures[account];
 
         unchecked {
             uint256 slot = nonce / 256;
@@ -1110,7 +1107,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
 
         emit NonceInvalidated(nonce, account, wasCancellation);
 
-        return masterNonces[account];
+        return sPaymentProcessor().masterNonces[account];
     }
 
     function _computeAndDistributeProceeds(
@@ -1271,11 +1268,11 @@ contract PaymentProcessorV2 is Context, EIP712 {
         address tokenAddress, 
         uint256 tokenId) private view returns (uint256, uint256) {
 
-        PricingBounds memory tokenLevelPricingBounds = tokenPricingBounds[tokenAddress][tokenId];
+        PricingBounds memory tokenLevelPricingBounds = sPaymentProcessor().tokenPricingBounds[tokenAddress][tokenId];
         if (tokenLevelPricingBounds.isSet) {
             return (tokenLevelPricingBounds.floorPrice, tokenLevelPricingBounds.ceilingPrice);
         } else {
-            PricingBounds memory collectionLevelPricingBounds = collectionPricingBounds[tokenAddress];
+            PricingBounds memory collectionLevelPricingBounds = sPaymentProcessor().collectionPricingBounds[tokenAddress];
             if (collectionLevelPricingBounds.isSet) {
                 return (collectionLevelPricingBounds.floorPrice, collectionLevelPricingBounds.ceilingPrice);
             }
@@ -1285,7 +1282,7 @@ contract PaymentProcessorV2 is Context, EIP712 {
     }
 
     function _requireCallerOwnsPaymentMethodWhitelist(uint88 paymentMethodWhitelistId) private view {
-        if(_msgSender() != paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
+        if(_msgSender() != sPaymentProcessor().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
             revert PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
         }
     }
