@@ -45,8 +45,6 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
     /// @notice keccack256("BundledSaleApproval(uint8 protocol,address signer,address marketplace,address paymentMethod,address tokenAddress,uint256 expiration,uint256 nonce,uint256 marketplaceFeeNumerator,uint256 masterNonce,uint256[] tokenIds,uint256[] amounts,uint256[] maxRoyaltyFeeNumerators,uint256[] itemPrices)")
     bytes32 public constant BUNDLED_SALE_APPROVAL_HASH = 0x6ee338102e037f512a8d29ebe1eaa0b27e14cb37f4d8cbd347c71a55d5519c5b;
 
-    bytes4 private constant SELECTOR_BUY_LISTING = 0xbe0af963;
-    bytes4 private constant SELECTOR_ACCEPT_OFFER = 0x8f48f433;
     bytes32 private immutable DOMAIN_SEPARATOR;
 
     address private immutable moduleBuyListing;
@@ -231,47 +229,69 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         _checkAndInvalidateNonce(_msgSender(), nonce, true);
     }
 
-    // TODO: Helper functions to encode args - also, pre-encde
-
-    function buyListing(bytes calldata saleDetailsAndSignature) external payable {
-        bytes memory data = 
-            bytes.concat(
-                SELECTOR_BUY_LISTING,
-                DOMAIN_SEPARATOR,
-                saleDetailsAndSignature
-            );
-
-        address moduleBuyListing_ = moduleBuyListing;
-
-        // TODO: Use assembly to compare first 4 bytes of data to SELECTOR_BUY_LISTING
-        /*
-        function foo(bytes calldata data) external payable {
-           bytes4 selector;
-           assembly {
-               selector := calldataload(data.offset)
-           }
-           // ...
+    function _removeFirst4Bytes(bytes memory data) private pure returns (bytes memory) {
+        if (data.length < 4) {
+            revert("PaymentProcessor__DataLengthTooShort()");
         }
 
-        */
-
+        bytes memory result = new bytes(data.length - 4);
+        
         assembly {
-            let result := delegatecall(gas(), moduleBuyListing_, add(data, 32), mload(data), 0, 0)
+            // Start positions of the data
+            let src := add(data, 0x24) // data starts 0x20 bytes in, skip another 0x04 bytes
+            let dest := add(result, 0x20) // result starts 0x20 bytes in
+            
+            // Copy data from source to destination
+            for { let end := add(src, mload(data)) } lt(src, end) {
+                src := add(src, 0x20)
+                dest := add(dest, 0x20)
+            } {
+                mstore(dest, mload(src))
+            }
+        }
+        
+        return result;
+    }
+
+    function encodeBuyListingCalldata(
+        Order memory saleDetails, 
+        SignatureECDSA memory signature) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "buyListing(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32))",
+                DOMAIN_SEPARATOR,
+                saleDetails,
+                signature));
+    }
+
+    function buyListing(bytes calldata data) external payable {
+        address module = moduleBuyListing;
+        assembly {
+            mstore(0x00, hex"be0af963")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
-    function acceptOffer(bytes calldata tradeData) external {
-        bytes memory data = 
-            bytes.concat(
-                SELECTOR_ACCEPT_OFFER,
+    function encodeAcceptOfferCalldata(
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32))",
                 DOMAIN_SEPARATOR,
-                tradeData
-            );
+                isCollectionLevelOffer,
+                saleDetails,
+                signature));
+    }
 
+    function acceptOffer(bytes calldata data) external {
         address module = moduleAcceptOffer;
-
         assembly {
-            let result := delegatecall(gas(), module, add(data, 32), mload(data), 0, 0)
+            mstore(0x00, hex"8f48f433")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 

@@ -484,9 +484,10 @@ contract Benchmark is Test {
             });
     
             SignatureECDSA memory signedListing = _getSignedListing(alicePk, saleDetails);
+            bytes memory data = paymentProcessor.encodeBuyListingCalldata(saleDetails, signedListing);
     
             vm.prank(bob, bob);
-            paymentProcessor.buyListing{value: saleDetails.itemPrice}(bytes.concat(abi.encode(saleDetails), abi.encode(signedListing)));
+            paymentProcessor.buyListing{value: saleDetails.itemPrice}(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -668,9 +669,11 @@ contract Benchmark is Test {
             });
     
             SignatureECDSA memory signedOffer = _getSignedOffer(bobPk, saleDetails);
+
+            bytes memory data = paymentProcessor.encodeAcceptOfferCalldata(false, saleDetails, signedOffer);
     
             vm.prank(alice, alice);
-            paymentProcessor.acceptOffer(bytes.concat(abi.encode(false), abi.encode(saleDetails), abi.encode(signedOffer)));
+            paymentProcessor.acceptOffer(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -758,9 +761,11 @@ contract Benchmark is Test {
             });
     
             SignatureECDSA memory signedOffer = _getSignedCollectionOffer(bobPk, saleDetails);
+
+            bytes memory data = paymentProcessor.encodeAcceptOfferCalldata(true, saleDetails, signedOffer);
     
             vm.prank(alice, alice);
-            paymentProcessor.acceptOffer(bytes.concat(abi.encode(true), abi.encode(saleDetails), abi.encode(signedOffer)));
+            paymentProcessor.acceptOffer(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }    
