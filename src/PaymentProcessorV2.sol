@@ -231,6 +231,8 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         _checkAndInvalidateNonce(_msgSender(), nonce, true);
     }
 
+    // TODO: Helper functions to encode args - also, pre-encde
+
     function buyListing(bytes calldata saleDetailsAndSignature) external payable {
         bytes memory data = 
             bytes.concat(
@@ -240,6 +242,18 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
             );
 
         address moduleBuyListing_ = moduleBuyListing;
+
+        // TODO: Use assembly to compare first 4 bytes of data to SELECTOR_BUY_LISTING
+        /*
+        function foo(bytes calldata data) external payable {
+           bytes4 selector;
+           assembly {
+               selector := calldataload(data.offset)
+           }
+           // ...
+        }
+
+        */
 
         assembly {
             let result := delegatecall(gas(), moduleBuyListing_, add(data, 32), mload(data), 0, 0)
