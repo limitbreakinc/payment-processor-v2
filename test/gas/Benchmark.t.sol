@@ -528,18 +528,10 @@ contract Benchmark is Test {
             SignatureECDSA[] memory signedListingSingleton = new SignatureECDSA[](1);
             signedListingSingleton[0] = signedListing;
 
-            bytes memory encodedSaleDetailsArrayData = "";
-            for (uint256 i = 0; i < saleDetailsSingleton.length; i++) {
-                encodedSaleDetailsArrayData = bytes.concat(encodedSaleDetailsArrayData, abi.encode(saleDetailsSingleton[i]));
-            }
+            bytes memory data = paymentProcessor.encodeBulkBuyListingsCalldata(saleDetailsSingleton, signedListingSingleton);
 
-            bytes memory encodedSignedListingArrayData = "";
-            for (uint256 i = 0; i < signedListingSingleton.length; i++) {
-                encodedSignedListingArrayData = bytes.concat(encodedSignedListingArrayData, abi.encode(signedListingSingleton[i]));
-            }
-    
             vm.prank(bob, bob);
-            paymentProcessor.bulkBuyListings{value: saleDetails.itemPrice}(saleDetailsSingleton, signedListingSingleton);
+            paymentProcessor.bulkBuyListings{value: saleDetails.itemPrice}(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -580,8 +572,10 @@ contract Benchmark is Test {
             SignatureECDSA[] memory signedOfferSingleton = new SignatureECDSA[](1);
             signedOfferSingleton[0] = signedOffer;
 
+            bytes memory data = paymentProcessor.encodeBulkAcceptOffersCalldata(true, saleDetailsSingleton, signedOfferSingleton);
+
             vm.prank(alice, alice);
-            paymentProcessor.bulkAcceptOffers(true, saleDetailsSingleton, signedOfferSingleton);
+            paymentProcessor.bulkAcceptOffers(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -850,12 +844,11 @@ contract Benchmark is Test {
                 });
     
             SignatureECDSA memory signedBundledListing = _getSignedBundledListing(alicePk, accumulatorHashes, bundleOfferDetailsExtended);
-    
+
+            bytes memory data = paymentProcessor.encodeBuyBundledListingCalldata(signedBundledListing, bundleOfferDetailsExtended, bundledOfferItems);    
+
             vm.prank(bob, bob);
-            paymentProcessor.buyBundledListing{value: accumulator.sumListingPrices}(
-                signedBundledListing,
-                bundleOfferDetailsExtended, 
-                bundledOfferItems);
+            paymentProcessor.buyBundledListing{value: accumulator.sumListingPrices}(data);
         }
     }
 
@@ -914,12 +907,11 @@ contract Benchmark is Test {
                 vm.prank(fakeAddress);
                 test721.setApprovalForAll(address(paymentProcessor), true);
             }
+
+            bytes memory data = paymentProcessor.encodeSweepCollectionCalldata(bundledOfferDetails, bundledOfferItems, signedListings);
     
             vm.prank(bob, bob);
-            paymentProcessor.sweepCollection{value: paymentAmount * numItemsInBundle}(
-                bundledOfferDetails, 
-                bundledOfferItems, 
-                signedListings);
+            paymentProcessor.sweepCollection{value: paymentAmount * numItemsInBundle}(data);
         }
     }
 

@@ -295,73 +295,89 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         }
     }
 
-    function bulkBuyListings(Order[] calldata saleDetailsArray, SignatureECDSA[] calldata signatures) external payable {
-        bytes memory data = abi.encodeWithSignature(
+    function encodeBulkBuyListingsCalldata(
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
                 "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
                 getDomainSeparator(),
                 saleDetailsArray,
-                signatures);
+                signatures));
+    }
 
+    function bulkBuyListings(bytes calldata data) external payable {
         address module = moduleBulkBuyListings;
-
         assembly {
-            let result := delegatecall(gas(), module, add(data, 32), mload(data), 0, 0)
+            mstore(0x00, hex"ec5b058f")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
-    function bulkAcceptOffers(
+    function encodeBulkAcceptOffersCalldata(
         bool areCollectionLevelOffers,
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures
-    ) external {
-        bytes memory data = abi.encodeWithSignature(
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
                 "bulkAcceptOffers(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
                 getDomainSeparator(),
                 areCollectionLevelOffers,
                 saleDetailsArray,
-                signatures);
+                signatures));
+    }
 
+    function bulkAcceptOffers(bytes calldata data) external {
         address module = moduleBulkAcceptOffers;
-
         assembly {
-            let result := delegatecall(gas(), module, add(data, 32), mload(data), 0, 0)
+            mstore(0x00, hex"50101c27")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
-    function buyBundledListing(
+    function encodeBuyBundledListingCalldata(
         SignatureECDSA memory signature,
         BundledOrderExtended memory bundleDetails,
-        BundledItem[] calldata items) external payable {
-        bytes memory data = abi.encodeWithSignature(
-            "buyBundledListing(bytes32,(uint8,bytes32,bytes32),((uint8,address,address,address,address,uint256),address,uint256,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[])",
-            getDomainSeparator(),
-            signature,
-            bundleDetails,
-            items);
-        
-        address module = moduleBuyBundledListing;
+        BundledItem[] calldata items) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "buyBundledListing(bytes32,(uint8,bytes32,bytes32),((uint8,address,address,address,address,uint256),address,uint256,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[])",
+                getDomainSeparator(),
+                signature,
+                bundleDetails,
+                items));
+    }
 
+    function buyBundledListing(bytes calldata data) external payable {
+        address module = moduleBuyBundledListing;
         assembly {
-            let result := delegatecall(gas(), module, add(data, 32), mload(data), 0, 0)
+            mstore(0x00, hex"c22db4a4")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
-    function sweepCollection(
+    function encodeSweepCollectionCalldata(
         BundledOrderBase memory bundleDetails,
         BundledItem[] calldata items,
-        SignatureECDSA[] calldata signatures) external payable {
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "sweepCollection(bytes32,(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                getDomainSeparator(),
+                bundleDetails,
+                items,
+                signatures));
+    }
 
-        bytes memory data = abi.encodeWithSignature(
-            "sweepCollection(bytes32,(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
-            getDomainSeparator(),
-            bundleDetails,
-            items,
-            signatures);
-
+    function sweepCollection(bytes calldata data) external payable {
         address module = moduleSweepCollection;
-
         assembly {
-            let result := delegatecall(gas(), module, add(data, 32), mload(data), 0, 0)
+            mstore(0x00, hex"482a6c6f")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
