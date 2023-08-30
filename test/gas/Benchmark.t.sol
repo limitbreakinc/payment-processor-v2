@@ -4,6 +4,12 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
 import "src/PaymentProcessorV2.sol";
+import "src/modules/ModuleBuyListing.sol";
+import "src/modules/ModuleAcceptOffer.sol";
+import "src/modules/ModuleBulkBuyListings.sol";
+import "src/modules/ModuleBulkAcceptOffers.sol";
+import "src/modules/ModuleBuyBundledListing.sol";
+import "src/modules/ModuleSweepCollection.sol";
 
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
@@ -39,6 +45,13 @@ contract Benchmark is Test {
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
 
+    PaymentProcessorModule public moduleBuyListing;
+    PaymentProcessorModule public moduleAcceptOffer;
+    PaymentProcessorModule public moduleBulkBuyListings;
+    PaymentProcessorModule public moduleBulkAcceptOffers;
+    PaymentProcessorModule public moduleBuyBundledListing;
+    PaymentProcessorModule public moduleSweepCollection;
+
     uint88 public customPaymentMethodWhitelistId;
 
     mapping (address => uint256) internal _nextAvailableTokenId;
@@ -56,6 +69,56 @@ contract Benchmark is Test {
 
         erc721s = [test721];
 
+        moduleBuyListing = new ModuleBuyListing(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        moduleAcceptOffer = new ModuleAcceptOffer(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        moduleBulkBuyListings = new ModuleBulkBuyListings(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        moduleBulkAcceptOffers = new ModuleBulkAcceptOffers(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        moduleBuyBundledListing = new ModuleBuyBundledListing(
+            2300,
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        moduleSweepCollection = new ModuleSweepCollection(
+            2300,
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
+
+        console.logBytes4(ModuleBuyListing.buyListing.selector);
+        console.logBytes4(ModuleAcceptOffer.acceptOffer.selector);
+        console.logBytes4(ModuleBulkBuyListings.bulkBuyListings.selector);
+        console.logBytes4(ModuleBulkAcceptOffers.bulkAcceptOffers.selector);
+        console.logBytes4(ModuleBuyBundledListing.buyBundledListing.selector);
+        console.logBytes4(ModuleSweepCollection.sweepCollection.selector);
+
+        /*
         paymentProcessor = 
             new PaymentProcessorV2(
                 2300, 
@@ -63,6 +126,17 @@ contract Benchmark is Test {
                 address(usdc), 
                 address(usdt), 
                 address(dai));
+        */
+
+        paymentProcessor = 
+            new PaymentProcessorV2(
+                address(moduleBuyListing),
+                address(moduleAcceptOffer),
+                address(moduleBulkBuyListings),
+                address(moduleBulkAcceptOffers),
+                address(moduleBuyBundledListing),
+                address(moduleSweepCollection)
+            );
 
         vm.label(alice, "alice");
         vm.label(bob, "bob");
@@ -257,6 +331,10 @@ contract Benchmark is Test {
         return signedListing;
     }
 
+    function testBenchmarkBulkAcceptOffersNoFeesDefaultPaymentMethods() public {
+        _runBenchmarkBulkAcceptOffers(100, 0, 0);
+    }
+
     function testBenchmarkBulkBuyListingNoFeesDefaultPaymentMethods() public {
         _runBenchmarkBulkBuyListing(100, 0, 0);
     }
@@ -408,7 +486,7 @@ contract Benchmark is Test {
             SignatureECDSA memory signedListing = _getSignedListing(alicePk, saleDetails);
     
             vm.prank(bob, bob);
-            paymentProcessor.buyListing{value: saleDetails.itemPrice}(saleDetails, signedListing);
+            paymentProcessor.buyListing{value: saleDetails.itemPrice}(bytes.concat(abi.encode(saleDetails), abi.encode(signedListing)));
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -448,9 +526,61 @@ contract Benchmark is Test {
 
             SignatureECDSA[] memory signedListingSingleton = new SignatureECDSA[](1);
             signedListingSingleton[0] = signedListing;
+
+            bytes memory encodedSaleDetailsArrayData = "";
+            for (uint256 i = 0; i < saleDetailsSingleton.length; i++) {
+                encodedSaleDetailsArrayData = bytes.concat(encodedSaleDetailsArrayData, abi.encode(saleDetailsSingleton[i]));
+            }
+
+            bytes memory encodedSignedListingArrayData = "";
+            for (uint256 i = 0; i < signedListingSingleton.length; i++) {
+                encodedSignedListingArrayData = bytes.concat(encodedSignedListingArrayData, abi.encode(signedListingSingleton[i]));
+            }
     
             vm.prank(bob, bob);
             paymentProcessor.bulkBuyListings{value: saleDetails.itemPrice}(saleDetailsSingleton, signedListingSingleton);
+    
+            assertEq(test721.ownerOf(tokenId), bob);
+        }
+    }
+
+    function _runBenchmarkBulkAcceptOffers(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate) private {
+
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: bob,
+                marketplace: cal,
+                paymentMethod: address(weth),
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(alice),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+    
+            SignatureECDSA memory signedOffer = _getSignedCollectionOffer(bobPk, saleDetails);
+
+            Order[] memory saleDetailsSingleton = new Order[](1);
+            saleDetailsSingleton[0] = saleDetails;
+
+            SignatureECDSA[] memory signedOfferSingleton = new SignatureECDSA[](1);
+            signedOfferSingleton[0] = signedOffer;
+
+            vm.prank(alice, alice);
+            paymentProcessor.bulkAcceptOffers(true, saleDetailsSingleton, signedOfferSingleton);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -540,7 +670,7 @@ contract Benchmark is Test {
             SignatureECDSA memory signedOffer = _getSignedOffer(bobPk, saleDetails);
     
             vm.prank(alice, alice);
-            paymentProcessor.acceptOffer(false, saleDetails, signedOffer);
+            paymentProcessor.acceptOffer(bytes.concat(abi.encode(false), abi.encode(saleDetails), abi.encode(signedOffer)));
     
             assertEq(test721.ownerOf(tokenId), bob);
         }
@@ -630,7 +760,7 @@ contract Benchmark is Test {
             SignatureECDSA memory signedOffer = _getSignedCollectionOffer(bobPk, saleDetails);
     
             vm.prank(alice, alice);
-            paymentProcessor.acceptOffer(true, saleDetails, signedOffer);
+            paymentProcessor.acceptOffer(bytes.concat(abi.encode(true), abi.encode(saleDetails), abi.encode(signedOffer)));
     
             assertEq(test721.ownerOf(tokenId), bob);
         }    

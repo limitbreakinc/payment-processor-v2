@@ -132,12 +132,49 @@ struct PayoutsAccumulator {
 }
 
 struct PaymentProcessorStorage {
+    /// @dev Tracks the most recently created payment method whitelist id
     uint88 lastPaymentMethodWhitelistId;
+
+    /**
+     * @notice User-specific master nonce that allows buyers and sellers to efficiently cancel all listings or offers
+     *         they made previously. The master nonce for a user only changes when they explicitly request to revoke all
+     *         existing listings and offers.
+     *
+     * @dev    When prompting sellers to sign a listing or offer, marketplaces must query the current master nonce of
+     *         the user and include it in the listing/offer signature data.
+     */
     mapping(address => uint256) masterNonces;
+
+    /**
+     * @dev The mapping key is the keccak256 hash of marketplace address and user address.
+     *
+     * @dev ```keccak256(abi.encodePacked(marketplace, user))```
+     *
+     * @dev The mapping value is another nested mapping of "slot" (key) to a bitmap (value) containing boolean flags
+     *      indicating whether or not a nonce has been used or invalidated.
+     *
+     * @dev Marketplaces MUST track their own nonce by user, incrementing it for every signed listing or offer the user
+     *      creates.  Listings and purchases may be executed out of order, and they may never be executed if orders
+     *      are not matched prior to expriation.
+     *
+     * @dev The slot and the bit offset within the mapped value are computed as:
+     *
+     * @dev ```slot = nonce / 256;```
+     * @dev ```offset = nonce % 256;```
+     */
     mapping(address => mapping(uint256 => uint256)) invalidatedSignatures;
+    
     mapping (address => CollectionPaymentSettings) collectionPaymentSettings;
     mapping (uint88 => address) paymentMethodWhitelistOwners;
     mapping (uint88 => mapping (address => bool)) collectionPaymentMethodWhitelists;
+
+    /**
+     * @dev Mapping of token contract addresses to the collection-level pricing boundaries (floor and ceiling price).
+     */
     mapping (address => PricingBounds) collectionPricingBounds;
+
+    /**
+     * @dev Mapping of token contract addresses to the token-level pricing boundaries (floor and ceiling price).
+     */
     mapping (address => mapping (uint256 => PricingBounds)) tokenPricingBounds;
 }
