@@ -6,6 +6,7 @@ import "forge-std/console.sol";
 import "src/interfaces/CPortEvents.sol";
 import "src/Constants.sol";
 import "src/CPort.sol";
+import "src/CPortEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModuleBuyListing.sol";
@@ -38,6 +39,7 @@ contract Benchmark is Test, cPortEvents {
     address payable internal abe = payable(vm.addr(abePk));
 
     cPort public _cPort;
+    cPortEncoder public _cPortEncoder;
 
     SeaportTestERC20 public weth;
     SeaportTestERC20 public usdc;
@@ -74,6 +76,8 @@ contract Benchmark is Test, cPortEvents {
         test721 = new SeaportTestERC721();
 
         erc721s = [test721];
+
+        _cPortEncoder = new cPortEncoder();
 
         modulePaymentSettings = new ModulePaymentSettings(
             2300, 
@@ -170,14 +174,14 @@ contract Benchmark is Test, cPortEvents {
         _allocateTokensAndApprovals(cal, uint128(MAX_INT));
         _allocateTokensAndApprovals(abe, uint128(MAX_INT));
 
-        bytes memory createWhitelistData = _cPort.encodeCreatePaymentMethodWhitelistCalldata("Test Whitelist");
+        bytes memory createWhitelistData = _cPortEncoder.encodeCreatePaymentMethodWhitelistCalldata(address(_cPort), "Test Whitelist");
         customPaymentMethodWhitelistId = _cPort.createPaymentMethodWhitelist(createWhitelistData);
 
-        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(0)));
-        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(weth)));
-        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(usdc)));
-        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(usdt)));
-        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(dai)));
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(0)));
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(weth)));
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(usdc)));
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(usdt)));
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(dai)));
     }
 
     /**
@@ -425,7 +429,7 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
         _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
@@ -435,7 +439,7 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
         _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
@@ -445,8 +449,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data1 = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
-        bytes memory data2 = _cPort.encodeSetCollectionPricingBoundsCalldata(address(test721), PricingBounds({
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
             isImmutable: true,
             floorPrice: 1 ether,
@@ -463,7 +467,7 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, address(0));
         _cPort.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](numRuns);
@@ -479,7 +483,7 @@ contract Benchmark is Test, cPortEvents {
             });
         }
 
-        bytes memory data2 = _cPort.encodeSetTokenPricingBoundsCalldata(address(test721), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
         
         _cPort.setTokenPricingBounds(data2);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
@@ -513,7 +517,7 @@ contract Benchmark is Test, cPortEvents {
             });
     
             SignatureECDSA memory signedListing = _getSignedListing(alicePk, saleDetails);
-            bytes memory data = _cPort.encodeBuyListingCalldata(saleDetails, signedListing);
+            bytes memory data = _cPortEncoder.encodeBuyListingCalldata(address(_cPort), saleDetails, signedListing);
     
             vm.prank(bob, bob);
             _cPort.buyListing{value: saleDetails.itemPrice}(data);
@@ -557,7 +561,7 @@ contract Benchmark is Test, cPortEvents {
             SignatureECDSA[] memory signedListingSingleton = new SignatureECDSA[](1);
             signedListingSingleton[0] = signedListing;
 
-            bytes memory data = _cPort.encodeBulkBuyListingsCalldata(saleDetailsSingleton, signedListingSingleton);
+            bytes memory data = _cPortEncoder.encodeBulkBuyListingsCalldata(address(_cPort), saleDetailsSingleton, signedListingSingleton);
 
             vm.prank(bob, bob);
             _cPort.bulkBuyListings{value: saleDetails.itemPrice}(data);
@@ -601,7 +605,7 @@ contract Benchmark is Test, cPortEvents {
             SignatureECDSA[] memory signedOfferSingleton = new SignatureECDSA[](1);
             signedOfferSingleton[0] = signedOffer;
 
-            bytes memory data = _cPort.encodeBulkAcceptOffersCalldata(true, saleDetailsSingleton, signedOfferSingleton);
+            bytes memory data = _cPortEncoder.encodeBulkAcceptOffersCalldata(address(_cPort), true, saleDetailsSingleton, signedOfferSingleton);
 
             vm.prank(alice, alice);
             _cPort.bulkAcceptOffers(data);
@@ -651,7 +655,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
             address(test721), 
             PaymentSettings.AllowAnyPaymentMethod, 
             0, 
@@ -667,7 +672,8 @@ contract Benchmark is Test, cPortEvents {
         uint96 royaltyFeeRate
     ) private {
         bytes memory data = 
-            _cPort.encodeSetCollectionPaymentSettingsCalldata(
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
                 address(test721), 
                 PaymentSettings.CustomPaymentMethodWhitelist, 
                 customPaymentMethodWhitelistId, 
@@ -706,7 +712,7 @@ contract Benchmark is Test, cPortEvents {
     
             SignatureECDSA memory signedOffer = _getSignedOffer(bobPk, saleDetails);
 
-            bytes memory data = _cPort.encodeAcceptOfferCalldata(false, saleDetails, signedOffer);
+            bytes memory data = _cPortEncoder.encodeAcceptOfferCalldata(address(_cPort), false, saleDetails, signedOffer);
     
             vm.prank(alice, alice);
             _cPort.acceptOffer(data);
@@ -756,7 +762,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
             address(test721), 
             PaymentSettings.AllowAnyPaymentMethod, 
             0, 
@@ -772,7 +779,8 @@ contract Benchmark is Test, cPortEvents {
         uint96 royaltyFeeRate
     ) private {
         bytes memory data = 
-            _cPort.encodeSetCollectionPaymentSettingsCalldata(
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
                 address(test721), 
                 PaymentSettings.CustomPaymentMethodWhitelist, 
                 customPaymentMethodWhitelistId, 
@@ -811,7 +819,7 @@ contract Benchmark is Test, cPortEvents {
     
             SignatureECDSA memory signedOffer = _getSignedCollectionOffer(bobPk, saleDetails);
 
-            bytes memory data = _cPort.encodeAcceptOfferCalldata(true, saleDetails, signedOffer);
+            bytes memory data = _cPortEncoder.encodeAcceptOfferCalldata(address(_cPort), true, saleDetails, signedOffer);
     
             vm.prank(alice, alice);
             _cPort.acceptOffer(data);
@@ -900,7 +908,7 @@ contract Benchmark is Test, cPortEvents {
     
             SignatureECDSA memory signedBundledListing = _getSignedBundledListing(alicePk, accumulatorHashes, bundleOfferDetailsExtended);
 
-            bytes memory data = _cPort.encodeBuyBundledListingCalldata(signedBundledListing, bundleOfferDetailsExtended, bundledOfferItems);    
+            bytes memory data = _cPortEncoder.encodeBuyBundledListingCalldata(address(_cPort), signedBundledListing, bundleOfferDetailsExtended, bundledOfferItems);    
 
             vm.prank(bob, bob);
             _cPort.buyBundledListing{value: accumulator.sumListingPrices}(data);
@@ -963,7 +971,7 @@ contract Benchmark is Test, cPortEvents {
                 test721.setApprovalForAll(address(_cPort), true);
             }
 
-            bytes memory data = _cPort.encodeSweepCollectionCalldata(bundledOfferDetails, bundledOfferItems, signedListings);
+            bytes memory data = _cPortEncoder.encodeSweepCollectionCalldata(address(_cPort), bundledOfferDetails, bundledOfferItems, signedListings);
     
             vm.prank(bob, bob);
             _cPort.sweepCollection{value: paymentAmount * numItemsInBundle}(data);
@@ -989,7 +997,7 @@ contract Benchmark is Test, cPortEvents {
             for (uint256 i = 0; i <= 255; i++) {
                 uint256 nonce = (run - 1) * 256 + i;
                 
-                bytes memory data = _cPort.encodeRevokeSingleNonceCalldata(nonce);
+                bytes memory data = _cPortEncoder.encodeRevokeSingleNonceCalldata(address(_cPort), nonce);
 
                 vm.prank(bob, bob);
                 vm.expectEmit(true, true, false, true);
