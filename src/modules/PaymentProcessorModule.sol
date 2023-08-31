@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "../interfaces/IPaymentProcessorEvents.sol";
 import "../storage/PaymentProcessorStorageAccess.sol";
+import "../Constants.sol";
 import "../Errors.sol";
 
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -12,22 +13,6 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaymentProcessorEvents {
-
-    /// @notice The denominator used when calculating the marketplace fee.
-    /// @dev    0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
-    uint256 public constant FEE_DENOMINATOR = 10_000;
-
-    /// @dev Convenience to avoid magic number in bitmask get/set logic.
-    uint256 private constant ONE = uint256(1);
-
-    /// @notice keccack256("OrderApproval(uint8 protocol,address signer,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce)")
-    bytes32 public constant ORDER_APPROVAL_HASH = 0x61718384c415a086091f6ee7779f499c089559dc5f0d8a00c21a2760ef58ac47;
-
-    /// @notice keccack256("CollectionOrderApproval(uint8 protocol,address signer,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce)")
-    bytes32 public constant COLLECTION_ORDER_APPROVAL_HASH = 0x61e6f7cf8f226da53a60071c56608b1b1f6d80644b1a566f2f26a786a550d9b4;
-
-    /// @notice keccack256("BundledSaleApproval(uint8 protocol,address signer,address marketplace,address paymentMethod,address tokenAddress,uint256 expiration,uint256 nonce,uint256 marketplaceFeeNumerator,uint256 masterNonce,uint256[] tokenIds,uint256[] amounts,uint256[] maxRoyaltyFeeNumerators,uint256[] itemPrices)")
-    bytes32 public constant BUNDLED_SALE_APPROVAL_HASH = 0x6ee338102e037f512a8d29ebe1eaa0b27e14cb37f4d8cbd347c71a55d5519c5b;
 
     uint256 private immutable pushPaymentGasLimit;
     address private immutable weth;

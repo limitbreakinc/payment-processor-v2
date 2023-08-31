@@ -3,7 +3,10 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
+import "src/interfaces/IPaymentProcessorEvents.sol";
+import "src/Constants.sol";
 import "src/PaymentProcessorV2.sol";
+import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModuleBuyListing.sol";
 import "src/modules/ModuleAcceptOffer.sol";
 import "src/modules/ModuleBulkBuyListings.sol";
@@ -15,7 +18,7 @@ import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
 import "../mocks/SeaportTestERC1155.sol";
 
-contract Benchmark is Test {
+contract Benchmark is Test, IPaymentProcessorEvents {
 
     struct FuzzInputsCommon {
         uint256 tokenId;
@@ -45,6 +48,7 @@ contract Benchmark is Test {
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
 
+    PaymentProcessorModule public moduleOnChainCancellation;
     PaymentProcessorModule public moduleBuyListing;
     PaymentProcessorModule public moduleAcceptOffer;
     PaymentProcessorModule public moduleBulkBuyListings;
@@ -68,6 +72,13 @@ contract Benchmark is Test {
         test721 = new SeaportTestERC721();
 
         erc721s = [test721];
+
+        moduleOnChainCancellation = new ModuleOnChainCancellation(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
 
         moduleBuyListing = new ModuleBuyListing(
             2300, 
@@ -111,6 +122,8 @@ contract Benchmark is Test {
             address(usdt), 
             address(dai));
 
+        console.logBytes4(ModuleOnChainCancellation.revokeMasterNonce.selector);
+        console.logBytes4(ModuleOnChainCancellation.revokeSingleNonce.selector);
         console.logBytes4(ModuleBuyListing.buyListing.selector);
         console.logBytes4(ModuleAcceptOffer.acceptOffer.selector);
         console.logBytes4(ModuleBulkBuyListings.bulkBuyListings.selector);
@@ -118,18 +131,9 @@ contract Benchmark is Test {
         console.logBytes4(ModuleBuyBundledListing.buyBundledListing.selector);
         console.logBytes4(ModuleSweepCollection.sweepCollection.selector);
 
-        /*
         paymentProcessor = 
             new PaymentProcessorV2(
-                2300, 
-                address(weth), 
-                address(usdc), 
-                address(usdt), 
-                address(dai));
-        */
-
-        paymentProcessor = 
-            new PaymentProcessorV2(
+                address(moduleOnChainCancellation),
                 address(moduleBuyListing),
                 address(moduleAcceptOffer),
                 address(moduleBulkBuyListings),
@@ -200,7 +204,7 @@ contract Benchmark is Test {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            paymentProcessor.ORDER_APPROVAL_HASH(),
+                            ORDER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.seller,
                             saleDetails.marketplace,
@@ -234,7 +238,7 @@ contract Benchmark is Test {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            paymentProcessor.ORDER_APPROVAL_HASH(),
+                            ORDER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.buyer,
                             saleDetails.marketplace,
@@ -268,7 +272,7 @@ contract Benchmark is Test {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            paymentProcessor.COLLECTION_ORDER_APPROVAL_HASH(),
+                            COLLECTION_ORDER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.buyer,
                             saleDetails.marketplace,
@@ -304,7 +308,7 @@ contract Benchmark is Test {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            paymentProcessor.BUNDLED_SALE_APPROVAL_HASH(),
+                            BUNDLED_SALE_APPROVAL_HASH,
                             uint8(bundleDetails.bundleBase.protocol),
                             bundleDetails.seller,
                             bundleDetails.bundleBase.marketplace,
@@ -912,6 +916,39 @@ contract Benchmark is Test {
     
             vm.prank(bob, bob);
             paymentProcessor.sweepCollection{value: paymentAmount * numItemsInBundle}(data);
+        }
+    }
+
+    function testBenchmarkRevokeMasterNonce(address account) public {
+        vm.assume(account != address(0));
+
+        uint256 numRuns = 100;
+
+        for (uint256 run = 1; run <= numRuns; run++) {
+            assertEq(paymentProcessor.masterNonces(account), run - 1);
+
+            vm.prank(account, account);
+            paymentProcessor.revokeMasterNonce();
+
+            assertEq(paymentProcessor.masterNonces(account), run);
+        }
+    }
+
+    function testBenchmarkRevokeSingleNonce(address account) public {
+        vm.assume(account != address(0));
+
+        uint256 numRuns = 1;
+        for (uint256 run = 1; run <= numRuns; run++) {
+            for (uint256 i = 0; i <= 255; i++) {
+                uint256 nonce = (run - 1) * 256 + i;
+                
+                bytes memory data = paymentProcessor.encodeRevokeSingleNonceCalldata(nonce);
+
+                vm.prank(account, account);
+                vm.expectEmit(true, true, false, true);
+                emit NonceInvalidated(nonce, account, true);
+                paymentProcessor.revokeSingleNonce(data);
+            }
         }
     }
 
