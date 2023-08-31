@@ -33,8 +33,6 @@ contract ModuleBulkAcceptOffers is cPortModule {
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures) public {
         
-        cPortStorage storage ptrAppStorage = appStorage();
-
         if (saleDetailsArray.length != signatures.length) {
             revert cPort__InputArrayLengthMismatch();
         }
@@ -53,7 +51,7 @@ contract ModuleBulkAcceptOffers is cPortModule {
             _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
             _verifyCallerIsSellerAndTxOrigin(saleDetails.seller);
 
-            _executeOrder(ptrAppStorage, domainSeparator, areCollectionLevelOffers, saleDetails.buyer, saleDetails, signature);
+            _executeOrder(domainSeparator, areCollectionLevelOffers, saleDetails.buyer, saleDetails, signature);
 
             unchecked {
                 ++i;

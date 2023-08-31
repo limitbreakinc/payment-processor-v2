@@ -36,10 +36,7 @@ contract ModuleAcceptOffer is cPortModule {
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _verifyCallerIsSellerAndTxOrigin(saleDetails.seller);
 
-        cPortStorage storage ptrAppStorage = appStorage();
-
         bool tokenDispensedSuccessfully = _executeOrder(
-            ptrAppStorage,
             domainSeparator,
             isCollectionLevelOffer, 
             saleDetails.buyer, 

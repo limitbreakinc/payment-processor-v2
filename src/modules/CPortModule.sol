@@ -121,7 +121,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _executeOrder(
-        cPortStorage storage ptrAppStorage,
         bytes32 domainSeparator,
         bool isCollectionLevelOrder, 
         address signer, 
@@ -145,14 +144,14 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = ptrAppStorage.collectionPaymentSettings[saleDetails.tokenAddress];
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
         
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!ptrAppStorage.collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
@@ -200,7 +199,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _validateBundledItems(
-        cPortStorage storage ptrAppStorage,
         bytes32 domainSeparator,
         bool individualListings,
         BundledOrderExtended memory bundleDetails,
@@ -208,14 +206,14 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SignatureECDSA[] memory signatures) 
         internal returns (Accumulator memory accumulator, Order[] memory saleDetailsBatch) {
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = ptrAppStorage.collectionPaymentSettings[bundleDetails.bundleBase.tokenAddress];
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[bundleDetails.bundleBase.tokenAddress];
 
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(bundleDetails.bundleBase.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!ptrAppStorage.collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {

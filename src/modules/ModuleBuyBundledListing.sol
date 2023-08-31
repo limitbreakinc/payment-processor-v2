@@ -33,8 +33,6 @@ contract ModuleBuyBundledListing is cPortModule {
         BundledOrderExtended memory bundleDetails,
         BundledItem[] calldata items) public payable {
 
-        cPortStorage storage ptrAppStorage = appStorage();
-        
         _verifyCallerIsBuyerAndTxOrigin(bundleDetails.bundleBase.buyer);
 
         if (items.length == 0) {
@@ -46,7 +44,6 @@ contract ModuleBuyBundledListing is cPortModule {
 
         (Accumulator memory accumulator, Order[] memory saleDetailsBatch) = 
         _validateBundledItems(
-            ptrAppStorage,
             domainSeparator,
             false,
             bundleDetails,

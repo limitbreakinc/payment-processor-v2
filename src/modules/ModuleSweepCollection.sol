@@ -33,8 +33,6 @@ contract ModuleSweepCollection is cPortModule {
         BundledItem[] calldata items,
         SignatureECDSA[] calldata signatures) public payable {
 
-        cPortStorage storage ptrAppStorage = appStorage();
-        
         _verifyCallerIsBuyerAndTxOrigin(bundleDetails.buyer);
 
         if (items.length != signatures.length) {
@@ -47,7 +45,6 @@ contract ModuleSweepCollection is cPortModule {
 
         (Accumulator memory accumulator, Order[] memory saleDetailsBatch) = 
         _validateBundledItems(
-            ptrAppStorage,
             domainSeparator,
             true,
             BundledOrderExtended({

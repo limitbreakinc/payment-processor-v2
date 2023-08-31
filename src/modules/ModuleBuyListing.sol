@@ -32,8 +32,6 @@ contract ModuleBuyListing is cPortModule {
         Order memory saleDetails, 
         SignatureECDSA memory signature) public payable {
 
-        cPortStorage storage ptrAppStorage = appStorage();
-        
         if (saleDetails.paymentMethod == address(0)) {
             if (saleDetails.itemPrice != msg.value) {
                 revert cPort__OfferPriceMustEqualSalePrice();
@@ -47,7 +45,6 @@ contract ModuleBuyListing is cPortModule {
         _verifyCallerIsBuyerAndTxOrigin(saleDetails.buyer);
 
         bool tokenDispensedSuccessfully = _executeOrder(
-            ptrAppStorage, 
             domainSeparator, 
             false, 
             saleDetails.seller, 

@@ -32,8 +32,6 @@ contract ModuleBulkBuyListings is cPortModule {
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures) public payable {
 
-        cPortStorage storage ptrAppStorage = appStorage();
-        
         if (saleDetailsArray.length != signatures.length) {
             revert cPort__InputArrayLengthMismatch();
         }
@@ -66,11 +64,11 @@ contract ModuleBulkBuyListings is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrder(ptrAppStorage, domainSeparator, false, saleDetails.seller, saleDetails, signature)) {
+                if (!_executeOrder(domainSeparator, false, saleDetails.seller, saleDetails, signature)) {
                     revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
-                _executeOrder(ptrAppStorage, domainSeparator, false, saleDetails.seller, saleDetails, signature);
+                _executeOrder(domainSeparator, false, saleDetails.seller, saleDetails, signature);
             }
 
             unchecked {
