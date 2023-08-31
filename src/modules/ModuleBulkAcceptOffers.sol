@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleBulkAcceptOffers is PaymentProcessorModule {
+contract ModuleBulkAcceptOffers is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,7 +25,7 @@ contract ModuleBulkAcceptOffers is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function bulkAcceptOffers(
         bytes32 domainSeparator, 
@@ -33,14 +33,14 @@ contract ModuleBulkAcceptOffers is PaymentProcessorModule {
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures) public {
         
-        PaymentProcessorStorage storage ptrAppStorage = appStorage();
+        cPortStorage storage ptrAppStorage = appStorage();
 
         if (saleDetailsArray.length != signatures.length) {
-            revert PaymentProcessor__InputArrayLengthMismatch();
+            revert cPort__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length == 0) {
-            revert PaymentProcessor__InputArrayLengthCannotBeZero();
+            revert cPort__InputArrayLengthCannotBeZero();
         }
 
         Order memory saleDetails;

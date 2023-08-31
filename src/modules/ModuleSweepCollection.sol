@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleSweepCollection is PaymentProcessorModule {
+contract ModuleSweepCollection is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,7 +25,7 @@ contract ModuleSweepCollection is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function sweepCollection(
         bytes32 domainSeparator, 
@@ -33,16 +33,16 @@ contract ModuleSweepCollection is PaymentProcessorModule {
         BundledItem[] calldata items,
         SignatureECDSA[] calldata signatures) public payable {
 
-        PaymentProcessorStorage storage ptrAppStorage = appStorage();
+        cPortStorage storage ptrAppStorage = appStorage();
         
         _verifyCallerIsBuyerAndTxOrigin(bundleDetails.buyer);
 
         if (items.length != signatures.length) {
-            revert PaymentProcessor__InputArrayLengthMismatch();
+            revert cPort__InputArrayLengthMismatch();
         }
 
         if (items.length == 0) {
-            revert PaymentProcessor__InputArrayLengthCannotBeZero();
+            revert cPort__InputArrayLengthCannotBeZero();
         }
 
         (Accumulator memory accumulator, Order[] memory saleDetailsBatch) = 
@@ -62,11 +62,11 @@ contract ModuleSweepCollection is PaymentProcessorModule {
 
         if (bundleDetails.paymentMethod == address(0)) {
             if (accumulator.sumListingPrices != msg.value) {
-                revert PaymentProcessor__OfferPriceMustEqualSalePrice();
+                revert cPort__OfferPriceMustEqualSalePrice();
             }
         } else {
             if (msg.value > 0) {
-                revert PaymentProcessor__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
             }
         }
 

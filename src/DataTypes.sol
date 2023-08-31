@@ -131,7 +131,7 @@ struct PayoutsAccumulator {
     uint256 accumulatedRoyaltyProceeds;
 }
 
-struct PaymentProcessorStorage {
+struct cPortStorage {
     /// @dev Tracks the most recently created payment method whitelist id
     uint88 lastPaymentMethodWhitelistId;
 

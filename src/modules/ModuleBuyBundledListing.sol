@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleBuyBundledListing is PaymentProcessorModule {
+contract ModuleBuyBundledListing is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,7 +25,7 @@ contract ModuleBuyBundledListing is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function buyBundledListing(
         bytes32 domainSeparator, 
@@ -33,12 +33,12 @@ contract ModuleBuyBundledListing is PaymentProcessorModule {
         BundledOrderExtended memory bundleDetails,
         BundledItem[] calldata items) public payable {
 
-        PaymentProcessorStorage storage ptrAppStorage = appStorage();
+        cPortStorage storage ptrAppStorage = appStorage();
         
         _verifyCallerIsBuyerAndTxOrigin(bundleDetails.bundleBase.buyer);
 
         if (items.length == 0) {
-            revert PaymentProcessor__InputArrayLengthCannotBeZero();
+            revert cPort__InputArrayLengthCannotBeZero();
         }
 
         SignatureECDSA[] memory signatureAsSingletonArray = new SignatureECDSA[](1);
@@ -56,11 +56,11 @@ contract ModuleBuyBundledListing is PaymentProcessorModule {
 
         if (bundleDetails.bundleBase.paymentMethod == address(0)) {
             if (accumulator.sumListingPrices != msg.value) {
-                revert PaymentProcessor__OfferPriceMustEqualSalePrice();
+                revert cPort__OfferPriceMustEqualSalePrice();
             }
         } else {
             if (msg.value > 0) {
-                revert PaymentProcessor__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
             }
         }
 

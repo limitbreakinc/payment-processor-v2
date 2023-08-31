@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleOnChainCancellation is PaymentProcessorModule {
+contract ModuleOnChainCancellation is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,7 +25,7 @@ contract ModuleOnChainCancellation is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function revokeMasterNonce() external {
         emit MasterNonceInvalidated(appStorage().masterNonces[msg.sender], msg.sender);

@@ -20,7 +20,7 @@ import "./Constants.sol";
 import "./DataTypes.sol";
 import "./Errors.sol";
 
-import "./interfaces/IPaymentProcessorEvents.sol";
+import "./interfaces/CPortEvents.sol";
 
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
@@ -34,12 +34,11 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
 
-import "./modules/ModuleBuyListing.sol";
-import "./storage/PaymentProcessorStorageAccess.sol";
+import "./storage/CPortStorageAccess.sol";
 
 import "forge-std/console.sol";
 
-contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
 
     address private immutable moduleOnChainCancellation;
     address private immutable moduleBuyListing;
@@ -57,7 +56,7 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         address moduleBulkAcceptOffers_,
         address moduleBuyBundledListing_,
         address moduleSweepCollection_) 
-        EIP712("PaymentProcessorLite", "1") {
+        EIP712("cPort", "1") {
         moduleOnChainCancellation = moduleOnChainCancellation_;
         moduleBuyListing = moduleBuyListing_;
         moduleAcceptOffer = moduleAcceptOffer_;
@@ -83,7 +82,7 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
+            revert cPort__PaymentMethodIsAlreadyApproved();
         }
 
         ptrPaymentMethodWhitelist[paymentMethod] = true;
@@ -96,7 +95,7 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (!ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert PaymentProcessor__CoinIsNotApproved();
+            revert cPort__CoinIsNotApproved();
         }
 
         delete ptrPaymentMethodWhitelist[paymentMethod];
@@ -123,7 +122,7 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
             }
 
             if (paymentMethodWhitelistId > appStorage().lastPaymentMethodWhitelistId) {
-                revert PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
+                revert cPort__PaymentMethodWhitelistDoesNotExist();
             }
 
             appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
@@ -142,11 +141,11 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(appStorage().collectionPricingBounds[tokenAddress].isImmutable) {
-            revert PaymentProcessor__PricingBoundsAreImmutable();
+            revert cPort__PricingBoundsAreImmutable();
         }
 
         if(pricingBounds.floorPrice > pricingBounds.ceilingPrice) {
-            revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
+            revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
         }
         
         appStorage().collectionPricingBounds[tokenAddress] = pricingBounds;
@@ -164,11 +163,11 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(tokenIds.length != pricingBounds.length) {
-            revert PaymentProcessor__InputArrayLengthMismatch();
+            revert cPort__InputArrayLengthMismatch();
         }
 
         if(tokenIds.length == 0) {
-            revert PaymentProcessor__InputArrayLengthCannotBeZero();
+            revert cPort__InputArrayLengthCannotBeZero();
         }
 
         mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = appStorage().tokenPricingBounds[tokenAddress];
@@ -179,11 +178,11 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
             PricingBounds memory pricingBounds_ = pricingBounds[i];
 
             if(ptrTokenPricingBounds[tokenId].isImmutable) {
-                revert PaymentProcessor__PricingBoundsAreImmutable();
+                revert cPort__PricingBoundsAreImmutable();
             }
 
             if(pricingBounds_.floorPrice > pricingBounds_.ceilingPrice) {
-                revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
+                revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
             }
 
             ptrTokenPricingBounds[tokenId] = pricingBounds_;
@@ -417,7 +416,7 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
 
     function _requireCallerOwnsPaymentMethodWhitelist(uint88 paymentMethodWhitelistId) internal view {
         if(_msgSender() != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
-            revert PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
+            revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
         }
     }
 
@@ -456,13 +455,13 @@ contract PaymentProcessorV2 is Context, EIP712, PaymentProcessorStorageAccess, I
         }
 
         if(!callerHasPermissions) {
-            revert PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+            revert cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
         }
     }
 
     function _removeFirst4Bytes(bytes memory data) private pure returns (bytes memory) {
         if (data.length < 4) {
-            revert("PaymentProcessor__DataLengthTooShort()");
+            revert("cPort__DataLengthTooShort()");
         }
 
         bytes memory result = new bytes(data.length - 4);

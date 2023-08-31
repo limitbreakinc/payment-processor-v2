@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleBulkBuyListings is PaymentProcessorModule {
+contract ModuleBulkBuyListings is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,21 +25,21 @@ contract ModuleBulkBuyListings is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function bulkBuyListings(
         bytes32 domainSeparator, 
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures) public payable {
 
-        PaymentProcessorStorage storage ptrAppStorage = appStorage();
+        cPortStorage storage ptrAppStorage = appStorage();
         
         if (saleDetailsArray.length != signatures.length) {
-            revert PaymentProcessor__InputArrayLengthMismatch();
+            revert cPort__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length == 0) {
-            revert PaymentProcessor__InputArrayLengthCannotBeZero();
+            revert cPort__InputArrayLengthCannotBeZero();
         }
 
         uint256 runningBalanceNativeProceeds = msg.value;
@@ -59,7 +59,7 @@ contract ModuleBulkBuyListings is PaymentProcessorModule {
                 msgValue = saleDetails.itemPrice;
 
                 if (runningBalanceNativeProceeds < msgValue) {
-                    revert PaymentProcessor__RanOutOfNativeFunds();
+                    revert cPort__RanOutOfNativeFunds();
                 }
 
                 unchecked {
@@ -67,7 +67,7 @@ contract ModuleBulkBuyListings is PaymentProcessorModule {
                 }
 
                 if (!_executeOrder(ptrAppStorage, domainSeparator, false, saleDetails.seller, saleDetails, signature)) {
-                    revert PaymentProcessor__DispensingTokenWasUnsuccessful();
+                    revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
                 _executeOrder(ptrAppStorage, domainSeparator, false, saleDetails.seller, saleDetails, signature);
@@ -79,7 +79,7 @@ contract ModuleBulkBuyListings is PaymentProcessorModule {
         }
 
         if (runningBalanceNativeProceeds > 0) {
-            revert PaymentProcessor__OverpaidNativeFunds();
+            revert cPort__OverpaidNativeFunds();
         }
     }
 }

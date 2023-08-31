@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "../DataTypes.sol";
 
-interface IPaymentProcessorEvents {
+interface cPortEvents {
     /// @notice Emitted when a bundle of ERC-721 tokens is successfully purchased using `buyBundledListing`
     event BuyBundledListingERC721(
         address indexed marketplace,

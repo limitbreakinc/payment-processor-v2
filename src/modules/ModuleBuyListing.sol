@@ -15,9 +15,9 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "./PaymentProcessorModule.sol";
+import "./CPortModule.sol";
 
-contract ModuleBuyListing is PaymentProcessorModule {
+contract ModuleBuyListing is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -25,22 +25,22 @@ contract ModuleBuyListing is PaymentProcessorModule {
         address usdc_,
         address usdt_,
         address dai_) 
-    PaymentProcessorModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
     function buyListing(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
         SignatureECDSA memory signature) public payable {
 
-        PaymentProcessorStorage storage ptrAppStorage = appStorage();
+        cPortStorage storage ptrAppStorage = appStorage();
         
         if (saleDetails.paymentMethod == address(0)) {
             if (saleDetails.itemPrice != msg.value) {
-                revert PaymentProcessor__OfferPriceMustEqualSalePrice();
+                revert cPort__OfferPriceMustEqualSalePrice();
             }
         } else {
             if (msg.value > 0) {
-                revert PaymentProcessor__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
             }
         }
 
@@ -55,7 +55,7 @@ contract ModuleBuyListing is PaymentProcessorModule {
             signature);
 
         if (!tokenDispensedSuccessfully) {
-            revert PaymentProcessor__DispensingTokenWasUnsuccessful();
+            revert cPort__DispensingTokenWasUnsuccessful();
         }
     }
 }

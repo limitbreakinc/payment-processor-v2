@@ -15,8 +15,8 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
-import "../interfaces/IPaymentProcessorEvents.sol";
-import "../storage/PaymentProcessorStorageAccess.sol";
+import "../interfaces/CPortEvents.sol";
+import "../storage/CPortStorageAccess.sol";
 import "../Constants.sol";
 import "../Errors.sol";
 
@@ -26,7 +26,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
-abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     uint256 private immutable pushPaymentGasLimit;
     address private immutable weth;
@@ -119,7 +119,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
     }
 
     function _executeOrder(
-        PaymentProcessorStorage storage ptrAppStorage,
+        cPortStorage storage ptrAppStorage,
         bytes32 domainSeparator,
         bool isCollectionLevelOrder, 
         address signer, 
@@ -127,35 +127,35 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         SignatureECDSA memory signature) internal returns (bool tokenDispensedSuccessfully) {
         if (saleDetails.protocol == TokenProtocols.ERC1155) {
             if (saleDetails.amount == 0) {
-                revert PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
+                revert cPort__AmountForERC1155SalesGreaterThanZero();
             }
         } else {
             if (saleDetails.amount != ONE) {
-                revert PaymentProcessor__AmountForERC721SalesMustEqualOne();
+                revert cPort__AmountForERC721SalesMustEqualOne();
             }
         }
 
         if (block.timestamp > saleDetails.expiration) {
-            revert PaymentProcessor__OrderHasExpired();
+            revert cPort__OrderHasExpired();
         }
 
         if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
-            revert PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+            revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
         CollectionPaymentSettings memory paymentSettingsForCollection = ptrAppStorage.collectionPaymentSettings[saleDetails.tokenAddress];
         
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!ptrAppStorage.collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
 
             _verifySalePriceInRange(
@@ -198,7 +198,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
     }
 
     function _validateBundledItems(
-        PaymentProcessorStorage storage ptrAppStorage,
+        cPortStorage storage ptrAppStorage,
         bytes32 domainSeparator,
         bool individualListings,
         BundledOrderExtended memory bundleDetails,
@@ -210,15 +210,15 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
 
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!isDefaultPaymentMethod(bundleDetails.bundleBase.paymentMethod)) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!ptrAppStorage.collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != bundleDetails.bundleBase.paymentMethod) {
-                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         }
 
@@ -272,16 +272,16 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
 
             if (saleDetails.protocol == TokenProtocols.ERC1155) {
                 if (saleDetails.amount == 0) {
-                    revert PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
+                    revert cPort__AmountForERC1155SalesGreaterThanZero();
                 }
             } else {
                 if (saleDetails.amount != ONE) {
-                    revert PaymentProcessor__AmountForERC721SalesMustEqualOne();
+                    revert cPort__AmountForERC721SalesMustEqualOne();
                 }
             }
 
             if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
-                revert PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+                revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
             }
 
             if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
@@ -294,7 +294,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
    
             if (individualListings) {
                 if (block.timestamp > saleDetails.expiration) {
-                    revert PaymentProcessor__OrderHasExpired();
+                    revert cPort__OrderHasExpired();
                 }
 
                 _verifySignedItemOrder(domainSeparator, saleDetails.seller, saleDetails, signatures[i]);
@@ -307,7 +307,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
 
         if(!individualListings) {
             if (block.timestamp > bundleDetails.expiration) {
-                revert PaymentProcessor__OrderHasExpired();
+                revert cPort__OrderHasExpired();
             }
 
             _verifySignedBundleListing(
@@ -359,7 +359,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         );
 
         if (signer != ECDSA.recover(digest, signedOrder.v, signedOrder.r, signedOrder.s)) {
-            revert PaymentProcessor__UnauthorizeSale();
+            revert cPort__UnauthorizeSale();
         }
     }
 
@@ -397,7 +397,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         );
 
         if (signer != ECDSA.recover(digest, signedOrder.v, signedOrder.r, signedOrder.s)) {
-            revert PaymentProcessor__UnauthorizeSale();
+            revert cPort__UnauthorizeSale();
         }
     }
 
@@ -438,7 +438,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         );
 
         if (signer != ECDSA.recover(digest, signedListing.v, signedListing.r, signedListing.s)) {
-            revert PaymentProcessor__UnauthorizeSale();
+            revert cPort__UnauthorizeSale();
         }
     }
 
@@ -455,7 +455,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
             uint256 slotValue = ptrInvalidatedSignatureBitmap[slot];
 
             if (((slotValue >> offset) & ONE) == ONE) {
-                revert PaymentProcessor__SignatureAlreadyUsedOrRevoked();
+                revert cPort__SignatureAlreadyUsedOrRevoked();
             }
 
             ptrInvalidatedSignatureBitmap[slot] = (slotValue | ONE << offset);
@@ -497,7 +497,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
 
             if (!successfullyDispensedToken) {
                 if (address(paymentCoin) == address(0)) {
-                    revert PaymentProcessor__DispensingTokenWasUnsuccessful();
+                    revert cPort__DispensingTokenWasUnsuccessful();
                 }
 
                 unsuccessfulFills[i] = true;
@@ -575,7 +575,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         }
 
         if (!success) {
-            revert PaymentProcessor__FailedToTransferProceeds();
+            revert cPort__FailedToTransferProceeds();
         }
     }
 
@@ -599,7 +599,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
 
             if (royaltyAmount > 0) {
                 if (royaltyAmount > (salePrice * maxRoyaltyFeeNumerator) / FEE_DENOMINATOR) {
-                    revert PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
+                    revert cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
                 }
 
                 proceeds.royaltyRecipient = royaltyReceiver;
@@ -645,7 +645,7 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         (uint256 floorPrice, uint256 ceilingPrice) = _getFloorAndCeilingPrices(tokenAddress, tokenId);
 
         if(salePrice < amount * floorPrice) {
-            revert PaymentProcessor__SalePriceBelowMinimumFloor();
+            revert cPort__SalePriceBelowMinimumFloor();
         }
 
         if(ceilingPrice < type(uint120).max) {
@@ -653,25 +653,25 @@ abstract contract PaymentProcessorModule is PaymentProcessorStorageAccess, IPaym
         }
 
         if(salePrice > ceilingPrice) {
-            revert PaymentProcessor__SalePriceAboveMaximumCeiling();
+            revert cPort__SalePriceAboveMaximumCeiling();
         }
     }
 
     function _verifyPaymentMethodIsNonNative(address paymentMethod) internal pure {
         if (paymentMethod == address(0)) {
-            revert PaymentProcessor__BadPaymentMethod();
+            revert cPort__BadPaymentMethod();
         }
     }
 
     function _verifyCallerIsSellerAndTxOrigin(address seller) internal view {
         if(seller != msg.sender || msg.sender != tx.origin) {
-            revert PaymentProcessor__SellerMustBeCallerAndTransactionOrigin();
+            revert cPort__SellerMustBeCallerAndTransactionOrigin();
         }
     }
 
     function _verifyCallerIsBuyerAndTxOrigin(address buyer) internal view {
         if(buyer != msg.sender || msg.sender != tx.origin) {
-            revert PaymentProcessor__BuyerMustBeCallerAndTransactionOrigin();
+            revert cPort__BuyerMustBeCallerAndTransactionOrigin();
         }
     }
 
