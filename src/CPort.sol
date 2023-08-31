@@ -40,6 +40,7 @@ import "forge-std/console.sol";
 
 contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
 
+    address private immutable modulePaymentSettings;
     address private immutable moduleOnChainCancellation;
     address private immutable moduleBuyListing;
     address private immutable moduleAcceptOffer;
@@ -49,6 +50,7 @@ contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
     address private immutable moduleSweepCollection;
 
     constructor(
+        address modulePaymentSettings_,
         address moduleOnChainCancellation_,
         address moduleBuyListing_,
         address moduleAcceptOffer_,
@@ -57,6 +59,7 @@ contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
         address moduleBuyBundledListing_,
         address moduleSweepCollection_) 
         EIP712("cPort", "1") {
+        modulePaymentSettings = modulePaymentSettings_;
         moduleOnChainCancellation = moduleOnChainCancellation_;
         moduleBuyListing = moduleBuyListing_;
         moduleAcceptOffer = moduleAcceptOffer_;
@@ -66,136 +69,122 @@ contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
         moduleSweepCollection = moduleSweepCollection_;
     }
 
-    function createPaymentMethodWhitelist(string calldata whitelistName) external returns (uint88 paymentMethodWhitelistId) {
-        unchecked {
-            paymentMethodWhitelistId = ++appStorage().lastPaymentMethodWhitelistId;
-        }
-
-        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = _msgSender();
-
-        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, _msgSender(), whitelistName);
+    function encodeCreatePaymentMethodWhitelistCalldata(string calldata whitelistName) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "createPaymentMethodWhitelist(string)",
+                whitelistName));
     }
 
-    function whitelistPaymentMethod(uint88 paymentMethodWhitelistId, address paymentMethod) external {
-        _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
+    function createPaymentMethodWhitelist(bytes calldata data) external returns (uint88 paymentMethodWhitelistId) {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"f83116c9")
+            calldatacopy(0x04, data.offset, data.length)
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0x00, 0x20)
 
-        if (ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__PaymentMethodIsAlreadyApproved();
+            returndatacopy(0x00, 0x00, 0x20)
+            switch result case 0 {
+                revert(0, 0)
+            } default {
+                return (0x00, 0x20)
+            }
         }
-
-        ptrPaymentMethodWhitelist[paymentMethod] = true;
-        emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
-    function unwhitelistPaymentMethod(uint88 paymentMethodWhitelistId, address paymentMethod) external {
-        _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
-
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
-
-        if (!ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__CoinIsNotApproved();
-        }
-
-        delete ptrPaymentMethodWhitelist[paymentMethod];
-        emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
+    function encodeWhitelistPaymentMethodCalldata(uint88 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "whitelistPaymentMethod(uint88,address)",
+                paymentMethodWhitelistId,
+                paymentMethod));
     }
 
-    function setCollectionPaymentSettings(
+    function whitelistPaymentMethod(bytes calldata data) external {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"c14f3818")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+        }
+    }
+
+    function encodeUnwhitelistPaymentMethodCalldata(uint88 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "unwhitelistPaymentMethod(uint88,address)",
+                paymentMethodWhitelistId,
+                paymentMethod));
+    }
+
+    function unwhitelistPaymentMethod(bytes calldata data) external {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"0c7c1d0f")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+        }
+    }
+
+    function encodeSetCollectionPaymentSettingsCalldata(
         address tokenAddress, 
         PaymentSettings paymentSettings,
         uint88 paymentMethodWhitelistId,
-        address constrainedPricingPaymentMethod) external {
-            _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
-
-            if (
-                paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist || 
-                paymentSettings == PaymentSettings.AllowAnyPaymentMethod
-            ) {
-                paymentMethodWhitelistId = 0;
-                constrainedPricingPaymentMethod = address(0);
-            } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-                constrainedPricingPaymentMethod = address(0);
-            } else if (paymentSettings == PaymentSettings.PricingConstraints) {
-                paymentMethodWhitelistId = 0;
-            }
-
-            if (paymentMethodWhitelistId > appStorage().lastPaymentMethodWhitelistId) {
-                revert cPort__PaymentMethodWhitelistDoesNotExist();
-            }
-
-            appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
+        address constrainedPricingPaymentMethod
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "setCollectionPaymentSettings(address,uint8,uint88,address)",
+                tokenAddress,
                 paymentSettings,
                 paymentMethodWhitelistId,
-                constrainedPricingPaymentMethod);
-
-            emit UpdatedCollectionPaymentSettings(
-                tokenAddress, 
-                paymentSettings, 
-                paymentMethodWhitelistId, 
-                constrainedPricingPaymentMethod);
+                constrainedPricingPaymentMethod));
     }
 
-    function setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds) external {
-        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
-
-        if(appStorage().collectionPricingBounds[tokenAddress].isImmutable) {
-            revert cPort__PricingBoundsAreImmutable();
+    function setCollectionPaymentSettings(bytes calldata data) external {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"56559a52")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
-
-        if(pricingBounds.floorPrice > pricingBounds.ceilingPrice) {
-            revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
-        }
-        
-        appStorage().collectionPricingBounds[tokenAddress] = pricingBounds;
-        
-        emit UpdatedCollectionLevelPricingBoundaries(
-            tokenAddress, 
-            pricingBounds.floorPrice, 
-            pricingBounds.ceilingPrice);
     }
 
-    function setTokenPricingBounds(
+    function encodeSetCollectionPricingBoundsCalldata(address tokenAddress, PricingBounds calldata pricingBounds) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "setCollectionPricingBounds(address,(bool,bool,uint120,uint120))",
+                tokenAddress,
+                pricingBounds));
+    }
+
+    function setCollectionPricingBounds(bytes calldata data) external {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"5e2180e7")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+        }
+    }
+
+    function encodeSetTokenPricingBoundsCalldata(
         address tokenAddress, 
         uint256[] calldata tokenIds, 
-        PricingBounds[] calldata pricingBounds) external {
-        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+        PricingBounds[] calldata pricingBounds) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "setTokenPricingBounds(address,uint256[],(bool,bool,uint120,uint120)[])",
+                tokenAddress,
+                pricingBounds));
+    }
 
-        if(tokenIds.length != pricingBounds.length) {
-            revert cPort__InputArrayLengthMismatch();
-        }
-
-        if(tokenIds.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
-        }
-
-        mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = appStorage().tokenPricingBounds[tokenAddress];
-
-        uint256 tokenId;
-        for(uint256 i = 0; i < tokenIds.length;) {
-            tokenId = tokenIds[i];
-            PricingBounds memory pricingBounds_ = pricingBounds[i];
-
-            if(ptrTokenPricingBounds[tokenId].isImmutable) {
-                revert cPort__PricingBoundsAreImmutable();
-            }
-
-            if(pricingBounds_.floorPrice > pricingBounds_.ceilingPrice) {
-                revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
-            }
-
-            ptrTokenPricingBounds[tokenId] = pricingBounds_;
-
-            emit UpdatedTokenLevelPricingBoundaries(
-                tokenAddress, 
-                tokenId, 
-                pricingBounds_.floorPrice, 
-                pricingBounds_.ceilingPrice);
-            
-            unchecked {
-                ++i;
-            }
+    function setTokenPricingBounds(bytes calldata data) external {
+        address module = modulePaymentSettings;
+        assembly {
+            mstore(0x00, hex"b0c88721")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
         }
     }
 
@@ -398,8 +387,17 @@ contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
      * @return The floor price.
      */
     function getFloorPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
-        (uint256 floorPrice,) = _getFloorAndCeilingPrices(tokenAddress, tokenId);
-        return floorPrice;
+        PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
+        if (tokenLevelPricingBounds.isSet) {
+            return tokenLevelPricingBounds.floorPrice;
+        } else {
+            PricingBounds memory collectionLevelPricingBounds = appStorage().collectionPricingBounds[tokenAddress];
+            if (collectionLevelPricingBounds.isSet) {
+                return collectionLevelPricingBounds.floorPrice;
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -410,76 +408,26 @@ contract cPort is Context, EIP712, cPortStorageAccess, cPortEvents {
      * @return The ceiling price.
      */
     function getCeilingPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
-        (, uint256 ceilingPrice) = _getFloorAndCeilingPrices(tokenAddress, tokenId);
-        return ceilingPrice;
-    }
-
-    function _requireCallerOwnsPaymentMethodWhitelist(uint88 paymentMethodWhitelistId) internal view {
-        if(_msgSender() != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
-            revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
-        }
-    }
-
-    function _getFloorAndCeilingPrices(
-        address tokenAddress, 
-        uint256 tokenId) internal view returns (uint256, uint256) {
-
         PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
         if (tokenLevelPricingBounds.isSet) {
-            return (tokenLevelPricingBounds.floorPrice, tokenLevelPricingBounds.ceilingPrice);
+            return tokenLevelPricingBounds.ceilingPrice;
         } else {
             PricingBounds memory collectionLevelPricingBounds = appStorage().collectionPricingBounds[tokenAddress];
             if (collectionLevelPricingBounds.isSet) {
-                return (collectionLevelPricingBounds.floorPrice, collectionLevelPricingBounds.ceilingPrice);
+                return collectionLevelPricingBounds.ceilingPrice;
             }
         }
 
-        return (0, type(uint256).max);
+        return type(uint256).max;
     }
 
-    function _requireCallerIsNFTOrContractOwnerOrAdmin(address tokenAddress) internal view {
-        bool callerHasPermissions = false;
-        
-        callerHasPermissions = _msgSender() == tokenAddress;
-        if(!callerHasPermissions) {
-            try IOwnable(tokenAddress).owner() returns (address contractOwner) {
-                callerHasPermissions = _msgSender() == contractOwner;
-            } catch {}
-
-            if(!callerHasPermissions) {
-                try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, _msgSender()) 
-                    returns (bool callerIsContractAdmin) {
-                    callerHasPermissions = callerIsContractAdmin;
-                } catch {}
-            }
-        }
-
-        if(!callerHasPermissions) {
-            revert cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
-        }
-    }
-
-    function _removeFirst4Bytes(bytes memory data) private pure returns (bytes memory) {
-        if (data.length < 4) {
-            revert("cPort__DataLengthTooShort()");
-        }
-
-        bytes memory result = new bytes(data.length - 4);
-        
+    function _removeFirst4Bytes(bytes memory data) private view returns (bytes memory result) {
         assembly {
-            // Start positions of the data
-            let src := add(data, 0x24) // data starts 0x20 bytes in, skip another 0x04 bytes
-            let dest := add(result, 0x20) // result starts 0x20 bytes in
-            
-            // Copy data from source to destination
-            for { let end := add(src, mload(data)) } lt(src, end) {
-                src := add(src, 0x20)
-                dest := add(dest, 0x20)
-            } {
-                mstore(dest, mload(src))
+            if lt(mload(data), 0x04) {
+                revert(0,0)
             }
+            mstore(result, sub(mload(data), 0x04))
+            let a := staticcall(gas(), 0x04, add(data, 0x24), sub(mload(data), 0x04), add(result, 0x20), mload(result))
         }
-        
-        return result;
     }
 }

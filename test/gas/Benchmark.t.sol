@@ -6,6 +6,7 @@ import "forge-std/console.sol";
 import "src/interfaces/CPortEvents.sol";
 import "src/Constants.sol";
 import "src/CPort.sol";
+import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModuleBuyListing.sol";
 import "src/modules/ModuleAcceptOffer.sol";
@@ -48,6 +49,7 @@ contract Benchmark is Test, cPortEvents {
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
 
+    cPortModule public modulePaymentSettings;
     cPortModule public moduleOnChainCancellation;
     cPortModule public moduleBuyListing;
     cPortModule public moduleAcceptOffer;
@@ -72,6 +74,13 @@ contract Benchmark is Test, cPortEvents {
         test721 = new SeaportTestERC721();
 
         erc721s = [test721];
+
+        modulePaymentSettings = new ModulePaymentSettings(
+            2300, 
+            address(weth), 
+            address(usdc), 
+            address(usdt), 
+            address(dai));
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
             2300, 
@@ -122,6 +131,12 @@ contract Benchmark is Test, cPortEvents {
             address(usdt), 
             address(dai));
 
+        console.logBytes4(ModulePaymentSettings.createPaymentMethodWhitelist.selector);
+        console.logBytes4(ModulePaymentSettings.whitelistPaymentMethod.selector);
+        console.logBytes4(ModulePaymentSettings.unwhitelistPaymentMethod.selector);
+        console.logBytes4(ModulePaymentSettings.setCollectionPaymentSettings.selector);
+        console.logBytes4(ModulePaymentSettings.setCollectionPricingBounds.selector);
+        console.logBytes4(ModulePaymentSettings.setTokenPricingBounds.selector);
         console.logBytes4(ModuleOnChainCancellation.revokeMasterNonce.selector);
         console.logBytes4(ModuleOnChainCancellation.revokeSingleNonce.selector);
         console.logBytes4(ModuleBuyListing.buyListing.selector);
@@ -133,6 +148,7 @@ contract Benchmark is Test, cPortEvents {
 
         _cPort = 
             new cPort(
+                address(modulePaymentSettings),
                 address(moduleOnChainCancellation),
                 address(moduleBuyListing),
                 address(moduleAcceptOffer),
@@ -154,13 +170,14 @@ contract Benchmark is Test, cPortEvents {
         _allocateTokensAndApprovals(cal, uint128(MAX_INT));
         _allocateTokensAndApprovals(abe, uint128(MAX_INT));
 
-        customPaymentMethodWhitelistId = _cPort.createPaymentMethodWhitelist("Test Whitelist");
+        bytes memory createWhitelistData = _cPort.encodeCreatePaymentMethodWhitelistCalldata("Test Whitelist");
+        customPaymentMethodWhitelistId = _cPort.createPaymentMethodWhitelist(createWhitelistData);
 
-        _cPort.whitelistPaymentMethod(customPaymentMethodWhitelistId, address(0));
-        _cPort.whitelistPaymentMethod(customPaymentMethodWhitelistId, address(weth));
-        _cPort.whitelistPaymentMethod(customPaymentMethodWhitelistId, address(usdc));
-        _cPort.whitelistPaymentMethod(customPaymentMethodWhitelistId, address(usdt));
-        _cPort.whitelistPaymentMethod(customPaymentMethodWhitelistId, address(dai));
+        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(0)));
+        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(weth)));
+        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(usdc)));
+        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(usdt)));
+        _cPort.whitelistPaymentMethod(_cPort.encodeWhitelistPaymentMethodCalldata(customPaymentMethodWhitelistId, address(dai)));
     }
 
     /**
@@ -408,7 +425,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -417,7 +435,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -426,13 +445,16 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
-        _cPort.setCollectionPricingBounds(address(test721), PricingBounds({
+        bytes memory data1 = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data2 = _cPort.encodeSetCollectionPricingBoundsCalldata(address(test721), PricingBounds({
             isSet: true,
             isImmutable: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -441,7 +463,8 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        _cPort.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](numRuns);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
@@ -455,8 +478,10 @@ contract Benchmark is Test, cPortEvents {
                 ceilingPrice: 500 ether
             });
         }
+
+        bytes memory data2 = _cPort.encodeSetTokenPricingBoundsCalldata(address(test721), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(address(test721), tokenIds, pricingBoundsArray);
+        _cPort.setTokenPricingBounds(data2);
         _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -626,7 +651,13 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            address(0));
+
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -635,7 +666,14 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        bytes memory data = 
+            _cPort.encodeSetCollectionPaymentSettingsCalldata(
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                address(0));
+
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -718,7 +756,13 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        bytes memory data = _cPort.encodeSetCollectionPaymentSettingsCalldata(
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            address(0));
+
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 
@@ -727,7 +771,14 @@ contract Benchmark is Test, cPortEvents {
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate
     ) private {
-        _cPort.setCollectionPaymentSettings(address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        bytes memory data = 
+            _cPort.encodeSetCollectionPaymentSettingsCalldata(
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                address(0));
+
+        _cPort.setCollectionPaymentSettings(data);
         _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
     }
 

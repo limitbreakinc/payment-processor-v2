@@ -15,11 +15,13 @@ pragma solidity 0.8.19;
 // 
 // By Limit Break, Inc.
 
+import "../IOwnable.sol";
 import "../interfaces/CPortEvents.sol";
 import "../storage/CPortStorageAccess.sol";
 import "../Constants.sol";
 import "../Errors.sol";
 
+import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -677,5 +679,33 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _hashTypedDataV4(bytes32 domainSeparator, bytes32 structHash) internal view returns (bytes32) {
         return ECDSA.toTypedDataHash(domainSeparator, structHash);
+    }
+
+    function _requireCallerOwnsPaymentMethodWhitelist(uint88 paymentMethodWhitelistId) internal view {
+        if(msg.sender != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
+            revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
+        }
+    }
+
+    function _requireCallerIsNFTOrContractOwnerOrAdmin(address tokenAddress) internal view {
+        bool callerHasPermissions = false;
+        
+        callerHasPermissions = msg.sender == tokenAddress;
+        if(!callerHasPermissions) {
+            try IOwnable(tokenAddress).owner() returns (address contractOwner) {
+                callerHasPermissions = msg.sender == contractOwner;
+            } catch {}
+
+            if(!callerHasPermissions) {
+                try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, msg.sender) 
+                    returns (bool callerIsContractAdmin) {
+                    callerHasPermissions = callerIsContractAdmin;
+                } catch {}
+            }
+        }
+
+        if(!callerHasPermissions) {
+            revert cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+        }
     }
 }
