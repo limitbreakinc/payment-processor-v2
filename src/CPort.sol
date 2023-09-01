@@ -123,10 +123,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
 
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0x00, 0x20)
 
-            returndatacopy(0x00, 0x00, 0x20)
             switch result case 0 {
-                revert(0, 0)
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
             } default {
+                returndatacopy(0x00, 0x00, 0x20)
                 return (0x00, 0x20)
             }
         }
@@ -138,6 +140,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"c14f3818")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -147,6 +155,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"0c7c1d0f")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -156,6 +170,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"56559a52")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -165,6 +185,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"5e2180e7")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -174,6 +200,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"b0c88721")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -186,6 +218,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         assembly {
             mstore(0x00, hex"226d4adb")
             let result := delegatecall(gas(), module, 0, 4, 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -195,6 +233,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"b6d7dc33")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -208,6 +252,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"be0af963")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -217,6 +267,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"8f48f433")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -226,6 +282,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"ec5b058f")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -235,6 +297,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"50101c27")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -244,6 +312,12 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"c22db4a4")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 
@@ -253,6 +327,29 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             mstore(0x00, hex"482a6c6f")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    /******************/
+
+    function buyListingForSelfWithEOA(bytes calldata data) external payable {
+        address module = moduleBuyListing;
+        assembly {
+            mstore(0x00, hex"428b4a34")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
         }
     }
 }
