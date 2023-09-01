@@ -30,3 +30,6 @@ error cPort__BadPaymentMethod();
 error cPort__SellerMustBeCallerAndTransactionOrigin();
 error cPort__RanOutOfNativeFunds();
 error cPort__OverpaidNativeFunds();
+
+error cPort__EIP1271SignatureInvalid();
+error cPort__BuyerMustBeCaller();

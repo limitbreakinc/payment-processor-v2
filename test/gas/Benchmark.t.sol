@@ -143,7 +143,6 @@ contract Benchmark is Test, cPortEvents {
         console.logBytes4(ModulePaymentSettings.setTokenPricingBounds.selector);
         console.logBytes4(ModuleOnChainCancellation.revokeMasterNonce.selector);
         console.logBytes4(ModuleOnChainCancellation.revokeSingleNonce.selector);
-        console.logBytes4(ModuleBuyListing.buyListing.selector);
         console.logBytes4(ModuleAcceptOffer.acceptOffer.selector);
         console.logBytes4(ModuleBulkBuyListings.bulkBuyListings.selector);
         console.logBytes4(ModuleBulkAcceptOffers.bulkAcceptOffers.selector);
@@ -520,7 +519,7 @@ contract Benchmark is Test, cPortEvents {
             bytes memory data = _cPortEncoder.encodeBuyListingCalldata(address(_cPort), saleDetails, signedListing);
     
             vm.prank(bob, bob);
-            _cPort.buyListing{value: saleDetails.itemPrice}(data);
+            _cPort.buyListingForAnyone{value: saleDetails.itemPrice}(data);
     
             assertEq(test721.ownerOf(tokenId), bob);
         }

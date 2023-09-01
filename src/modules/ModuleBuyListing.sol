@@ -27,27 +27,48 @@ contract ModuleBuyListing is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function buyListing(
+    function buyListingForAnyone(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature
+    ) public payable {
+        _buyListing(domainSeparator, saleDetails, signature);
+    }
+
+    function buyListingForSelf(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature
+    ) public payable {
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
+        _buyListing(domainSeparator, saleDetails, signature);
+    }
+
+    function buyListingForSelfWithEOA(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
         SignatureECDSA memory signature) public payable {
-
-        if (saleDetails.paymentMethod == address(0)) {
-            if (saleDetails.itemPrice != msg.value) {
-                revert cPort__OfferPriceMustEqualSalePrice();
-            }
-        } else {
-            if (msg.value > 0) {
-                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
-            }
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
         }
 
-        _verifyCallerIsBuyerAndTxOrigin(saleDetails.buyer);
+        if (saleDetails.buyer != tx.origin) {
+            revert cPort__BuyerMustBeCallerAndTransactionOrigin();
+        }
 
-        bool tokenDispensedSuccessfully = _executeOrder(
+        _buyListing(domainSeparator, saleDetails, signature);
+    }
+
+    function _buyListing(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature
+    ) private {
+        bool tokenDispensedSuccessfully = _executeOrderBuySide(
             domainSeparator, 
-            false, 
-            saleDetails.seller, 
             saleDetails, 
             signature);
 

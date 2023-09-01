@@ -21,6 +21,7 @@ import "../storage/CPortStorageAccess.sol";
 import "../Constants.sol";
 import "../Errors.sol";
 
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -120,6 +121,95 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
+    // Description: Executes a buy-side order.  A buy-side order is when the caller is the account
+    // purchasing the item(s) from the seller (whether for themselves or on behalf of someone else).
+    // The signed seller order is validated to ensure that the seller has authorized the sale.
+    // The seller may be either an EOA or a contract (such as a multi-sig).
+
+    function _executeOrderBuySide(
+        bytes32 domainSeparator,
+        Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (saleDetails.paymentMethod == address(0)) {
+            if (saleDetails.itemPrice != msg.value) {
+                revert cPort__OfferPriceMustEqualSalePrice();
+            }
+        } else {
+            if (msg.value > 0) {
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+            }
+        }
+
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            if (saleDetails.amount == 0) {
+                revert cPort__AmountForERC1155SalesGreaterThanZero();
+            }
+        } else {
+            if (saleDetails.amount != ONE) {
+                revert cPort__AmountForERC721SalesMustEqualOne();
+            }
+        }
+
+        if (block.timestamp > saleDetails.expiration) {
+            revert cPort__OrderHasExpired();
+        }
+
+        if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
+            revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+        }
+
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+        
+        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+            if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+            if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+
+            _verifySalePriceInRange(
+                saleDetails.tokenAddress, 
+                saleDetails.tokenId, 
+                saleDetails.amount, 
+                saleDetails.itemPrice);
+        }
+
+        _verifySignedItemListing(domainSeparator, saleDetails.seller, saleDetails, signedSellOrder);
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+
     function _executeOrder(
         bytes32 domainSeparator,
         bool isCollectionLevelOrder, 
@@ -197,6 +287,86 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.itemPrice);
         }
     }
+
+    /*
+    function _executeOrder(
+        bytes32 domainSeparator,
+        bool isCollectionLevelOrder, 
+        address signer, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature) internal returns (bool tokenDispensedSuccessfully) {
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            if (saleDetails.amount == 0) {
+                revert cPort__AmountForERC1155SalesGreaterThanZero();
+            }
+        } else {
+            if (saleDetails.amount != ONE) {
+                revert cPort__AmountForERC721SalesMustEqualOne();
+            }
+        }
+
+        if (block.timestamp > saleDetails.expiration) {
+            revert cPort__OrderHasExpired();
+        }
+
+        if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
+            revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+        }
+
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+        
+        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+            if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+            if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+
+            _verifySalePriceInRange(
+                saleDetails.tokenAddress, 
+                saleDetails.tokenId, 
+                saleDetails.amount, 
+                saleDetails.itemPrice);
+        }
+
+        if (isCollectionLevelOrder) {
+            _verifySignedCollectionOrder(domainSeparator, signer, saleDetails, signature);
+        } else {
+            _verifySignedItemOrder(domainSeparator, signer, saleDetails, signature);
+        }
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds(
+            saleDetails.buyer,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+    */
 
     function _validateBundledItems(
         bytes32 domainSeparator,
@@ -321,6 +491,47 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 }),
                 bundleDetails, 
                 signatures[0]);
+        }
+    }
+
+    function _verifySignedItemListing(
+        bytes32 domainSeparator,
+        address signer,
+        Order memory saleDetails,
+        SignatureECDSA memory signedOrder) internal {
+        bytes32 digest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                bytes.concat(
+                    abi.encode(
+                        ORDER_APPROVAL_HASH,
+                        uint8(saleDetails.protocol),
+                        saleDetails.seller,
+                        saleDetails.marketplace,
+                        saleDetails.paymentMethod,
+                        saleDetails.tokenAddress
+                    ),
+                    abi.encode(
+                        saleDetails.tokenId,
+                        saleDetails.amount,
+                        saleDetails.itemPrice,
+                        saleDetails.nonce,
+                        saleDetails.expiration,
+                        saleDetails.marketplaceFeeNumerator,
+                        saleDetails.maxRoyaltyFeeNumerator,
+                        _checkAndInvalidateNonce(
+                            saleDetails.seller,
+                            saleDetails.nonce,
+                            false
+                        )
+                    )
+                )
+            )
+        );
+
+        if(saleDetails.seller.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.seller, digest, signedOrder);
+        } else if (saleDetails.seller != ECDSA.recover(digest, signedOrder.v, signedOrder.r, signedOrder.s)) {
+            revert cPort__UnauthorizeSale();
         }
     }
 
@@ -566,6 +777,106 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         return unsuccessfulFills;
     }
 
+    function _computeAndDistributeProceeds2(
+        address purchaser,
+        IERC20 paymentCoin,
+        function(address,address,IERC20,uint256,uint256) funcPayout,
+        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
+        Order[] memory saleDetailsBatch) internal returns (bool[] memory unsuccessfulFills) {
+
+        unsuccessfulFills = new bool[](saleDetailsBatch.length);
+
+        PayoutsAccumulator memory accumulator = PayoutsAccumulator({
+            lastSeller: address(0),
+            lastMarketplace: address(0),
+            lastRoyaltyRecipient: address(0),
+            accumulatedSellerProceeds: 0,
+            accumulatedMarketplaceProceeds: 0,
+            accumulatedRoyaltyProceeds: 0
+        });
+
+        for (uint256 i = 0; i < saleDetailsBatch.length;) {
+            Order memory saleDetails = saleDetailsBatch[i];
+
+            bool successfullyDispensedToken = 
+                funcDispenseToken(
+                    saleDetails.seller, 
+                    saleDetails.buyer, 
+                    saleDetails.tokenAddress, 
+                    saleDetails.tokenId, 
+                    saleDetails.amount);
+
+            if (!successfullyDispensedToken) {
+                if (address(paymentCoin) == address(0)) {
+                    revert cPort__DispensingTokenWasUnsuccessful();
+                }
+
+                unsuccessfulFills[i] = true;
+            } else {
+                SplitProceeds memory proceeds =
+                    _computePaymentSplits(
+                        saleDetails.itemPrice,
+                        saleDetails.tokenAddress,
+                        saleDetails.tokenId,
+                        saleDetails.marketplace,
+                        saleDetails.marketplaceFeeNumerator,
+                        saleDetails.maxRoyaltyFeeNumerator
+                    );
+    
+                if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
+                    if(accumulator.accumulatedRoyaltyProceeds > 0) {
+                        funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
+                    accumulator.accumulatedRoyaltyProceeds = 0;
+                }
+    
+                if (saleDetails.marketplace != accumulator.lastMarketplace) {
+                    if(accumulator.accumulatedMarketplaceProceeds > 0) {
+                        funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastMarketplace = saleDetails.marketplace;
+                    accumulator.accumulatedMarketplaceProceeds = 0;
+                }
+    
+                if (saleDetails.seller != accumulator.lastSeller) {
+                    if(accumulator.accumulatedSellerProceeds > 0) {
+                        funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastSeller = saleDetails.seller;
+                    accumulator.accumulatedSellerProceeds = 0;
+                }
+
+                unchecked {
+                    accumulator.accumulatedRoyaltyProceeds += proceeds.royaltyProceeds;
+                    accumulator.accumulatedMarketplaceProceeds += proceeds.marketplaceProceeds;
+                    accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
+                }
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if(accumulator.accumulatedRoyaltyProceeds > 0) {
+            funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+        }
+
+        if(accumulator.accumulatedMarketplaceProceeds > 0) {
+            funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+        }
+
+        if(accumulator.accumulatedSellerProceeds > 0) {
+            funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+        }
+
+        return unsuccessfulFills;
+    }
+
     function _pushProceeds(address to, uint256 proceeds, uint256 pushPaymentGasLimit_) internal {
         bool success;
 
@@ -669,6 +980,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
+    function _verifyCallerIsBuyer(address buyer) internal view {
+        if(buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+    }
+
     function _verifyCallerIsBuyerAndTxOrigin(address buyer) internal view {
         if(buyer != msg.sender || msg.sender != tx.origin) {
             revert cPort__BuyerMustBeCallerAndTransactionOrigin();
@@ -704,6 +1021,24 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         if(!callerHasPermissions) {
             revert cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+        }
+    }
+
+    function _verifyEIP1271Signature(
+        address signer, 
+        bytes32 hash, 
+        SignatureECDSA memory signature) private view {
+        bool isValidSignatureNow;
+        
+        try IERC1271(signer).isValidSignature(
+            hash, 
+            abi.encodePacked(signature.r, signature.s, signature.v)) 
+            returns (bytes4 magicValue) {
+            isValidSignatureNow = magicValue == IERC1271.isValidSignature.selector;
+        } catch {}
+
+        if (!isValidSignatureNow) {
+            revert cPort__EIP1271SignatureInvalid();
         }
     }
 }
