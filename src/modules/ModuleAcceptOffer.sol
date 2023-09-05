@@ -34,12 +34,10 @@ contract ModuleAcceptOffer is cPortModule {
         SignatureECDSA memory signature) public {
         
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
-        _verifyCallerIsSellerAndTxOrigin(saleDetails.seller);
 
-        bool tokenDispensedSuccessfully = _executeOrder(
-            domainSeparator,
+        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+            domainSeparator, 
             isCollectionLevelOffer, 
-            saleDetails.buyer, 
             saleDetails, 
             signature);
 

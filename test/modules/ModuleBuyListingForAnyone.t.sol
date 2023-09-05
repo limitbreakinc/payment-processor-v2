@@ -15,7 +15,8 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
             seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.beneficiary,
+            buyer: purchaser,
+            beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(0),
             tokenAddress: address(test721),
@@ -35,13 +36,12 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyListingForAnyone(
-            purchaser,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs, 
             saleDetails, 
             EMPTY_SELECTOR);
 
-        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.buyer);
+        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
     function testBuyListingForSelf_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
@@ -52,7 +52,8 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
             seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.beneficiary,
+            buyer: purchaser,
+            beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
@@ -72,16 +73,15 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyListingForAnyone(
-            purchaser,
             uint128(0),
             fuzzedOrderInputs,
             saleDetails, 
             EMPTY_SELECTOR);
 
-        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.buyer);
+        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
-    function _buyListingForAnyone(address purchaser, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
+    function _buyListingForAnyone(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
         SignatureECDSA memory signedListing = _getSignedListing(fuzzedOrderInputs.sellerKey, saleDetails);
 
         bytes memory fnCalldata = 
@@ -94,7 +94,7 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
             vm.expectRevert(expectedRevertSelector);
         }
 
-        vm.prank(purchaser, purchaser);
+        vm.prank(saleDetails.buyer, saleDetails.buyer);
         _cPort.buyListingForAnyone{value: nativePaymentValue}(fnCalldata);
     }
 }

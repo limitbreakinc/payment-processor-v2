@@ -32,6 +32,7 @@ struct Order {
     TokenProtocols protocol;
     address seller;
     address buyer;
+    address beneficiary;
     address marketplace;
     address paymentMethod;
     address tokenAddress;

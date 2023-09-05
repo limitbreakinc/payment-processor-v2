@@ -32,6 +32,10 @@ contract ModuleBuyListing is cPortModule {
         Order memory saleDetails, 
         SignatureECDSA memory signature
     ) public payable {
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
         _buyListing(domainSeparator, saleDetails, signature);
     }
 
@@ -44,6 +48,10 @@ contract ModuleBuyListing is cPortModule {
             revert cPort__BuyerMustBeCaller();
         }
 
+        if (saleDetails.buyer != saleDetails.beneficiary) {
+            revert("TODO");
+        }
+
         _buyListing(domainSeparator, saleDetails, signature);
     }
 
@@ -51,6 +59,10 @@ contract ModuleBuyListing is cPortModule {
         bytes32 domainSeparator, 
         Order memory saleDetails, 
         SignatureECDSA memory signature) public payable {
+        if (saleDetails.buyer != saleDetails.beneficiary) {
+            revert("TODO");
+        }
+
         if (saleDetails.buyer != msg.sender) {
             revert cPort__BuyerMustBeCaller();
         }

@@ -220,7 +220,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            ORDER_APPROVAL_HASH,
+                            SALE_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.seller,
                             saleDetails.marketplace,
@@ -247,16 +247,17 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedListing;
     }
 
-    function _getSignedOffer(uint256 buyerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
+    function _getSignedItemOffer(uint256 buyerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
         bytes32 offerDigest = 
             ECDSA.toTypedDataHash(
                 _cPort.getDomainSeparator(), 
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            ORDER_APPROVAL_HASH,
+                            ITEM_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.buyer,
+                            saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
@@ -288,9 +289,10 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COLLECTION_ORDER_APPROVAL_HASH,
+                            COLLECTION_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.buyer,
+                            saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress

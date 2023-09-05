@@ -14,6 +14,7 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             protocol: TokenProtocols.ERC721,
             seller: vm.addr(fuzzedOrderInputs.sellerKey),
             buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(0),
             tokenAddress: address(test721),
@@ -25,6 +26,8 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
+
+        saleDetails.beneficiary = saleDetails.buyer;
 
         _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
         _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
@@ -38,7 +41,7 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             saleDetails, 
             EMPTY_SELECTOR);
 
-        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.buyer);
+        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
     function testBuyListingForSelf_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
@@ -48,6 +51,7 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             protocol: TokenProtocols.ERC721,
             seller: vm.addr(fuzzedOrderInputs.sellerKey),
             buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
@@ -59,6 +63,8 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
+
+        saleDetails.beneficiary = saleDetails.buyer;
 
         _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
         _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
@@ -72,7 +78,7 @@ contract ModuleBuyListingForSelfTest is cPortModuleTest {
             saleDetails, 
             EMPTY_SELECTOR);
 
-        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.buyer);
+        assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
     function _buyListingForSelf(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
