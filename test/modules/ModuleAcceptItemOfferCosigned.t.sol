@@ -18,7 +18,7 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
-            cosigner: address(0),
+            cosigner: vm.addr(fuzzedOrderInputs.cosignerKey),
             tokenId: fuzzedOrderInputs.tokenId,
             amount: 1,
             itemPrice: fuzzedOrderInputs.itemPrice,
@@ -44,20 +44,22 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
     }
 
     function _acceptItemOffer(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
-        SignatureECDSA memory signedOffer = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory buyerSignature = _getCosignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedItemOffer(fuzzedOrderInputs.cosignerKey, saleDetails);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCalldata(
+            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
                 address(_cPort), 
                 false, 
                 saleDetails, 
-                signedOffer);
+                buyerSignature,
+                cosignerSignature);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(saleDetails.seller, saleDetails.seller);
-        _cPort.acceptOffer(fnCalldata);
+        _cPort.acceptOfferCosigned(fnCalldata);
     }
 }

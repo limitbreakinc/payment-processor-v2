@@ -33,3 +33,6 @@ error cPort__OverpaidNativeFunds();
 
 error cPort__EIP1271SignatureInvalid();
 error cPort__BuyerMustBeCaller();
+error cPort__NotAuthorizedByCoSigner();
+error cPort__SellerDidNotAuthorizeSale();
+error cPort__BuyerDidNotAuthorizePurchase();

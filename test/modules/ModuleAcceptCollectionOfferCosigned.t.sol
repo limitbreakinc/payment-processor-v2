@@ -5,9 +5,9 @@ import "forge-std/console.sol";
 
 import "./CPortModule.t.sol";
 
-contract ModuleAcceptItemOfferTest is cPortModuleTest {
+contract ModuleAcceptCollectionOfferCosignedTest is cPortModuleTest {
 
-    function testAcceptItemOffer_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
+    function testAcceptCollectionOffer_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
         Order memory saleDetails = Order({
@@ -18,7 +18,7 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
-            cosigner: address(0),
+            cosigner: vm.addr(fuzzedOrderInputs.cosignerKey),
             tokenId: fuzzedOrderInputs.tokenId,
             amount: 1,
             itemPrice: fuzzedOrderInputs.itemPrice,
@@ -34,7 +34,7 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
         test721.mint(saleDetails.seller, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
-        _acceptItemOffer(
+        _acceptCollectionOffer(
             uint128(0),
             fuzzedOrderInputs,
             saleDetails, 
@@ -43,21 +43,23 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
         assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
-    function _acceptItemOffer(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
-        SignatureECDSA memory signedOffer = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+    function _acceptCollectionOffer(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
+        SignatureECDSA memory buyerSignature = _getCosignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedCollectionOffer(fuzzedOrderInputs.cosignerKey, saleDetails);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCalldata(
+            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
                 address(_cPort), 
-                false, 
+                true, 
                 saleDetails, 
-                signedOffer);
+                buyerSignature,
+                cosignerSignature);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(saleDetails.seller, saleDetails.seller);
-        _cPort.acceptOffer(fnCalldata);
+        _cPort.acceptOfferCosigned(fnCalldata);
     }
 }

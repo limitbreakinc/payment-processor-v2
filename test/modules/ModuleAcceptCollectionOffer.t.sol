@@ -18,6 +18,7 @@ contract ModuleAcceptCollectionOfferTest is cPortModuleTest {
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
+            cosigner: address(0),
             tokenId: fuzzedOrderInputs.tokenId,
             amount: 1,
             itemPrice: fuzzedOrderInputs.itemPrice,

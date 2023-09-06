@@ -45,4 +45,25 @@ contract ModuleAcceptOffer is cPortModule {
             revert cPort__DispensingTokenWasUnsuccessful();
         }
     }
+
+    function acceptOfferCosigned(
+        bytes32 domainSeparator, 
+        bool isCollectionLevelOffer, 
+        Order memory saleDetails, 
+        SignatureECDSA memory buyerSignature,
+        SignatureECDSA memory cosignerSignature) public {
+        
+        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
+
+        bool tokenDispensedSuccessfully = _executeOrderSellSideCosigned(
+            domainSeparator, 
+            isCollectionLevelOffer, 
+            saleDetails, 
+            buyerSignature,
+            cosignerSignature);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
 }

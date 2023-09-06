@@ -5,9 +5,9 @@ import "forge-std/console.sol";
 
 import "./CPortModule.t.sol";
 
-contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
+contract ModuleBuyCoSignedListingForAnyoneTest is cPortModuleTest {
 
-    function testBuyListingForAnyone_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
+    function testBuyCoSignedListingForAnyone_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
         address purchaser = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
@@ -20,7 +20,7 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
             marketplace: cal,
             paymentMethod: address(0),
             tokenAddress: address(test721),
-            cosigner: address(0),
+            cosigner: vm.addr(fuzzedOrderInputs.cosignerKey),
             tokenId: fuzzedOrderInputs.tokenId,
             amount: 1,
             itemPrice: fuzzedOrderInputs.itemPrice,
@@ -45,7 +45,7 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
-    function testBuyListingForSelf_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
+    function testBuyCoSignedListingForSelf_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
         address purchaser = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
@@ -58,7 +58,7 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
             marketplace: cal,
             paymentMethod: address(weth),
             tokenAddress: address(test721),
-            cosigner: address(0),
+            cosigner: vm.addr(fuzzedOrderInputs.cosignerKey),
             tokenId: fuzzedOrderInputs.tokenId,
             amount: 1,
             itemPrice: fuzzedOrderInputs.itemPrice,
@@ -84,19 +84,21 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
     }
 
     function _buyListingForAnyone(uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) private {
-        SignatureECDSA memory signedListing = _getSignedListing(fuzzedOrderInputs.sellerKey, saleDetails);
+        SignatureECDSA memory sellerSignature = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedSaleApproval(fuzzedOrderInputs.cosignerKey, saleDetails);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingCalldata(
+            _cPortEncoder.encodeBuyListingCosignedCalldata(
                 address(_cPort), 
                 saleDetails, 
-                signedListing);
+                sellerSignature,
+                cosignerSignature);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(saleDetails.buyer, saleDetails.buyer);
-        _cPort.buyListingForAnyone{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListingForAnyoneCosigned{value: nativePaymentValue}(fnCalldata);
     }
 }

@@ -36,6 +36,7 @@ struct Order {
     address marketplace;
     address paymentMethod;
     address tokenAddress;
+    address cosigner;
     uint256 tokenId;
     uint256 amount;
     uint256 itemPrice;

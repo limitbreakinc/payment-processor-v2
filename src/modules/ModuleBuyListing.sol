@@ -58,7 +58,8 @@ contract ModuleBuyListing is cPortModule {
     function buyListingForSelfWithEOA(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
-        SignatureECDSA memory signature) public payable {
+        SignatureECDSA memory signature
+    ) public payable {
         if (saleDetails.buyer != saleDetails.beneficiary) {
             revert("TODO");
         }
@@ -74,6 +75,57 @@ contract ModuleBuyListing is cPortModule {
         _buyListing(domainSeparator, saleDetails, signature);
     }
 
+    function buyListingForAnyoneCosigned(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        SignatureECDSA memory cosignerSignature
+    ) public payable {
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
+        _buyListingCosigned(domainSeparator, saleDetails, signature, cosignerSignature);
+    }
+
+    function buyListingForSelfCosigned(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        SignatureECDSA memory cosignerSignature
+    ) public payable {
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
+        if (saleDetails.buyer != saleDetails.beneficiary) {
+            revert("TODO");
+        }
+
+        _buyListingCosigned(domainSeparator, saleDetails, signature, cosignerSignature);
+    }
+
+    function buyListingForSelfWithEOACosigned(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        SignatureECDSA memory cosignerSignature
+    ) public payable {
+        if (saleDetails.buyer != saleDetails.beneficiary) {
+            revert("TODO");
+        }
+
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
+        if (saleDetails.buyer != tx.origin) {
+            revert cPort__BuyerMustBeCallerAndTransactionOrigin();
+        }
+
+        _buyListingCosigned(domainSeparator, saleDetails, signature, cosignerSignature);
+    }
+
     function _buyListing(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
@@ -83,6 +135,23 @@ contract ModuleBuyListing is cPortModule {
             domainSeparator, 
             saleDetails, 
             signature);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
+
+    function _buyListingCosigned(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory sellerSignature,
+        SignatureECDSA memory cosignerSignature
+    ) private {
+        bool tokenDispensedSuccessfully = _executeOrderBuySideCosigned(
+            domainSeparator, 
+            saleDetails, 
+            sellerSignature,
+            cosignerSignature);
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();

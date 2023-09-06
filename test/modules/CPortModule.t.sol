@@ -33,6 +33,7 @@ contract cPortModuleTest is Test, cPortEvents {
         uint256 tokenId;
         uint128 itemPrice;
         address beneficiary;
+        uint160 cosignerKey;
     }
 
     bytes4 internal constant EMPTY_SELECTOR = bytes4(0x00000000);
@@ -213,6 +214,106 @@ contract cPortModuleTest is Test, cPortEvents {
         return nextTokenId;
     }
 
+    function _getCosignedSaleApproval(uint256 signerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
+        bytes32 listingDigest = 
+            ECDSA.toTypedDataHash(
+                _cPort.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            COSIGNED_SALE_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            saleDetails.cosigner,
+                            saleDetails.seller,
+                            saleDetails.marketplace,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.tokenId,
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.maxRoyaltyFeeNumerator
+                        )
+                    )
+                )
+            );
+    
+        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(signerKey_, listingDigest);
+        SignatureECDSA memory signedSaleApproval = SignatureECDSA({v: listingV, r: listingR, s: listingS});
+    
+        return signedSaleApproval;
+    }
+
+    function _getCosignedItemOffer(uint256 signerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
+        bytes32 offerDigest = 
+            ECDSA.toTypedDataHash(
+                _cPort.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            COSIGNED_ITEM_OFFER_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            saleDetails.cosigner,
+                            saleDetails.buyer,
+                            saleDetails.beneficiary,
+                            saleDetails.marketplace,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.tokenId,
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.maxRoyaltyFeeNumerator
+                        )
+                    )
+                )
+            );
+    
+        (uint8 offerV, bytes32 offerR, bytes32 offerS) = vm.sign(signerKey_, offerDigest);
+        SignatureECDSA memory signedOffer = SignatureECDSA({v: offerV, r: offerR, s: offerS});
+    
+        return signedOffer;
+    }
+
+    function _getCosignedCollectionOffer(uint256 signerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
+        bytes32 offerDigest = 
+            ECDSA.toTypedDataHash(
+                _cPort.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            COSIGNED_COLLECTION_OFFER_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            saleDetails.cosigner,
+                            saleDetails.buyer,
+                            saleDetails.beneficiary,
+                            saleDetails.marketplace,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.maxRoyaltyFeeNumerator
+                        )
+                    )
+                )
+            );
+    
+        (uint8 offerV, bytes32 offerR, bytes32 offerS) = vm.sign(signerKey_, offerDigest);
+        SignatureECDSA memory signedOffer = SignatureECDSA({v: offerV, r: offerR, s: offerS});
+    
+        return signedOffer;
+    }
+
     function _getSignedListing(uint256 sellerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
         bytes32 listingDigest = 
             ECDSA.toTypedDataHash(
@@ -374,9 +475,15 @@ contract cPortModuleTest is Test, cPortEvents {
 
         vm.assume(0 < fuzzedOrderInputs.sellerKey);
         vm.assume(0 < fuzzedOrderInputs.buyerKey);
+        vm.assume(0 < fuzzedOrderInputs.cosignerKey);
+
+        vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.buyerKey);
+        vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.cosignerKey);
+        vm.assume(fuzzedOrderInputs.buyerKey != fuzzedOrderInputs.cosignerKey);
         
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), new address[](0));
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), new address[](0));
+        _sanitizeAddress(vm.addr(fuzzedOrderInputs.cosignerKey), new address[](0));
         _sanitizeAddress(fuzzedOrderInputs.beneficiary, new address[](0));
         
         vm.assume(0 < fuzzedOrderInputs.expirationSeconds);
