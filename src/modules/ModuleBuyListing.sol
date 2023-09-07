@@ -133,6 +133,7 @@ contract ModuleBuyListing is cPortModule {
     ) private {
         bool tokenDispensedSuccessfully = _executeOrderBuySide(
             domainSeparator, 
+            msg.value,
             saleDetails, 
             signature);
 
@@ -149,6 +150,7 @@ contract ModuleBuyListing is cPortModule {
     ) private {
         bool tokenDispensedSuccessfully = _executeOrderBuySideCosigned(
             domainSeparator, 
+            msg.value,
             saleDetails, 
             sellerSignature,
             cosignerSignature);

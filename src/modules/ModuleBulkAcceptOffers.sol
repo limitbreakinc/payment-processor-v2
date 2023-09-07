@@ -51,7 +51,7 @@ contract ModuleBulkAcceptOffers is cPortModule {
             _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
             _verifyCallerIsSellerAndTxOrigin(saleDetails.seller);
 
-            _executeOrder(domainSeparator, areCollectionLevelOffers, saleDetails.buyer, saleDetails, signature);
+            _executeOrder(domainSeparator, 0, areCollectionLevelOffers, saleDetails.buyer, saleDetails, signature);
 
             unchecked {
                 ++i;

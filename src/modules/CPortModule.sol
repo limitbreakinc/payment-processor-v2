@@ -121,13 +121,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
-    function _validateBasicOrderDetails(Order memory saleDetails) internal {
+    function _validateBasicOrderDetails(uint256 msgValue, Order memory saleDetails) internal {
         if (saleDetails.paymentMethod == address(0)) {
-            if (saleDetails.itemPrice != msg.value) {
+            if (saleDetails.itemPrice != msgValue) {
                 revert cPort__OfferPriceMustEqualSalePrice();
             }
         } else {
-            if (msg.value > 0) {
+            if (msgValue > 0) {
                 revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
             }
         }
@@ -180,11 +180,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrderBuySide(
         bytes32 domainSeparator,
+        uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder
     ) internal returns (bool tokenDispensedSuccessfully) {
         _verifySignedItemListing(domainSeparator, saleDetails, signedSellOrder);
-        _validateBasicOrderDetails(saleDetails);
+        _validateBasicOrderDetails(msgValue, saleDetails);
 
         Order[] memory saleDetailsSingletonBatch = new Order[](1);
         saleDetailsSingletonBatch[0] = saleDetails;
@@ -214,12 +215,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrderBuySideCosigned(
         bytes32 domainSeparator,
+        uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
         SignatureECDSA memory cosignerSignature
     ) internal returns (bool tokenDispensedSuccessfully) {
         _verifyCosignedItemListing(domainSeparator, saleDetails, signedSellOrder, cosignerSignature);
-        _validateBasicOrderDetails(saleDetails);
+        _validateBasicOrderDetails(msgValue, saleDetails);
 
         Order[] memory saleDetailsSingletonBatch = new Order[](1);
         saleDetailsSingletonBatch[0] = saleDetails;
@@ -249,6 +251,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrderSellSide(
         bytes32 domainSeparator,
+        uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory signedBuyOrder
@@ -261,7 +264,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifySignedItemOffer(domainSeparator, saleDetails, signedBuyOrder);
         }
 
-        _validateBasicOrderDetails(saleDetails);
+        _validateBasicOrderDetails(msgValue, saleDetails);
 
         Order[] memory saleDetailsSingletonBatch = new Order[](1);
         saleDetailsSingletonBatch[0] = saleDetails;
@@ -291,6 +294,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrderSellSideCosigned(
         bytes32 domainSeparator,
+        uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory signedBuyOrder,
@@ -304,7 +308,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifyCosignedItemOffer(domainSeparator, saleDetails, signedBuyOrder, cosignerSignature);
         }
 
-        _validateBasicOrderDetails(saleDetails);
+        _validateBasicOrderDetails(msgValue, saleDetails);
 
         Order[] memory saleDetailsSingletonBatch = new Order[](1);
         saleDetailsSingletonBatch[0] = saleDetails;
@@ -335,6 +339,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrder(
         bytes32 domainSeparator,
+        uint256 msgValue,
         bool isCollectionLevelOrder, 
         address signer, 
         Order memory saleDetails, 
@@ -345,7 +350,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifySignedItemOrder(domainSeparator, signer, saleDetails, signature);
         }
 
-        _validateBasicOrderDetails(saleDetails);
+        _validateBasicOrderDetails(msgValue, saleDetails);
 
         Order[] memory saleDetailsSingletonBatch = new Order[](1);
         saleDetailsSingletonBatch[0] = saleDetails;

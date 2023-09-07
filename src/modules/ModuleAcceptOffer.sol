@@ -37,6 +37,7 @@ contract ModuleAcceptOffer is cPortModule {
 
         bool tokenDispensedSuccessfully = _executeOrderSellSide(
             domainSeparator, 
+            0,
             isCollectionLevelOffer, 
             saleDetails, 
             signature);
@@ -57,6 +58,7 @@ contract ModuleAcceptOffer is cPortModule {
 
         bool tokenDispensedSuccessfully = _executeOrderSellSideCosigned(
             domainSeparator, 
+            0,
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,

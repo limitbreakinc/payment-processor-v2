@@ -27,10 +27,61 @@ contract ModuleBulkBuyListings is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function bulkBuyListings(
+    function bulkBuyListingsForAnyone(
         bytes32 domainSeparator, 
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures) public payable {
+        SignatureECDSA[] calldata signatures
+    ) public payable {
+        _bulkBuyListings(_validateCallerIsBuyer, domainSeparator, saleDetailsArray, signatures);
+    }
+
+    function bulkBuyListingsForSelf(
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures
+    ) public payable {
+        _bulkBuyListings(_validateCallerIsBuyerAndBeneficiary, domainSeparator, saleDetailsArray, signatures);
+    }
+
+    function bulkBuyListingsForSelfWithEOA(
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures
+    ) public payable {
+        _bulkBuyListings(
+            _validateCallerIsBuyerAndBeneficiaryAndTxOrigin, 
+            domainSeparator, 
+            saleDetailsArray, 
+            signatures);
+    }
+
+    function _validateCallerIsBuyer(address buyer, address /*beneficiary*/) internal view {
+        if (buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+    }
+
+    function _validateCallerIsBuyerAndBeneficiary(address buyer, address beneficiary) internal view {
+        _validateCallerIsBuyer(buyer, beneficiary);
+
+        if (buyer != beneficiary) {
+            revert("TODO");
+        }
+    }
+
+    function _validateCallerIsBuyerAndBeneficiaryAndTxOrigin(address buyer,address beneficiary) internal view {
+        _validateCallerIsBuyerAndBeneficiary(buyer, beneficiary);
+
+        if (buyer != tx.origin) {
+            revert cPort__BuyerMustBeCallerAndTransactionOrigin();
+        }
+    }
+
+    function _bulkBuyListings(
+        function(address,address) funcValidateCaller,
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures) internal {
 
         if (saleDetailsArray.length != signatures.length) {
             revert cPort__InputArrayLengthMismatch();
@@ -51,7 +102,7 @@ contract ModuleBulkBuyListings is cPortModule {
             signature = signatures[i];
             msgValue = 0;
 
-            _verifyCallerIsBuyerAndTxOrigin(saleDetails.buyer);
+            funcValidateCaller(saleDetails.buyer, saleDetails.beneficiary);
 
             if(saleDetails.paymentMethod == address(0)) {
                 msgValue = saleDetails.itemPrice;
@@ -64,11 +115,11 @@ contract ModuleBulkBuyListings is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrder(domainSeparator, false, saleDetails.seller, saleDetails, signature)) {
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, signature)) {
                     revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
-                _executeOrder(domainSeparator, false, saleDetails.seller, saleDetails, signature);
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, signature);
             }
 
             unchecked {

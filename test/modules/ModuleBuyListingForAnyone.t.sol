@@ -45,7 +45,7 @@ contract ModuleBuyListingForAnyoneTest is cPortModuleTest {
         assertEq(test721.ownerOf(saleDetails.tokenId), saleDetails.beneficiary);
     }
 
-    function testBuyListingForSelf_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
+    function testBuyListingForAnyone_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
         address purchaser = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
