@@ -249,6 +249,47 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
+    function _executeOrderBuySideCosignedOrNot(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder,
+        SignatureECDSA memory cosignerSignature
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (saleDetails.cosigner != address(0)) {
+            _verifyCosignedItemListing(domainSeparator, saleDetails, signedSellOrder, cosignerSignature);
+        } else {
+            _verifySignedItemListing(domainSeparator, saleDetails, signedSellOrder);
+        }
+        
+        _validateBasicOrderDetails(msgValue, saleDetails);
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
     function _executeOrderSellSide(
         bytes32 domainSeparator,
         uint256 msgValue,

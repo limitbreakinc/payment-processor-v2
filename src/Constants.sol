@@ -7,8 +7,8 @@ bytes32 constant SALE_APPROVAL_HASH = 0x61718384c415a086091f6ee7779f499c089559dc
 // keccack256("ItemOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce)")
 bytes32 constant ITEM_OFFER_APPROVAL_HASH = 0x14d5bd57a0f425f32bdf8ef6f67ffbe773bf0180cea351d08d6cc463f556e439;
 
-// keccack256("CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce)")
-bytes32 constant COLLECTION_OFFER_APPROVAL_HASH = 0x84eb8e11c489191c536b90fc453fd83643c32b6ca4b09fb198e20d2d3966035c;
+// keccack256("CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce,bytes32 tokenSetMerkleRoot)")
+bytes32 constant COLLECTION_OFFER_APPROVAL_HASH = 0xd5607d00fafa17001ca313328b7c81be0e4b02dfb10973c32ed5cb9b2d437400;
 
 // keccack256("OrderApproval(uint8 protocol,address signer,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 nonce,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 masterNonce)")
 bytes32 constant ORDER_APPROVAL_HASH = 0x61718384c415a086091f6ee7779f499c089559dc5f0d8a00c21a2760ef58ac47;

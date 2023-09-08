@@ -46,6 +46,11 @@ struct Order {
     uint256 maxRoyaltyFeeNumerator;
 }
 
+struct TokenSetProof {
+    bytes32 rootHash;
+    bytes32[] proof;
+}
+
 struct BundledOrderBase {
     TokenProtocols protocol;
     address buyer;

@@ -126,6 +126,19 @@ contract ModuleBuyListing is cPortModule {
         _buyListingCosigned(domainSeparator, saleDetails, signature, cosignerSignature);
     }
 
+    function combinedBuyListingFunction(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        SignatureECDSA memory cosignerSignature
+    ) public payable {
+        if (saleDetails.buyer != msg.sender) {
+            revert cPort__BuyerMustBeCaller();
+        }
+
+        _buyListingCombined(domainSeparator, saleDetails, signature, cosignerSignature);
+    }
+
     function _buyListing(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
@@ -149,6 +162,24 @@ contract ModuleBuyListing is cPortModule {
         SignatureECDSA memory cosignerSignature
     ) private {
         bool tokenDispensedSuccessfully = _executeOrderBuySideCosigned(
+            domainSeparator, 
+            msg.value,
+            saleDetails, 
+            sellerSignature,
+            cosignerSignature);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
+
+    function _buyListingCombined(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory sellerSignature,
+        SignatureECDSA memory cosignerSignature
+    ) private {
+        bool tokenDispensedSuccessfully = _executeOrderBuySideCosignedOrNot(
             domainSeparator, 
             msg.value,
             saleDetails, 
