@@ -29,6 +29,8 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
 abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     uint256 private immutable pushPaymentGasLimit;
@@ -301,6 +303,58 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         if (isCollectionLevelOrder) {
             _verifySignedCollectionOffer(domainSeparator, saleDetails, signedBuyOrder);
+        } else {
+            _verifySignedItemOffer(domainSeparator, saleDetails, signedBuyOrder);
+        }
+
+        _validateBasicOrderDetails(msgValue, saleDetails);
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
+            saleDetails.buyer,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderSellSideOnTokenSet(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        bool isCollectionLevelOrder, 
+        Order memory saleDetails,
+        SignatureECDSA memory signedBuyOrder,
+        TokenSetProof memory tokenSetProof
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        // TODO: On the sell side, should revert if payment method is zero address (native)
+
+        if (isCollectionLevelOrder) {
+            if (tokenSetProof.rootHash != bytes32(0)) {
+                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenId)))) {
+                    revert("Invalid Merkle Proof");// MerkleWhitelistMint__InvalidProof();
+                }
+
+                _verifySignedCollectionOfferOnTokenSet(domainSeparator, saleDetails, signedBuyOrder, tokenSetProof);
+            } else {
+                _verifySignedCollectionOffer(domainSeparator, saleDetails, signedBuyOrder);
+            }
         } else {
             _verifySignedItemOffer(domainSeparator, saleDetails, signedBuyOrder);
         }
@@ -778,6 +832,48 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                             saleDetails.nonce,
                             false
                         )
+                    )
+                )
+            )
+        );
+
+        if(saleDetails.buyer.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.buyer, digest, signedOrder);
+        } else if (saleDetails.buyer != ECDSA.recover(digest, signedOrder.v, signedOrder.r, signedOrder.s)) {
+            revert cPort__UnauthorizeSale();
+        }
+    }
+
+    function _verifySignedCollectionOfferOnTokenSet(
+        bytes32 domainSeparator,
+        Order memory saleDetails,
+        SignatureECDSA memory signedOrder,
+        TokenSetProof memory tokenSetProof) internal {
+        bytes32 digest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                bytes.concat(
+                    abi.encode(
+                        COLLECTION_OFFER_APPROVAL_HASH,
+                        uint8(saleDetails.protocol),
+                        saleDetails.buyer,
+                        saleDetails.beneficiary,
+                        saleDetails.marketplace,
+                        saleDetails.paymentMethod,
+                        saleDetails.tokenAddress
+                    ),
+                    abi.encode(
+                        saleDetails.amount,
+                        saleDetails.itemPrice,
+                        saleDetails.nonce,
+                        saleDetails.expiration,
+                        saleDetails.marketplaceFeeNumerator,
+                        saleDetails.maxRoyaltyFeeNumerator,
+                        _checkAndInvalidateNonce(
+                            saleDetails.buyer,
+                            saleDetails.nonce,
+                            false
+                        ),
+                        tokenSetProof.rootHash
                     )
                 )
             )

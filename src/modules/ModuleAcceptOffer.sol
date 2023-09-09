@@ -68,4 +68,26 @@ contract ModuleAcceptOffer is cPortModule {
             revert cPort__DispensingTokenWasUnsuccessful();
         }
     }
+
+    function acceptOfferOnTokenSet(
+        bytes32 domainSeparator, 
+        bool isCollectionLevelOffer, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof) public {
+        
+        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
+
+        bool tokenDispensedSuccessfully = _executeOrderSellSideOnTokenSet(
+            domainSeparator, 
+            0,
+            isCollectionLevelOffer, 
+            saleDetails, 
+            signature,
+            tokenSetProof);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
 }

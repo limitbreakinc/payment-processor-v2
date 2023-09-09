@@ -164,6 +164,23 @@ contract cPortEncoder {
                 cosignerSignature));
     }
 
+    function encodeAcceptOfferOnTokenSetCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "acceptOfferOnTokenSet(bytes32,bool,(uint8,address,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]))",
+                IcPort(cPortAddress).getDomainSeparator(),
+                isCollectionLevelOffer,
+                saleDetails,
+                signature,
+                tokenSetProof));
+    }
+
     function encodeBulkBuyListingsCalldata(
         address cPortAddress, 
         Order[] calldata saleDetailsArray, 

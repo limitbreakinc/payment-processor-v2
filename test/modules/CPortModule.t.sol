@@ -417,6 +417,42 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
+    function _getSignedCollectionOfferOnTokenSet(uint256 buyerKey_, Order memory saleDetails, TokenSetProof memory tokenSetProof) internal view returns (SignatureECDSA memory) {
+        bytes32 offerDigest = 
+            ECDSA.toTypedDataHash(
+                _cPort.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            COLLECTION_OFFER_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            saleDetails.buyer,
+                            saleDetails.beneficiary,
+                            saleDetails.marketplace,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.nonce,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.maxRoyaltyFeeNumerator,
+                            _cPort.masterNonces(saleDetails.buyer),
+                            tokenSetProof.rootHash
+                        )
+                    )
+                )
+            );
+    
+        (uint8 offerV, bytes32 offerR, bytes32 offerS) = vm.sign(buyerKey_, offerDigest);
+        SignatureECDSA memory signedOffer = SignatureECDSA({v: offerV, r: offerR, s: offerS});
+    
+        return signedOffer;
+    }
+
+
     function _getSignedBundledListing(
         uint256 sellerKey_, 
         AccumulatorHashes memory accumulatorHashes,

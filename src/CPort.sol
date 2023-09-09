@@ -366,6 +366,21 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function acceptOfferOnTokenSet(bytes calldata data) external {
+        address module = moduleAcceptOffer;
+        assembly {
+            mstore(0x00, hex"08517d1d")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function bulkBuyListingsForAnyone(bytes calldata data) external payable {
         address module = moduleBulkBuyListings;
         assembly {
