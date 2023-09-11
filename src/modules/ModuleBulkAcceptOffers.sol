@@ -29,13 +29,17 @@ contract ModuleBulkAcceptOffers is cPortModule {
 
     function bulkAcceptOffers(
         bytes32 domainSeparator, 
-        bool areCollectionLevelOffers,
+        bool[] calldata isCollectionLevelOfferArray,
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures) public {
-        // TODO
-        
-        /*
-        if (saleDetailsArray.length != signatures.length) {
+        SignatureECDSA[] calldata buyerSignaturesArray,
+        SignatureECDSA[] calldata cosignerSignaturesArray,
+        TokenSetProof[] calldata tokenSetProofsArray
+    ) public {
+        if (saleDetailsArray.length != buyerSignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != cosignerSignaturesArray.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
@@ -43,22 +47,19 @@ contract ModuleBulkAcceptOffers is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
-        Order memory saleDetails;
-        SignatureECDSA memory signature;
-
         for (uint256 i = 0; i < saleDetailsArray.length;) {
-            saleDetails = saleDetailsArray[i];
-            signature = signatures[i];
-
-            _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
-            _verifyCallerIsSellerAndTxOrigin(saleDetails.seller);
-
-            _executeOrder(domainSeparator, 0, areCollectionLevelOffers, saleDetails.buyer, saleDetails, signature);
+            _executeOrderSellSide(
+                domainSeparator, 
+                0, 
+                isCollectionLevelOfferArray[i], 
+                saleDetailsArray[i], 
+                buyerSignaturesArray[i],
+                cosignerSignaturesArray[i],
+                tokenSetProofsArray[i]);
 
             unchecked {
                 ++i;
             }
         }
-        */
     }
 }

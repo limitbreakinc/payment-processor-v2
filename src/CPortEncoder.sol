@@ -155,17 +155,21 @@ contract cPortEncoder {
 
     function encodeBulkAcceptOffersCalldata(
         address cPortAddress, 
-        bool areCollectionLevelOffers,
+        bool[] calldata isCollectionLevelOfferArrayArray,
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures
+        SignatureECDSA[] calldata buyerSignaturesArray,
+        SignatureECDSA[] calldata cosignerSignaturesArray,
+        TokenSetProof[] calldata tokenSetProofsArray
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffers(bytes32,bool,(uint8,address,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                "bulkAcceptOffers(bytes32,bool[],(uint8,address,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[])",
                 IcPort(cPortAddress).getDomainSeparator(),
-                areCollectionLevelOffers,
+                isCollectionLevelOfferArrayArray,
                 saleDetailsArray,
-                signatures));
+                buyerSignaturesArray,
+                cosignerSignaturesArray,
+                tokenSetProofsArray));
     }
 
     function encodeSweepCollectionCalldata(

@@ -291,7 +291,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkAcceptOffers(bytes calldata data) external {
         address module = moduleBulkAcceptOffers;
         assembly {
-            mstore(0x00, hex"50101c27")
+            mstore(0x00, hex"59c57370")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
