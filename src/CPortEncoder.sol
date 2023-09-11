@@ -168,21 +168,6 @@ contract cPortEncoder {
                 signatures));
     }
 
-    function encodeBuyBundledListingCalldata(
-        address cPortAddress, 
-        SignatureECDSA memory signature,
-        BundledOrderExtended memory bundleDetails,
-        BundledItem[] calldata items
-    ) external view returns (bytes memory) {
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "buyBundledListing(bytes32,(uint8,bytes32,bytes32),((uint8,address,address,address,address,uint256),address,uint256,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[])",
-                IcPort(cPortAddress).getDomainSeparator(),
-                signature,
-                bundleDetails,
-                items));
-    }
-
     function encodeSweepCollectionCalldata(
         address cPortAddress, 
         BundledOrderBase memory bundleDetails,

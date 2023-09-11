@@ -13,7 +13,6 @@ import "src/modules/ModuleBuyListing.sol";
 import "src/modules/ModuleAcceptOffer.sol";
 import "src/modules/ModuleBulkBuyListings.sol";
 import "src/modules/ModuleBulkAcceptOffers.sol";
-import "src/modules/ModuleBuyBundledListing.sol";
 import "src/modules/ModuleSweepCollection.sol";
 
 import "../mocks/ContractMock.sol";
@@ -68,7 +67,6 @@ contract cPortModuleTest is Test, cPortEvents {
     cPortModule public moduleAcceptOffer;
     cPortModule public moduleBulkBuyListings;
     cPortModule public moduleBulkAcceptOffers;
-    cPortModule public moduleBuyBundledListing;
     cPortModule public moduleSweepCollection;
 
     uint88 public customPaymentMethodWhitelistId;
@@ -132,13 +130,6 @@ contract cPortModuleTest is Test, cPortEvents {
             address(usdt), 
             address(dai));
 
-        moduleBuyBundledListing = new ModuleBuyBundledListing(
-            2300,
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
-
         moduleSweepCollection = new ModuleSweepCollection(
             2300,
             address(weth), 
@@ -154,7 +145,6 @@ contract cPortModuleTest is Test, cPortEvents {
                 address(moduleAcceptOffer),
                 address(moduleBulkBuyListings),
                 address(moduleBulkAcceptOffers),
-                address(moduleBuyBundledListing),
                 address(moduleSweepCollection)
             );
 

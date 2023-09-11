@@ -4,29 +4,6 @@ pragma solidity 0.8.19;
 import "../DataTypes.sol";
 
 interface cPortEvents {
-    /// @notice Emitted when a bundle of ERC-721 tokens is successfully purchased using `buyBundledListing`
-    event BuyBundledListingERC721(
-        address indexed marketplace,
-        address indexed tokenAddress,
-        address indexed paymentCoin,
-        address buyer,
-        address seller,
-        bool[] unsuccessfulFills,
-        uint256[] tokenIds,
-        uint256[] salePrices);
-
-    /// @notice Emitted when a bundle of ERC-1155 tokens is successfully purchased using `buyBundledListing`
-    event BuyBundledListingERC1155(
-        address indexed marketplace,
-        address indexed tokenAddress,
-        address indexed paymentCoin,
-        address buyer,
-        address seller,
-        bool[] unsuccessfulFills,
-        uint256[] tokenIds,
-        uint256[] amounts,
-        uint256[] salePrices);
-
     /// @notice Emitted for each token successfully purchased using either `buySingleLising` or `buyBatchOfListings`
     event BuySingleListing(
         address indexed marketplace,
