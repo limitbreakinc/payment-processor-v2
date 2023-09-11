@@ -236,8 +236,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignerSignature);
                 }
             } else {
-                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenId)))) {
-                    revert("Invalid Merkle Proof");// MerkleWhitelistMint__InvalidProof();
+                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                    revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
                 if (saleDetails.cosigner == address(0)) {

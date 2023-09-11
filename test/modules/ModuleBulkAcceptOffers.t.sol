@@ -182,9 +182,9 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
         }
     }
 
-    /***************************************/
-    /*    Accept Cosigned Collection Offer */
-    /***************************************/
+    /********************************************/
+    /*   Bulk Accept Cosigned Collection Offers */
+    /********************************************/
 
     function testBulkAcceptCosignedCollectionOffers_WETH(FuzzedOrder721[2] memory fuzzedOrderInputsArray) public {
         for (uint256 i = 0; i < fuzzedOrderInputsArray.length; ++i) {
@@ -240,9 +240,9 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
         }
     }
 
-    /******************************/
-    /*    Accept Token Set Offer  */
-    /******************************/
+    /**********************************/
+    /*   Bulk Accept Token Set Offers */
+    /**********************************/
 
     function testBulkAcceptTokenSetOffers_WETH(FuzzedOrder721[2] memory fuzzedOrderInputsArray, uint8[2] memory dataIndexes) public {
         uint256[] memory tokenSetIds = new uint256[](3);
@@ -251,9 +251,9 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
         tokenSetIds[2] = 7;
 
         bytes32[] memory data = new bytes32[](3);
-        data[0] = keccak256(abi.encode(tokenSetIds[0]));
-        data[1] = keccak256(abi.encode(tokenSetIds[1]));
-        data[2] = keccak256(abi.encode(tokenSetIds[2]));
+        data[0] = keccak256(abi.encode(address(test721), tokenSetIds[0]));
+        data[1] = keccak256(abi.encode(address(test721), tokenSetIds[1]));
+        data[2] = keccak256(abi.encode(address(test721), tokenSetIds[2]));
 
         for (uint256 i = 0; i < fuzzedOrderInputsArray.length; ++i) {
             _scrubFuzzedOrderInputs(fuzzedOrderInputsArray[i]);
@@ -323,9 +323,9 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
         }
     }
 
-    /***************************************/
-    /*    Accept Cosigned Token Set Offer  */
-    /***************************************/
+    /********************************************/
+    /*   Bulk Accept Cosigned Token Set Offers  */
+    /********************************************/
 
     function testBulkAcceptCosignedTokenSetOffers_WETH(FuzzedOrder721[2] memory fuzzedOrderInputsArray, uint8[2] memory dataIndexes) public {
         uint256[] memory tokenSetIds = new uint256[](3);
@@ -334,9 +334,9 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
         tokenSetIds[2] = 7;
 
         bytes32[] memory data = new bytes32[](3);
-        data[0] = keccak256(abi.encode(tokenSetIds[0]));
-        data[1] = keccak256(abi.encode(tokenSetIds[1]));
-        data[2] = keccak256(abi.encode(tokenSetIds[2]));
+        data[0] = keccak256(abi.encode(address(test721), tokenSetIds[0]));
+        data[1] = keccak256(abi.encode(address(test721), tokenSetIds[1]));
+        data[2] = keccak256(abi.encode(address(test721), tokenSetIds[2]));
 
         for (uint256 i = 0; i < fuzzedOrderInputsArray.length; ++i) {
             _scrubFuzzedOrderInputs(fuzzedOrderInputsArray[i]);

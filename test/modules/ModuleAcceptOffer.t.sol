@@ -182,9 +182,9 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         tokenSetIds[2] = 7;
 
         bytes32[] memory data = new bytes32[](3);
-        data[0] = keccak256(abi.encode(tokenSetIds[0]));
-        data[1] = keccak256(abi.encode(tokenSetIds[1]));
-        data[2] = keccak256(abi.encode(tokenSetIds[2]));
+        data[0] = keccak256(abi.encode(address(test721), tokenSetIds[0]));
+        data[1] = keccak256(abi.encode(address(test721), tokenSetIds[1]));
+        data[2] = keccak256(abi.encode(address(test721), tokenSetIds[2]));
 
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
@@ -239,9 +239,9 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         tokenSetIds[2] = 7;
 
         bytes32[] memory data = new bytes32[](3);
-        data[0] = keccak256(abi.encode(tokenSetIds[0]));
-        data[1] = keccak256(abi.encode(tokenSetIds[1]));
-        data[2] = keccak256(abi.encode(tokenSetIds[2]));
+        data[0] = keccak256(abi.encode(address(test721), tokenSetIds[0]));
+        data[1] = keccak256(abi.encode(address(test721), tokenSetIds[1]));
+        data[2] = keccak256(abi.encode(address(test721), tokenSetIds[2]));
 
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 

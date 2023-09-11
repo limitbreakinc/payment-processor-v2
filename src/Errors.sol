@@ -36,3 +36,4 @@ error cPort__BuyerMustBeCaller();
 error cPort__NotAuthorizedByCoSigner();
 error cPort__SellerDidNotAuthorizeSale();
 error cPort__BuyerDidNotAuthorizePurchase();
+error cPort__IncorrectTokenSetMerkleProof();
