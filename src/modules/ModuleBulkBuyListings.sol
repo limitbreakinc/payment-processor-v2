@@ -27,63 +27,17 @@ contract ModuleBulkBuyListings is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function bulkBuyListingsForAnyone(
+    function bulkBuyListings(
         bytes32 domainSeparator, 
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures
+        SignatureECDSA[] calldata sellerSignatures,
+        SignatureECDSA[] calldata cosignerSignatures
     ) public payable {
-        _bulkBuyListings(_validateCallerIsBuyer, domainSeparator, saleDetailsArray, signatures);
-    }
-
-    function bulkBuyListingsForSelf(
-        bytes32 domainSeparator, 
-        Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures
-    ) public payable {
-        _bulkBuyListings(_validateCallerIsBuyerAndBeneficiary, domainSeparator, saleDetailsArray, signatures);
-    }
-
-    function bulkBuyListingsForSelfWithEOA(
-        bytes32 domainSeparator, 
-        Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures
-    ) public payable {
-        _bulkBuyListings(
-            _validateCallerIsBuyerAndBeneficiaryAndTxOrigin, 
-            domainSeparator, 
-            saleDetailsArray, 
-            signatures);
-    }
-
-    function _validateCallerIsBuyer(address buyer, address /*beneficiary*/) internal view {
-        if (buyer != msg.sender) {
-            revert cPort__BuyerMustBeCaller();
+        if (saleDetailsArray.length != sellerSignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
         }
-    }
 
-    function _validateCallerIsBuyerAndBeneficiary(address buyer, address beneficiary) internal view {
-        _validateCallerIsBuyer(buyer, beneficiary);
-
-        if (buyer != beneficiary) {
-            revert("TODO");
-        }
-    }
-
-    function _validateCallerIsBuyerAndBeneficiaryAndTxOrigin(address buyer,address beneficiary) internal view {
-        _validateCallerIsBuyerAndBeneficiary(buyer, beneficiary);
-
-        if (buyer != tx.origin) {
-            revert cPort__BuyerMustBeCallerAndTransactionOrigin();
-        }
-    }
-
-    function _bulkBuyListings(
-        function(address,address) funcValidateCaller,
-        bytes32 domainSeparator, 
-        Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata signatures) internal {
-
-        if (saleDetailsArray.length != signatures.length) {
+        if (saleDetailsArray.length != cosignerSignatures.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
@@ -94,15 +48,15 @@ contract ModuleBulkBuyListings is cPortModule {
         uint256 runningBalanceNativeProceeds = msg.value;
 
         Order memory saleDetails;
-        SignatureECDSA memory signature;
+        SignatureECDSA memory sellerSignature;
+        SignatureECDSA memory cosignerSignature;
         uint256 msgValue;
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
-            signature = signatures[i];
+            sellerSignature = sellerSignatures[i];
+            cosignerSignature = cosignerSignatures[i];
             msgValue = 0;
-
-            funcValidateCaller(saleDetails.buyer, saleDetails.beneficiary);
 
             if(saleDetails.paymentMethod == address(0)) {
                 msgValue = saleDetails.itemPrice;
@@ -115,11 +69,11 @@ contract ModuleBulkBuyListings is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, signature)) {
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignerSignature)) {
                     revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, signature);
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignerSignature);
             }
 
             unchecked {

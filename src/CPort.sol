@@ -246,85 +246,10 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     /*                     TRADING OPERATIONS                     */
     /**************************************************************/
 
-    function buyListingForAnyone(bytes calldata data) external payable {
+    function buyListing(bytes calldata data) external payable {
         address module = moduleBuyListing;
         assembly {
-            mstore(0x00, hex"4483b842")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingForSelf(bytes calldata data) external payable {
-        address module = moduleBuyListing;
-        assembly {
-            mstore(0x00, hex"b002ce4e")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingForSelfWithEOA(bytes calldata data) external payable {
-        address module = moduleBuyListing;
-        assembly {
-            mstore(0x00, hex"fa5a4be2")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingForAnyoneCosigned(bytes calldata data) external payable {
-        address module = moduleBuyListing;
-        assembly {
-            mstore(0x00, hex"a0bc090e")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingForSelfCosigned(bytes calldata data) external payable {
-        address module = moduleBuyListing;
-        assembly {
-            mstore(0x00, hex"282ac077")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingForSelfWithEOACosigned(bytes calldata data) external payable {
-        address module = moduleBuyListing;
-        assembly {
-            mstore(0x00, hex"2bb9c536")
+            mstore(0x00, hex"2590dcff")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -339,7 +264,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function acceptOffer(bytes calldata data) external {
         address module = moduleAcceptOffer;
         assembly {
-            mstore(0x00, hex"2a692e9b")
+            mstore(0x00, hex"0c872a2c")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -351,70 +276,10 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         }
     }
 
-    function acceptOfferCosigned(bytes calldata data) external {
-        address module = moduleAcceptOffer;
-        assembly {
-            mstore(0x00, hex"d92be2a1")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function acceptOfferOnTokenSet(bytes calldata data) external {
-        address module = moduleAcceptOffer;
-        assembly {
-            mstore(0x00, hex"08517d1d")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function bulkBuyListingsForAnyone(bytes calldata data) external payable {
+    function bulkBuyListings(bytes calldata data) external payable {
         address module = moduleBulkBuyListings;
         assembly {
-            mstore(0x00, hex"d2918623")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function bulkBuyListingsForSelf(bytes calldata data) external payable {
-        address module = moduleBulkBuyListings;
-        assembly {
-            mstore(0x00, hex"35f640c7")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function bulkBuyListingsForSelfWithEOA(bytes calldata data) external payable {
-        address module = moduleBulkBuyListings;
-        assembly {
-            mstore(0x00, hex"8f945d62")
+            mstore(0x00, hex"aa76a85b")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

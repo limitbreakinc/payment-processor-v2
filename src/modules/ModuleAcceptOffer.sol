@@ -31,59 +31,17 @@ contract ModuleAcceptOffer is cPortModule {
         bytes32 domainSeparator, 
         bool isCollectionLevelOffer, 
         Order memory saleDetails, 
-        SignatureECDSA memory signature) public {
-        
-        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
-
+        SignatureECDSA memory signature,
+        SignatureECDSA memory cosignerSignature,
+        TokenSetProof memory tokenSetProof
+    ) public {
         bool tokenDispensedSuccessfully = _executeOrderSellSide(
             domainSeparator, 
             0,
             isCollectionLevelOffer, 
             saleDetails, 
-            signature);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
-    }
-
-    function acceptOfferCosigned(
-        bytes32 domainSeparator, 
-        bool isCollectionLevelOffer, 
-        Order memory saleDetails, 
-        SignatureECDSA memory buyerSignature,
-        SignatureECDSA memory cosignerSignature) public {
-        
-        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
-
-        bool tokenDispensedSuccessfully = _executeOrderSellSideCosigned(
-            domainSeparator, 
-            0,
-            isCollectionLevelOffer, 
-            saleDetails, 
-            buyerSignature,
-            cosignerSignature);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
-    }
-
-    function acceptOfferOnTokenSet(
-        bytes32 domainSeparator, 
-        bool isCollectionLevelOffer, 
-        Order memory saleDetails, 
-        SignatureECDSA memory signature,
-        TokenSetProof memory tokenSetProof) public {
-        
-        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
-
-        bool tokenDispensedSuccessfully = _executeOrderSellSideOnTokenSet(
-            domainSeparator, 
-            0,
-            isCollectionLevelOffer, 
-            saleDetails, 
             signature,
+            cosignerSignature,
             tokenSetProof);
 
         if (!tokenDispensedSuccessfully) {

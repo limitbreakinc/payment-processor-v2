@@ -214,6 +214,40 @@ contract cPortModuleTest is Test, cPortEvents {
         return nextTokenId;
     }
 
+    function _getSignedSaleApproval(uint256 sellerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
+        bytes32 listingDigest = 
+            ECDSA.toTypedDataHash(
+                _cPort.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            SALE_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            saleDetails.seller,
+                            saleDetails.marketplace,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.tokenId,
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.maxRoyaltyFeeNumerator,
+                            saleDetails.nonce,
+                            _cPort.masterNonces(saleDetails.seller)
+                        )
+                    )
+                )
+            );
+    
+        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(sellerKey_, listingDigest);
+        SignatureECDSA memory signedListing = SignatureECDSA({v: listingV, r: listingR, s: listingS});
+    
+        return signedListing;
+    }
+
     function _getCosignedSaleApproval(uint256 signerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
         bytes32 listingDigest = 
             ECDSA.toTypedDataHash(
@@ -221,7 +255,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COSIGNED_SALE_APPROVAL_HASH,
+                            SALE_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.cosigner,
                             saleDetails.seller,
@@ -254,7 +288,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COSIGNED_ITEM_OFFER_APPROVAL_HASH,
+                            ITEM_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.cosigner,
                             saleDetails.buyer,
@@ -288,7 +322,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COSIGNED_COLLECTION_OFFER_APPROVAL_HASH,
+                            COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.cosigner,
                             saleDetails.buyer,
@@ -314,38 +348,38 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
-    function _getSignedListing(uint256 sellerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
-        bytes32 listingDigest = 
+    function _getCosignedTokenSetOffer(uint256 signerKey_, Order memory saleDetails, TokenSetProof memory tokenSetProof) internal view returns (SignatureECDSA memory) {
+        bytes32 offerDigest = 
             ECDSA.toTypedDataHash(
                 _cPort.getDomainSeparator(), 
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            SALE_APPROVAL_HASH,
+                            TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
-                            saleDetails.seller,
+                            saleDetails.cosigner,
+                            saleDetails.buyer,
+                            saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
                         abi.encode(
-                            saleDetails.tokenId,
                             saleDetails.amount,
                             saleDetails.itemPrice,
-                            saleDetails.nonce,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
-                            _cPort.masterNonces(saleDetails.seller)
+                            tokenSetProof.rootHash
                         )
                     )
                 )
             );
     
-        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(sellerKey_, listingDigest);
-        SignatureECDSA memory signedListing = SignatureECDSA({v: listingV, r: listingR, s: listingS});
+        (uint8 offerV, bytes32 offerR, bytes32 offerS) = vm.sign(signerKey_, offerDigest);
+        SignatureECDSA memory signedOffer = SignatureECDSA({v: offerV, r: offerR, s: offerS});
     
-        return signedListing;
+        return signedOffer;
     }
 
     function _getSignedItemOffer(uint256 buyerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
@@ -367,10 +401,10 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.tokenId,
                             saleDetails.amount,
                             saleDetails.itemPrice,
-                            saleDetails.nonce,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
+                            saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.buyer)
                         )
                     )
@@ -401,10 +435,10 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             saleDetails.amount,
                             saleDetails.itemPrice,
-                            saleDetails.nonce,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
+                            saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.buyer)
                         )
                     )
@@ -417,14 +451,14 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
-    function _getSignedCollectionOfferOnTokenSet(uint256 buyerKey_, Order memory saleDetails, TokenSetProof memory tokenSetProof) internal view returns (SignatureECDSA memory) {
+    function _getSignedTokenSetOffer(uint256 buyerKey_, Order memory saleDetails, TokenSetProof memory tokenSetProof) internal view returns (SignatureECDSA memory) {
         bytes32 offerDigest = 
             ECDSA.toTypedDataHash(
                 _cPort.getDomainSeparator(), 
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COLLECTION_OFFER_APPROVAL_HASH,
+                            TOKEN_SET_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             saleDetails.buyer,
                             saleDetails.beneficiary,
@@ -435,10 +469,10 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             saleDetails.amount,
                             saleDetails.itemPrice,
-                            saleDetails.nonce,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
+                            saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.buyer),
                             tokenSetProof.rootHash
                         )
@@ -488,6 +522,230 @@ contract cPortModuleTest is Test, cPortEvents {
         SignatureECDSA memory signedListing = SignatureECDSA({v: listingV, r: listingR, s: listingS});
 
         return signedListing;
+    }
+
+    function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory sellerSignature = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedSaleApproval(fuzzedOrderInputs.cosignerKey, saleDetails);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBuyListingCalldata(
+                address(_cPort), 
+                saleDetails, 
+                sellerSignature,
+                cosignerSignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _buySignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = SignatureECDSA({v: 0, r: 0, s: 0});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBuyListingCalldata(
+                address(_cPort), 
+                saleDetails, 
+                sellerSignature,
+                cosignerSignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+    
+        vm.prank(caller, caller);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _bulkBuyCosignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        SignatureECDSA[] memory cosignerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignerSignaturesArray[i] = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                cosignerSignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _bulkBuySignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        SignatureECDSA[] memory cosignerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignerSignaturesArray[i] = SignatureECDSA({v: 0, r: 0, s: 0});
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                cosignerSignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _acceptCosignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getCosignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedItemOffer(fuzzedOrderInputs.cosignerKey, saleDetails);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                false,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
+    }
+
+    function _acceptSignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = SignatureECDSA({v: 0, r: 0, s: 0});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                false,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+    
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
+    }
+
+    function _acceptCosignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getCosignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = _getCosignedCollectionOffer(fuzzedOrderInputs.cosignerKey, saleDetails);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
+    }
+
+    function _acceptSignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        SignatureECDSA memory cosignerSignature = SignatureECDSA({v: 0, r: 0, s: 0});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+    
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
+    }
+
+    function _acceptCosignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getCosignedTokenSetOffer(fuzzedOrderInputs.buyerKey, saleDetails, tokenSetProof);
+        SignatureECDSA memory cosignerSignature = _getCosignedTokenSetOffer(fuzzedOrderInputs.cosignerKey, saleDetails, tokenSetProof);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                tokenSetProof);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
+    }
+
+    function _acceptSignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedTokenSetOffer(fuzzedOrderInputs.buyerKey, saleDetails, tokenSetProof);
+        SignatureECDSA memory cosignerSignature = SignatureECDSA({v: 0, r: 0, s: 0});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                cosignerSignature,
+                tokenSetProof);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+    
+        vm.prank(caller, caller);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _sanitizeAddress(address addr, address[] memory exclusionList) internal view {

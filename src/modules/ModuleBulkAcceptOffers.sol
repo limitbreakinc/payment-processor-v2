@@ -32,7 +32,9 @@ contract ModuleBulkAcceptOffers is cPortModule {
         bool areCollectionLevelOffers,
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures) public {
+        // TODO
         
+        /*
         if (saleDetailsArray.length != signatures.length) {
             revert cPort__InputArrayLengthMismatch();
         }
@@ -57,5 +59,6 @@ contract ModuleBulkAcceptOffers is cPortModule {
                 ++i;
             }
         }
+        */
     }
 }
