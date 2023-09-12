@@ -17,7 +17,7 @@ pragma solidity 0.8.19;
 
 import "./CPortModule.sol";
 
-contract ModuleBulkBuyListings is cPortModule {
+contract ModuleBulkTrades is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -30,14 +30,9 @@ contract ModuleBulkBuyListings is cPortModule {
     function bulkBuyListings(
         bytes32 domainSeparator, 
         Order[] calldata saleDetailsArray,
-        SignatureECDSA[] calldata sellerSignatures,
-        SignatureECDSA[] calldata cosignerSignatures
+        SignatureECDSA[] calldata sellerSignatures
     ) public payable {
         if (saleDetailsArray.length != sellerSignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
-        }
-
-        if (saleDetailsArray.length != cosignerSignatures.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
@@ -49,13 +44,11 @@ contract ModuleBulkBuyListings is cPortModule {
 
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
-        SignatureECDSA memory cosignerSignature;
         uint256 msgValue;
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
             sellerSignature = sellerSignatures[i];
-            cosignerSignature = cosignerSignatures[i];
             msgValue = 0;
 
             if(saleDetails.paymentMethod == address(0)) {
@@ -69,11 +62,11 @@ contract ModuleBulkBuyListings is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignerSignature)) {
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature)) {
                     revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignerSignature);
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature);
             }
 
             unchecked {
@@ -83,6 +76,36 @@ contract ModuleBulkBuyListings is cPortModule {
 
         if (runningBalanceNativeProceeds > 0) {
             revert cPort__OverpaidNativeFunds();
+        }
+    }
+
+    function bulkAcceptOffers(
+        bytes32 domainSeparator, 
+        bool[] calldata isCollectionLevelOfferArray,
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata buyerSignaturesArray,
+        TokenSetProof[] calldata tokenSetProofsArray
+    ) public {
+        if (saleDetailsArray.length != buyerSignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        for (uint256 i = 0; i < saleDetailsArray.length;) {
+            _executeOrderSellSide(
+                domainSeparator, 
+                0, 
+                isCollectionLevelOfferArray[i], 
+                saleDetailsArray[i], 
+                buyerSignaturesArray[i],
+                tokenSetProofsArray[i]);
+
+            unchecked {
+                ++i;
+            }
         }
     }
 }

@@ -17,7 +17,7 @@ pragma solidity 0.8.19;
 
 import "./CPortModule.sol";
 
-contract ModuleBuyListing is cPortModule {
+contract ModuleSingleTradesCosigned is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -27,18 +27,40 @@ contract ModuleBuyListing is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function buyListing(
+    function buyListingCosigned(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
         SignatureECDSA memory sellerSignature,
-        SignatureECDSA memory cosignerSignature
+        Cosignature memory cosignature
     ) public payable {
         bool tokenDispensedSuccessfully = _executeOrderBuySide(
             domainSeparator, 
             msg.value,
             saleDetails, 
             sellerSignature,
-            cosignerSignature);
+            cosignature);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
+
+    function acceptOfferCosigned(
+        bytes32 domainSeparator, 
+        bool isCollectionLevelOffer, 
+        Order memory saleDetails, 
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature
+    ) public {
+        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+            domainSeparator, 
+            0,
+            isCollectionLevelOffer, 
+            saleDetails, 
+            buyerSignature,
+            tokenSetProof,
+            cosignature);
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();

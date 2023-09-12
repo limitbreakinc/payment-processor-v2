@@ -179,13 +179,48 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         uint256 msgValue,
         Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        _validateBasicOrderDetails(msgValue, saleDetails);
+        _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderBuySide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
-        SignatureECDSA memory cosignerSignature
+        Cosignature memory cosignature
     ) internal returns (bool tokenDispensedSuccessfully) {
         _validateBasicOrderDetails(msgValue, saleDetails);
 
-        if (saleDetails.cosigner != address(0)) {
-            _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignerSignature);
+        if (cosignature.signer != address(0)) {
+            _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
         } else {
             _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
         }
@@ -222,7 +257,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
-        SignatureECDSA memory cosignerSignature,
         TokenSetProof memory tokenSetProof
     ) internal returns (bool tokenDispensedSuccessfully) {
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
@@ -230,27 +264,79 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
-                if (saleDetails.cosigner == address(0)) {
+                _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+            } else {
+                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                    revert cPort__IncorrectTokenSetMerkleProof();
+                }
+
+                _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+            }
+        } else {
+            _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+        }
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
+            saleDetails.buyer,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderSellSide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        bool isCollectionLevelOrder, 
+        Order memory saleDetails,
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
+        _validateBasicOrderDetails(msgValue, saleDetails);
+
+        if (isCollectionLevelOrder) {
+            if (tokenSetProof.rootHash == bytes32(0)) {
+                if (cosignature.signer == address(0)) {
                     _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
                 } else {
-                    _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignerSignature);
+                    _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
                 }
             } else {
                 if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
-                if (saleDetails.cosigner == address(0)) {
+                if (cosignature.signer == address(0)) {
                     _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
                 } else {
-                    _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, cosignerSignature, tokenSetProof);
+                    _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
                 }
             }
         } else {
-            if (saleDetails.cosigner == address(0)) {
+            if (cosignature.signer == address(0)) {
                 _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
             } else {
-                _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignerSignature);
+                _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
             }
         }
 
@@ -458,15 +544,15 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         Order memory saleDetails,
         SignatureECDSA memory signature,
-        SignatureECDSA memory cosignature
+        Cosignature memory cosignature
     ) internal view {
-        bytes32 digest = 
+        bytes32 orderDigest = 
             _hashTypedDataV4(domainSeparator, keccak256(
                 bytes.concat(
                     abi.encode(
                         COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.cosigner,
+                        cosignature.signer,
                         saleDetails.buyer,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
@@ -484,13 +570,25 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if (saleDetails.cosigner != ECDSA.recover(digest, cosignature.v, cosignature.r, cosignature.s)) {
+        bytes32 cosignedDigest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                abi.encode(
+                    COSIGNATURE_HASH,
+                    signature.v,
+                    signature.r,
+                    signature.s,
+                    cosignature.expiration
+                )
+            )
+        );
+
+        if (cosignature.signer != ECDSA.recover(cosignedDigest, cosignature.v, cosignature.r, cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
         if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+            _verifyEIP1271Signature(saleDetails.buyer, orderDigest, signature);
+        } else if (saleDetails.buyer != ECDSA.recover(orderDigest, signature.v, signature.r, signature.s)) {
             revert cPort__BuyerDidNotAuthorizePurchase();
         }
     }
@@ -541,7 +639,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         Order memory saleDetails,
         SignatureECDSA memory signature,
-        SignatureECDSA memory cosignature
+        Cosignature memory cosignature
     ) internal view {
         bytes32 digest = 
             _hashTypedDataV4(domainSeparator, keccak256(
@@ -549,7 +647,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         ITEM_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.cosigner,
+                        cosignature.signer,
                         saleDetails.buyer,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
@@ -568,7 +666,19 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if (saleDetails.cosigner != ECDSA.recover(digest, cosignature.v, cosignature.r, cosignature.s)) {
+        bytes32 cosignedDigest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                abi.encode(
+                    COSIGNATURE_HASH,
+                    signature.v,
+                    signature.r,
+                    signature.s,
+                    cosignature.expiration
+                )
+            )
+        );
+
+        if (cosignature.signer != ECDSA.recover(cosignedDigest, cosignature.v, cosignature.r, cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
@@ -626,8 +736,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         Order memory saleDetails,
         SignatureECDSA memory signature,
-        SignatureECDSA memory cosignature,
-        TokenSetProof memory tokenSetProof
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature
     ) internal view {
         bytes32 digest = 
             _hashTypedDataV4(domainSeparator, keccak256(
@@ -635,7 +745,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.cosigner,
+                        cosignature.signer,
                         saleDetails.buyer,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
@@ -654,7 +764,19 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if (saleDetails.cosigner != ECDSA.recover(digest, cosignature.v, cosignature.r, cosignature.s)) {
+        bytes32 cosignedDigest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                abi.encode(
+                    COSIGNATURE_HASH,
+                    signature.v,
+                    signature.r,
+                    signature.s,
+                    cosignature.expiration
+                )
+            )
+        );
+
+        if (cosignature.signer != ECDSA.recover(cosignedDigest, cosignature.v, cosignature.r, cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
@@ -710,7 +832,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         Order memory saleDetails,
         SignatureECDSA memory signature,
-        SignatureECDSA memory cosignature
+        Cosignature memory cosignature
     ) internal view {
         bytes32 digest = 
             _hashTypedDataV4(domainSeparator, keccak256(
@@ -718,7 +840,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         SALE_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.cosigner,
+                        cosignature.signer,
                         saleDetails.seller,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -736,7 +858,19 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if (saleDetails.cosigner != ECDSA.recover(digest, cosignature.v, cosignature.r, cosignature.s)) {
+        bytes32 cosignedDigest = 
+            _hashTypedDataV4(domainSeparator, keccak256(
+                abi.encode(
+                    COSIGNATURE_HASH,
+                    signature.v,
+                    signature.r,
+                    signature.s,
+                    cosignature.expiration
+                )
+            )
+        );
+
+        if (cosignature.signer != ECDSA.recover(cosignedDigest, cosignature.v, cosignature.r, cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
         }
 

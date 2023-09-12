@@ -36,7 +36,6 @@ struct Order {
     address marketplace;
     address paymentMethod;
     address tokenAddress;
-    address cosigner;
     uint256 tokenId;
     uint256 amount;
     uint256 itemPrice;
@@ -44,6 +43,14 @@ struct Order {
     uint256 expiration;
     uint256 marketplaceFeeNumerator;
     uint256 maxRoyaltyFeeNumerator;
+}
+
+struct Cosignature {
+    address signer;
+    uint256 expiration;
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
 }
 
 struct TokenSetProof {

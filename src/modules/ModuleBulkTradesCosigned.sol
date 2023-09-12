@@ -17,7 +17,7 @@ pragma solidity 0.8.19;
 
 import "./CPortModule.sol";
 
-contract ModuleBulkAcceptOffers is cPortModule {
+contract ModuleBulkTradesCosigned is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -27,19 +27,78 @@ contract ModuleBulkAcceptOffers is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function bulkAcceptOffers(
+    function bulkBuyListingsCosigned(
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata sellerSignatures,
+        Cosignature[] calldata cosignatures
+    ) public payable {
+        if (saleDetailsArray.length != sellerSignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != cosignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        uint256 runningBalanceNativeProceeds = msg.value;
+
+        Order memory saleDetails;
+        SignatureECDSA memory sellerSignature;
+        Cosignature memory cosignature;
+        uint256 msgValue;
+
+        for (uint256 i = 0; i < saleDetailsArray.length;) {
+            saleDetails = saleDetailsArray[i];
+            sellerSignature = sellerSignatures[i];
+            cosignature = cosignatures[i];
+            msgValue = 0;
+
+            if(saleDetails.paymentMethod == address(0)) {
+                msgValue = saleDetails.itemPrice;
+
+                if (runningBalanceNativeProceeds < msgValue) {
+                    revert cPort__RanOutOfNativeFunds();
+                }
+
+                unchecked {
+                    runningBalanceNativeProceeds -= msgValue;
+                }
+
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignature)) {
+                    revert cPort__DispensingTokenWasUnsuccessful();
+                }
+            } else {
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignature);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if (runningBalanceNativeProceeds > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
+    }
+
+    function bulkAcceptOffersCosigned(
         bytes32 domainSeparator, 
         bool[] calldata isCollectionLevelOfferArray,
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata buyerSignaturesArray,
-        SignatureECDSA[] calldata cosignerSignaturesArray,
-        TokenSetProof[] calldata tokenSetProofsArray
+        TokenSetProof[] calldata tokenSetProofsArray,
+        Cosignature[] calldata cosignaturesArray
     ) public {
         if (saleDetailsArray.length != buyerSignaturesArray.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
-        if (saleDetailsArray.length != cosignerSignaturesArray.length) {
+        if (saleDetailsArray.length != cosignaturesArray.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
@@ -54,8 +113,8 @@ contract ModuleBulkAcceptOffers is cPortModule {
                 isCollectionLevelOfferArray[i], 
                 saleDetailsArray[i], 
                 buyerSignaturesArray[i],
-                cosignerSignaturesArray[i],
-                tokenSetProofsArray[i]);
+                tokenSetProofsArray[i],
+                cosignaturesArray[i]);
 
             unchecked {
                 ++i;
