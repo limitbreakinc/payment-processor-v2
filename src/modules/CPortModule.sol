@@ -215,6 +215,57 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
+        FeeOnTop memory feeOnTop
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        uint256 msgValueItemPrice = 0;
+
+        if (saleDetails.paymentMethod == address(0)) {
+            if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
+                revert cPort__IncorrectFundsToCoverFeeOnTop();
+            }
+            
+            msgValueItemPrice = saleDetails.itemPrice;
+        }
+
+        _validateBasicOrderDetails(msgValueItemPrice, saleDetails);
+        _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderBuySide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder,
         Cosignature memory cosignature
     ) internal returns (bool tokenDispensedSuccessfully) {
         _validateBasicOrderDetails(msgValue, saleDetails);
@@ -233,6 +284,63 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderBuySide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        uint256 msgValueItemPrice = 0;
+
+        if (saleDetails.paymentMethod == address(0)) {
+            if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
+                revert cPort__IncorrectFundsToCoverFeeOnTop();
+            }
+            
+            msgValueItemPrice = saleDetails.itemPrice;
+        }
+
+        _validateBasicOrderDetails(msgValueItemPrice, saleDetails);
+
+        if (cosignature.signer != address(0)) {
+            _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
+        } else {
+            _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+        }
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
             saleDetailsSingletonBatch
         );
 
@@ -309,6 +417,63 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof,
+        FeeOnTop memory feeOnTop
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
+        _validateBasicOrderDetails(msgValue, saleDetails);
+
+        if (isCollectionLevelOrder) {
+            if (tokenSetProof.rootHash == bytes32(0)) {
+                _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+            } else {
+                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                    revert cPort__IncorrectTokenSetMerkleProof();
+                }
+
+                _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+            }
+        } else {
+            _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+        }
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            saleDetails.buyer,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderSellSide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        bool isCollectionLevelOrder, 
+        Order memory saleDetails,
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
     ) internal returns (bool tokenDispensedSuccessfully) {
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
@@ -348,6 +513,76 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            saleDetailsSingletonBatch
+        );
+
+        tokenDispensedSuccessfully = !unsuccessfulFills[0];
+
+        if (tokenDispensedSuccessfully) {
+            emit BuySingleListing(
+                saleDetails.marketplace,
+                saleDetails.tokenAddress,
+                saleDetails.paymentMethod,
+                saleDetails.buyer,
+                saleDetails.seller,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        }
+    }
+
+    function _executeOrderSellSide(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        bool isCollectionLevelOrder, 
+        Order memory saleDetails,
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) internal returns (bool tokenDispensedSuccessfully) {
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
+        _validateBasicOrderDetails(msgValue, saleDetails);
+
+        if (isCollectionLevelOrder) {
+            if (tokenSetProof.rootHash == bytes32(0)) {
+                if (cosignature.signer == address(0)) {
+                    _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                } else {
+                    _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                }
+            } else {
+                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                    revert cPort__IncorrectTokenSetMerkleProof();
+                }
+
+                if (cosignature.signer == address(0)) {
+                    _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                } else {
+                    _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
+                }
+            }
+        } else {
+            if (cosignature.signer == address(0)) {
+                _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+            } else {
+                _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+            }
+        }
+
+        Order[] memory saleDetailsSingletonBatch = new Order[](1);
+        saleDetailsSingletonBatch[0] = saleDetails;
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            saleDetails.buyer,
+            IERC20(saleDetails.paymentMethod),
+            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
             saleDetailsSingletonBatch
         );
 
@@ -1182,6 +1417,113 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         if(accumulator.accumulatedSellerProceeds > 0) {
             funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+        }
+
+        return unsuccessfulFills;
+    }
+
+    function _computeAndDistributeProceedsWithFeeOnTop(
+        address purchaser,
+        IERC20 paymentCoin,
+        function(address,address,IERC20,uint256,uint256) funcPayout,
+        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
+        FeeOnTop memory feeOnTop,
+        Order[] memory saleDetailsBatch) internal returns (bool[] memory unsuccessfulFills) {
+
+        unsuccessfulFills = new bool[](saleDetailsBatch.length);
+
+        PayoutsAccumulator memory accumulator = PayoutsAccumulator({
+            lastSeller: address(0),
+            lastMarketplace: address(0),
+            lastRoyaltyRecipient: address(0),
+            accumulatedSellerProceeds: 0,
+            accumulatedMarketplaceProceeds: 0,
+            accumulatedRoyaltyProceeds: 0
+        });
+
+        for (uint256 i = 0; i < saleDetailsBatch.length;) {
+            Order memory saleDetails = saleDetailsBatch[i];
+
+            bool successfullyDispensedToken = 
+                funcDispenseToken(
+                    saleDetails.seller, 
+                    saleDetails.beneficiary, 
+                    saleDetails.tokenAddress, 
+                    saleDetails.tokenId, 
+                    saleDetails.amount);
+
+            if (!successfullyDispensedToken) {
+                if (address(paymentCoin) == address(0)) {
+                    revert cPort__DispensingTokenWasUnsuccessful();
+                }
+
+                unsuccessfulFills[i] = true;
+            } else {
+                SplitProceeds memory proceeds =
+                    _computePaymentSplits(
+                        saleDetails.itemPrice,
+                        saleDetails.tokenAddress,
+                        saleDetails.tokenId,
+                        saleDetails.marketplace,
+                        saleDetails.marketplaceFeeNumerator,
+                        saleDetails.maxRoyaltyFeeNumerator
+                    );
+    
+                if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
+                    if(accumulator.accumulatedRoyaltyProceeds > 0) {
+                        funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
+                    accumulator.accumulatedRoyaltyProceeds = 0;
+                }
+    
+                if (saleDetails.marketplace != accumulator.lastMarketplace) {
+                    if(accumulator.accumulatedMarketplaceProceeds > 0) {
+                        funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastMarketplace = saleDetails.marketplace;
+                    accumulator.accumulatedMarketplaceProceeds = 0;
+                }
+    
+                if (saleDetails.seller != accumulator.lastSeller) {
+                    if(accumulator.accumulatedSellerProceeds > 0) {
+                        funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+                    }
+    
+                    accumulator.lastSeller = saleDetails.seller;
+                    accumulator.accumulatedSellerProceeds = 0;
+                }
+
+                unchecked {
+                    accumulator.accumulatedRoyaltyProceeds += proceeds.royaltyProceeds;
+                    accumulator.accumulatedMarketplaceProceeds += proceeds.marketplaceProceeds;
+                    accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
+                }
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if(accumulator.accumulatedRoyaltyProceeds > 0) {
+            funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+        }
+
+        if(accumulator.accumulatedMarketplaceProceeds > 0) {
+            funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+        }
+
+        if(accumulator.accumulatedSellerProceeds > 0) {
+            funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+        }
+
+        if (feeOnTop.recipient != address(0)) {
+            if (feeOnTop.amount > 0) {
+                funcPayout(feeOnTop.recipient, msg.sender, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
+            }
         }
 
         return unsuccessfulFills;

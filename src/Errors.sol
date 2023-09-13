@@ -37,3 +37,5 @@ error cPort__NotAuthorizedByCoSigner();
 error cPort__SellerDidNotAuthorizeSale();
 error cPort__BuyerDidNotAuthorizePurchase();
 error cPort__IncorrectTokenSetMerkleProof();
+error cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+error cPort__IncorrectFundsToCoverFeeOnTop();

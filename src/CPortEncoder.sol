@@ -117,6 +117,21 @@ contract cPortEncoder {
                 signature));
     }
 
+    function encodeBuyListingWithFeeOnTopCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        FeeOnTop memory feeOnTop
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "buyListingWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,uint256))",
+                IcPort(cPortAddress).getDomainSeparator(),
+                saleDetails,
+                signature,
+                feeOnTop));
+    }
+
     function encodeBuyListingCosignedCalldata(
         address cPortAddress, 
         Order memory saleDetails, 
@@ -130,6 +145,23 @@ contract cPortEncoder {
                 saleDetails,
                 signature,
                 cosignature));
+    }
+
+    function encodeBuyListingCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "buyListingCosignedWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                IcPort(cPortAddress).getDomainSeparator(),
+                saleDetails,
+                signature,
+                cosignature,
+                feeOnTop));
     }
 
     function encodeAcceptOfferCalldata(
@@ -149,6 +181,25 @@ contract cPortEncoder {
                 tokenSetProof));
     }
 
+    function encodeAcceptOfferWithFeeOnTopCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        FeeOnTop memory feeOnTop
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "acceptOfferWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,uint256))",
+                IcPort(cPortAddress).getDomainSeparator(),
+                isCollectionLevelOffer,
+                saleDetails,
+                signature,
+                tokenSetProof,
+                feeOnTop));
+    }
+
     function encodeAcceptOfferCosignedCalldata(
         address cPortAddress, 
         bool isCollectionLevelOffer,
@@ -166,6 +217,27 @@ contract cPortEncoder {
                 signature,
                 tokenSetProof,
                 cosignature));
+    }
+
+    function encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "acceptOfferCosignedWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                IcPort(cPortAddress).getDomainSeparator(),
+                isCollectionLevelOffer,
+                saleDetails,
+                signature,
+                tokenSetProof,
+                cosignature,
+                feeOnTop));
     }
 
     function encodeBulkBuyListingsCalldata(

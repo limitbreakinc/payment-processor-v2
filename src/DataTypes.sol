@@ -53,6 +53,11 @@ struct Cosignature {
     bytes32 s;
 }
 
+struct FeeOnTop {
+    address recipient;
+    uint256 amount;
+}
+
 struct TokenSetProof {
     bytes32 rootHash;
     bytes32[] proof;

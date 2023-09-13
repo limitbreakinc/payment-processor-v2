@@ -258,10 +258,40 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function buyListingWithFeeOnTop(bytes calldata data) external payable {
+        address module = moduleSingleTrades;
+        assembly {
+            mstore(0x00, hex"1474c6b8")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function buyListingCosigned(bytes calldata data) external payable {
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"ad302f53")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable {
+        address module = moduleSingleTradesCosigned;
+        assembly {
+            mstore(0x00, hex"9f7a9ef1")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -288,10 +318,40 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function acceptOfferWithFeeOnTop(bytes calldata data) external {
+        address module = moduleSingleTrades;
+        assembly {
+            mstore(0x00, hex"1977a3ee")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function acceptOfferCosigned(bytes calldata data) external {
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"33ce5795")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external {
+        address module = moduleSingleTradesCosigned;
+        assembly {
+            mstore(0x00, hex"86a0c899")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

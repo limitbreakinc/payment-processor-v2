@@ -45,6 +45,26 @@ contract ModuleSingleTradesCosigned is cPortModule {
         }
     }
 
+    function buyListingCosignedWithFeeOnTop(
+        bytes32 domainSeparator, 
+        Order memory saleDetails, 
+        SignatureECDSA memory sellerSignature,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) public payable {
+        bool tokenDispensedSuccessfully = _executeOrderBuySide(
+            domainSeparator, 
+            msg.value,
+            saleDetails, 
+            sellerSignature,
+            cosignature,
+            feeOnTop);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
+
     function acceptOfferCosigned(
         bytes32 domainSeparator, 
         bool isCollectionLevelOffer, 
@@ -61,6 +81,30 @@ contract ModuleSingleTradesCosigned is cPortModule {
             buyerSignature,
             tokenSetProof,
             cosignature);
+
+        if (!tokenDispensedSuccessfully) {
+            revert cPort__DispensingTokenWasUnsuccessful();
+        }
+    }
+
+    function acceptOfferCosignedWithFeeOnTop(
+        bytes32 domainSeparator, 
+        bool isCollectionLevelOffer, 
+        Order memory saleDetails, 
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) public {
+        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+            domainSeparator, 
+            0,
+            isCollectionLevelOffer, 
+            saleDetails, 
+            buyerSignature,
+            tokenSetProof,
+            cosignature,
+            feeOnTop);
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();
