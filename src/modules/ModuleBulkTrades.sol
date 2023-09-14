@@ -79,6 +79,65 @@ contract ModuleBulkTrades is cPortModule {
         }
     }
 
+    function bulkBuyListingsWithFeesOnTop(
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata sellerSignatures,
+        FeeOnTop[] calldata feesOnTop
+    ) public payable {
+        if (saleDetailsArray.length != sellerSignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != feesOnTop.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        uint256 runningBalanceNativeProceeds = msg.value;
+
+        Order memory saleDetails;
+        SignatureECDSA memory sellerSignature;
+        FeeOnTop memory feeOnTop;
+        uint256 msgValue;
+
+        for (uint256 i = 0; i < saleDetailsArray.length;) {
+            saleDetails = saleDetailsArray[i];
+            sellerSignature = sellerSignatures[i];
+            feeOnTop = feesOnTop[i];
+            msgValue = 0;
+
+            if(saleDetails.paymentMethod == address(0)) {
+                msgValue = saleDetails.itemPrice + feeOnTop.amount;
+
+                if (runningBalanceNativeProceeds < msgValue) {
+                    revert cPort__RanOutOfNativeFunds();
+                }
+
+                unchecked {
+                    runningBalanceNativeProceeds -= msgValue;
+                }
+
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, feeOnTop)) {
+                    revert cPort__DispensingTokenWasUnsuccessful();
+                }
+            } else {
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, feeOnTop);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if (runningBalanceNativeProceeds > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
+    }
+
     function bulkAcceptOffers(
         bytes32 domainSeparator, 
         bool[] calldata isCollectionLevelOfferArray,
@@ -86,7 +145,15 @@ contract ModuleBulkTrades is cPortModule {
         SignatureECDSA[] calldata buyerSignaturesArray,
         TokenSetProof[] calldata tokenSetProofsArray
     ) public {
+        if (saleDetailsArray.length != isCollectionLevelOfferArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+        
         if (saleDetailsArray.length != buyerSignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != tokenSetProofsArray.length) {
             revert cPort__InputArrayLengthMismatch();
         }
 
@@ -102,6 +169,50 @@ contract ModuleBulkTrades is cPortModule {
                 saleDetailsArray[i], 
                 buyerSignaturesArray[i],
                 tokenSetProofsArray[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function bulkAcceptOffersWithFeesOnTop(
+        bytes32 domainSeparator, 
+        bool[] calldata isCollectionLevelOfferArray,
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata buyerSignaturesArray,
+        TokenSetProof[] calldata tokenSetProofsArray,
+        FeeOnTop[] calldata feesOnTopArray
+    ) public {
+        if (saleDetailsArray.length != isCollectionLevelOfferArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != buyerSignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != tokenSetProofsArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != feesOnTopArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        for (uint256 i = 0; i < saleDetailsArray.length;) {
+            _executeOrderSellSide(
+                domainSeparator, 
+                0, 
+                isCollectionLevelOfferArray[i], 
+                saleDetailsArray[i], 
+                buyerSignaturesArray[i],
+                tokenSetProofsArray[i],
+                feesOnTopArray[i]);
 
             unchecked {
                 ++i;
