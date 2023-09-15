@@ -39,3 +39,4 @@ error cPort__BuyerDidNotAuthorizePurchase();
 error cPort__IncorrectTokenSetMerkleProof();
 error cPort__FeeOnTopCannotBeGreaterThanItemPrice();
 error cPort__IncorrectFundsToCoverFeeOnTop();
+error cPort__SellerMustBeCaller();

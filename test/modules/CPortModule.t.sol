@@ -43,10 +43,14 @@ contract cPortModuleTest is Test, cPortEvents {
     uint256 internal bobPk = 0xb0b;
     uint256 internal calPk = 0xca1;
     uint256 internal abePk = 0xabe;
+    uint256 internal benchmarkBeneficiaryPk = 0xbe2ef;
+    uint256 internal cosignerPk = 0xc0519;
     address payable internal alice = payable(vm.addr(alicePk));
     address payable internal bob = payable(vm.addr(bobPk));
     address payable internal cal = payable(vm.addr(calPk));
     address payable internal abe = payable(vm.addr(abePk));
+    address payable internal benchmarkBeneficiary = payable(vm.addr(benchmarkBeneficiaryPk));
+    address payable internal cosigner = payable(vm.addr(cosignerPk));
 
     cPort public _cPort;
     cPortEncoder public _cPortEncoder;
@@ -267,6 +271,7 @@ contract cPortModuleTest is Test, cPortEvents {
     }
 
     function _getCosignedSaleApproval(uint256 signerKey_, uint256 cosignerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory, Cosignature memory) {
+        
         bytes32 listingDigest = 
             ECDSA.toTypedDataHash(
                 _cPort.getDomainSeparator(), 
@@ -552,6 +557,25 @@ contract cPortModuleTest is Test, cPortEvents {
 
     function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBuyListingCosignedCalldata(
+                address(_cPort), 
+                saleDetails, 
+                sellerSignature,
+                cosignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.buyListingCosigned{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _buyEmptyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
+        Cosignature memory cosignature = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
             _cPortEncoder.encodeBuyListingCosignedCalldata(

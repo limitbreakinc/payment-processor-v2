@@ -4,13 +4,41 @@ pragma solidity 0.8.19;
 import "../DataTypes.sol";
 
 interface cPortEvents {
-    /// @notice Emitted for each token successfully purchased using either `buySingleLising` or `buyBatchOfListings`
-    event BuySingleListing(
-        address indexed marketplace,
+
+    event BuyListingERC721(
+        address indexed buyer,
+        address indexed seller,
         address indexed tokenAddress,
-        address indexed paymentCoin,
-        address buyer,
-        address seller,
+        address beneficiary,
+        address paymentCoin,
+        uint256 tokenId,
+        uint256 salePrice);
+
+    event BuyListingERC1155(
+        address indexed buyer,
+        address indexed seller,
+        address indexed tokenAddress,
+        address beneficiary,
+        address paymentCoin,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 salePrice);
+
+    event AcceptOfferERC721(
+        address indexed seller,
+        address indexed buyer,
+        address indexed tokenAddress,
+        address beneficiary,
+        address paymentCoin,
+        uint256 tokenId,
+        uint256 salePrice);
+
+    event AcceptOfferERC1155(
+        address indexed seller,
+        address indexed buyer,
+        address indexed tokenAddress,
+        address beneficiary,
+        address paymentCoin,
         uint256 tokenId,
         uint256 amount,
         uint256 salePrice);

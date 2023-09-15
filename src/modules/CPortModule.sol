@@ -198,15 +198,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit BuyListingERC1155(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit BuyListingERC721(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -249,15 +260,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit BuyListingERC1155(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit BuyListingERC721(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -290,15 +312,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit BuyListingERC1155(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit BuyListingERC721(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -347,15 +380,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit BuyListingERC1155(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit BuyListingERC721(
+                    msg.sender,
+                    saleDetails.seller,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -367,6 +411,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof
     ) internal returns (bool tokenDispensedSuccessfully) {
+        _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -398,15 +443,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit AcceptOfferERC1155(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit AcceptOfferERC721(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -423,6 +479,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
+        _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -455,15 +512,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit AcceptOfferERC1155(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit AcceptOfferERC721(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -476,6 +544,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
     ) internal returns (bool tokenDispensedSuccessfully) {
+        _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -519,15 +588,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit AcceptOfferERC1155(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit AcceptOfferERC721(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -545,6 +625,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
+        _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -589,15 +670,26 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         tokenDispensedSuccessfully = !unsuccessfulFills[0];
 
         if (tokenDispensedSuccessfully) {
-            emit BuySingleListing(
-                saleDetails.marketplace,
-                saleDetails.tokenAddress,
-                saleDetails.paymentMethod,
-                saleDetails.buyer,
-                saleDetails.seller,
-                saleDetails.tokenId,
-                saleDetails.amount,
-                saleDetails.itemPrice);
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                emit AcceptOfferERC1155(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice);
+            } else {
+                emit AcceptOfferERC721(
+                    msg.sender,
+                    saleDetails.buyer,
+                    saleDetails.tokenAddress,
+                    saleDetails.beneficiary,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenId,
+                    saleDetails.itemPrice);
+            }
         }
     }
 
@@ -1623,6 +1715,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _verifyPaymentMethodIsNonNative(address paymentMethod) internal pure {
         if (paymentMethod == address(0)) {
             revert cPort__BadPaymentMethod();
+        }
+    }
+
+    function _verifyCallerIsSeller(address seller) internal view {
+        if(seller != msg.sender) {
+            revert cPort__SellerMustBeCaller();
         }
     }
 
