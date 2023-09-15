@@ -1,8 +1,13 @@
 pragma solidity 0.8.19;
 
 import "../modules/CPortModule.t.sol";
+import {Merkle} from "murky/Merkle.sol";
 
 contract BenchmarkTradesBaseTest is cPortModuleTest {
+
+    /**********************/
+    /*     Buy Listing    */
+    /**********************/
 
     function _runBenchmarkBuyListingAllowAnyPaymentMethod(
         uint256 numRuns,
@@ -88,13 +93,15 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         address currency,
         address buyer,
         address beneficiary) internal {
+        
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+        }
 
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -222,13 +229,15 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         address buyer,
         address beneficiary,
         bool emptyCosignature) internal {
+        
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+        }
 
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -277,101 +286,58 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         }
     }
 
-    /*
-    function testBenchmarkBulkAcceptOffersNoFeesDefaultPaymentMethods() public {
-        _runBenchmarkBulkAcceptOffers(100, 0, 0);
-    }
+    /**********************/
+    /* Accept Item Offers */
+    /**********************/
 
-    function testBenchmarkBulkBuyListingNoFeesDefaultPaymentMethods() public {
-        _runBenchmarkBulkBuyListing(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingNoFeesDefaultPaymentMethods() public {
-        _runBenchmarkBuyListing(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceFeesDefaultPaymentMethods() public {
-        _runBenchmarkBuyListing(100, 500, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceAndRoyaltyFeesDefaultPaymentMethods() public {
-        _runBenchmarkBuyListing(100, 500, 1000);
-    }
-
-    function testBenchmarkBuyListingNoFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkBuyListingAllowAnyPaymentMethod(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkBuyListingAllowAnyPaymentMethod(100, 500, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkBuyListingAllowAnyPaymentMethod(100, 500, 1000);
-    }
-
-    function testBenchmarkBuyListingNoFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkBuyListingCustomPaymentMethodWhitelist(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkBuyListingCustomPaymentMethodWhitelist(100, 500, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkBuyListingCustomPaymentMethodWhitelist(100, 500, 1000);
-    }
-
-    function testBenchmarkBuyListingNoFeesCollectionLevelPricingConstraints() public {
-        _runBenchmarkBuyListingCollectionLevelPricingConstraints(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceFeesCollectionLevelPricingConstraints() public {
-        _runBenchmarkBuyListingCollectionLevelPricingConstraints(100, 500, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints() public {
-        _runBenchmarkBuyListingCollectionLevelPricingConstraints(100, 500, 1000);
-    }
-
-    function testBenchmarkBuyListingNoFeesTokenLevelPricingConstraints() public {
-        _runBenchmarkBuyListingTokenLevelPricingConstraints(100, 0, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceFeesTokenLevelPricingConstraints() public {
-        _runBenchmarkBuyListingTokenLevelPricingConstraints(100, 500, 0);
-    }
-
-    function testBenchmarkBuyListingMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints() public {
-        _runBenchmarkBuyListingTokenLevelPricingConstraints(100, 500, 1000);
-    }
-
-    function _runBenchmarkBuyListingAllowAnyPaymentMethod(
+    function _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
+        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
     }
 
-    function _runBenchmarkBuyListingCustomPaymentMethodWhitelist(
+    function _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
+        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
     }
 
-    function _runBenchmarkBuyListingCollectionLevelPricingConstraints(
+    function _runBenchmarkAcceptItemOfferCollectionLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
             isImmutable: true,
@@ -381,15 +347,18 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
         _cPort.setCollectionPaymentSettings(data1);
         _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
+        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
     }
 
-    function _runBenchmarkBuyListingTokenLevelPricingConstraints(
+    function _runBenchmarkAcceptItemOfferTokenLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, address(0));
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
         _cPort.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](numRuns);
@@ -408,45 +377,386 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
         
         _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate);
+        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
     }
 
-    function _runBenchmarkBuyListing(
+    function _runBenchmarkAcceptItemOffer(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate) internal {
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary) internal {
+
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+        }
 
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: 0
+            });
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
                 seller: alice,
-                buyer: bob,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
                 marketplace: cal,
-                paymentMethod: address(0),
+                paymentMethod: currency,
                 tokenAddress: address(test721),
                 tokenId: tokenId,
                 amount: 1,
                 itemPrice: paymentAmount,
-                nonce: _getNextNonce(alice),
+                nonce: _getNextNonce(vm.addr(buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: marketplaceFeeRate,
                 maxRoyaltyFeeNumerator: royaltyFeeRate
             });
-    
-            SignatureECDSA memory signedListing = _getSignedListing(alicePk, saleDetails);
-            bytes memory data = _cPortEncoder.encodeBuyListingCalldata(address(_cPort), saleDetails, signedListing);
-    
-            vm.prank(bob, bob);
-            _cPort.buyListingForAnyone{value: saleDetails.itemPrice}(data);
-    
-            assertEq(test721.ownerOf(tokenId), bob);
+
+            _acceptSignedItemOffer(
+                alice, 
+                fuzzedOrderInputs, 
+                saleDetails, 
+                EMPTY_SELECTOR);
         }
     }
+
+    /****************************/
+    /* Accept Collection Offers */
+    /****************************/
+
+    function _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCollectionLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferTokenLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
+
+        for (uint256 i = 1; i <= numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptCollectionOffer(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+        }
+
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: 0
+            });
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
+                marketplace: cal,
+                paymentMethod: currency,
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(vm.addr(buyerKey)),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+
+            _acceptSignedCollectionOffer(
+                alice, 
+                fuzzedOrderInputs, 
+                saleDetails, 
+                EMPTY_SELECTOR);
+        }    
+    }
+
+    /****************************/
+    /* Accept Token Set Offers  */
+    /****************************/
+
+    function _runBenchmarkAcceptTokenSetOfferAllowAnyPaymentMethod(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptTokenSetOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCustomPaymentMethodWhitelist(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptTokenSetOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCollectionLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkAcceptTokenSetOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferTokenLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
+
+        for (uint256 i = 1; i <= numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkAcceptTokenSetOffer(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary);
+    }
+
+    function _runBenchmarkAcceptTokenSetOffer(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary
+    ) internal {
+        uint256[] memory tokenSetIds = new uint256[](numRuns);
+        bytes32[] memory data = new bytes32[](numRuns);
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            test721.mint(alice, tokenId);
+            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+
+            tokenSetIds[tokenId - 1] = tokenId;
+            data[tokenId - 1] = keccak256(abi.encode(address(test721), tokenId));
+        }
+
+        Merkle merkle = new Merkle();
+        bytes32 root = merkle.getRoot(data);
+
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: 0
+            });
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
+                marketplace: cal,
+                paymentMethod: currency,
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(vm.addr(buyerKey)),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+
+            _acceptSignedTokenSetOffer(
+                alice,
+                fuzzedOrderInputs,
+                saleDetails, 
+                TokenSetProof({
+                    rootHash: root,
+                    proof: merkle.getProof(data, tokenId - 1)
+                }),
+                EMPTY_SELECTOR);
+        }    
+    }
+
+    /*
+    function testBenchmarkBulkAcceptOffersNoFeesDefaultPaymentMethods() public {
+        _runBenchmarkBulkAcceptOffers(100, 0, 0);
+    }
+
+    function testBenchmarkBulkBuyListingNoFeesDefaultPaymentMethods() public {
+        _runBenchmarkBulkBuyListing(100, 0, 0);
+    }
+
+    function testBenchmarkBuyListingNoFeesDefaultPaymentMethods() public {
+        _runBenchmarkBuyListing(100, 0, 0);
+    }
+
+    
 
     function _runBenchmarkBulkBuyListing(
         uint256 numRuns,
@@ -536,219 +846,13 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         }
     }
 
-    function testBenchmarkAcceptItemOfferNoFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptItemOffer(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptItemOffer(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceAndRoyaltyFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptItemOffer(100, 500, 1000);
-    }
-
-    function testBenchmarkAcceptItemOfferNoFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(100, 500, 1000);
-    }
-
-    function testBenchmarkAcceptItemOfferNoFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptItemOfferMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(100, 500, 1000);
-    }
-
-    function _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
-    ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
-    }
-
-    function _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
-    ) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
-    }
-
-    function _runBenchmarkAcceptItemOffer(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate) internal {
-
-        uint256 paymentAmount = 100 ether;
     
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
+
     
-            Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: bob,
-                marketplace: cal,
-                paymentMethod: address(weth),
-                tokenAddress: address(test721),
-                tokenId: tokenId,
-                amount: 1,
-                itemPrice: paymentAmount,
-                nonce: _getNextNonce(bob),
-                expiration: type(uint256).max,
-                marketplaceFeeNumerator: marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: royaltyFeeRate
-            });
+
     
-            SignatureECDSA memory signedOffer = _getSignedOffer(bobPk, saleDetails);
 
-            bytes memory data = _cPortEncoder.encodeAcceptOfferCalldata(address(_cPort), false, saleDetails, signedOffer);
     
-            vm.prank(alice, alice);
-            _cPort.acceptOffer(data);
-    
-            assertEq(test721.ownerOf(tokenId), bob);
-        }
-    }
-
-    function testBenchmarkAcceptCollectionOfferNoFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptCollectionOffer(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptCollectionOffer(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceAndRoyaltyFeesDefaultPaymentMethods() public {
-        _runBenchmarkAcceptCollectionOffer(100, 500, 1000);
-    }
-
-    function testBenchmarkAcceptCollectionOfferNoFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod() public {
-        _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(100, 500, 1000);
-    }
-
-    function testBenchmarkAcceptCollectionOfferNoFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(100, 0, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(100, 500, 0);
-    }
-
-    function testBenchmarkAcceptCollectionOfferMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist() public {
-        _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(100, 500, 1000);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
-    ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate
-    ) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOffer(numRuns, marketplaceFeeRate, royaltyFeeRate);
-    }
-
-    function _runBenchmarkAcceptCollectionOffer(
-        uint256 numRuns,
-        uint256 marketplaceFeeRate, 
-        uint96 royaltyFeeRate) internal {
-
-        uint256 paymentAmount = 100 ether;
-    
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-    
-            Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: bob,
-                marketplace: cal,
-                paymentMethod: address(weth),
-                tokenAddress: address(test721),
-                tokenId: tokenId,
-                amount: 1,
-                itemPrice: paymentAmount,
-                nonce: _getNextNonce(bob),
-                expiration: type(uint256).max,
-                marketplaceFeeNumerator: marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: royaltyFeeRate
-            });
-    
-            SignatureECDSA memory signedOffer = _getSignedCollectionOffer(bobPk, saleDetails);
-
-            bytes memory data = _cPortEncoder.encodeAcceptOfferCalldata(address(_cPort), true, saleDetails, signedOffer);
-    
-            vm.prank(alice, alice);
-            _cPort.acceptOffer(data);
-    
-            assertEq(test721.ownerOf(tokenId), bob);
-        }    
-    }
 
     function testBenchmarkBuyBundledListingNoFees() public {
         uint256 numRuns = 100;
