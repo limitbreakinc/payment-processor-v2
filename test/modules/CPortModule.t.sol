@@ -45,12 +45,14 @@ contract cPortModuleTest is Test, cPortEvents {
     uint256 internal abePk = 0xabe;
     uint256 internal benchmarkBeneficiaryPk = 0xbe2ef;
     uint256 internal cosignerPk = 0xc0519;
+    uint256 internal feePk = 0xfee3;
     address payable internal alice = payable(vm.addr(alicePk));
     address payable internal bob = payable(vm.addr(bobPk));
     address payable internal cal = payable(vm.addr(calPk));
     address payable internal abe = payable(vm.addr(abePk));
     address payable internal benchmarkBeneficiary = payable(vm.addr(benchmarkBeneficiaryPk));
     address payable internal cosigner = payable(vm.addr(cosignerPk));
+    address payable internal benchmarkFeeRecipient = payable(vm.addr(feePk));
 
     cPort public _cPort;
     cPortEncoder public _cPortEncoder;
@@ -163,6 +165,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _allocateTokensAndApprovals(bob, uint128(MAX_INT));
         _allocateTokensAndApprovals(cal, uint128(MAX_INT));
         _allocateTokensAndApprovals(abe, uint128(MAX_INT));
+        _allocateTokensAndApprovals(benchmarkFeeRecipient, uint128(MAX_INT));
 
         bytes memory createWhitelistData = _cPortEncoder.encodeCreatePaymentMethodWhitelistCalldata(address(_cPort), "Test Whitelist");
         customPaymentMethodWhitelistId = _cPort.createPaymentMethodWhitelist(createWhitelistData);
@@ -611,6 +614,30 @@ contract cPortModuleTest is Test, cPortEvents {
 
     function _buyCosignedListingWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails);
+
+        if (saleDetails.paymentMethod == address(0)) {
+            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBuyListingCosignedWithFeeOnTopCalldata(
+                address(_cPort), 
+                saleDetails, 
+                sellerSignature,
+                cosignature,
+                feeOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+    
+        vm.prank(caller, caller);
+        _cPort.buyListingCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _buyEmptyCosignedListingWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
+        Cosignature memory cosignature = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         if (saleDetails.paymentMethod == address(0)) {
             nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);

@@ -13,32 +13,35 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary
     ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary);
+        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary);
     }
 
     function _runBenchmarkBuyListingCustomPaymentMethodWhitelist(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary
     ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary);
+        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary);
     }
 
     function _runBenchmarkBuyListingCollectionLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary
@@ -53,13 +56,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
         _cPort.setCollectionPaymentSettings(data1);
         _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary);
+        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary);
     }
 
     function _runBenchmarkBuyListingTokenLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary
@@ -83,18 +87,28 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
         
         _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary);
+        _runBenchmarkBuyListing(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary);
     }
 
     function _runBenchmarkBuyListing(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary) internal {
 
         uint256 paymentAmount = 100 ether;
+
+        FeeOnTop memory feeOnTop = FeeOnTop({
+            amount: feeOnTopRate == type(uint96).max ? 0 : paymentAmount * feeOnTopRate / 10_000,
+            recipient: benchmarkFeeRecipient
+        });
+
+        if (feeOnTop.amount == 0) {
+            feeOnTop.recipient = address(0);
+        }
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
             if ((tokenId - 1) % 3 == 0) {
@@ -134,12 +148,22 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: royaltyFeeRate
             });
 
-            _buySignedListing(
-                saleDetails.buyer, 
-                currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
-                fuzzedOrderInputs, 
-                saleDetails, 
-                EMPTY_SELECTOR);
+            if (feeOnTopRate == type(uint96).max) {
+                _buySignedListing(
+                    saleDetails.buyer, 
+                    currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            } else {
+                _buySignedListingWithFeeOnTop(
+                    saleDetails.buyer, 
+                    currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    feeOnTop, 
+                    EMPTY_SELECTOR);
+            }
         }
     }
 
@@ -151,6 +175,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary,
@@ -158,13 +183,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary, emptyCosignature);
+        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary, emptyCosignature);
     }
 
     function _runBenchmarkBuyListingCosignedCustomPaymentMethodWhitelist(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary,
@@ -172,13 +198,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary, emptyCosignature);
+        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary, emptyCosignature);
     }
 
     function _runBenchmarkBuyListingCosignedCollectionLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary, bool emptyCosignature
@@ -193,13 +220,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
         _cPort.setCollectionPaymentSettings(data1);
         _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary, emptyCosignature);
+        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary, emptyCosignature);
     }
 
     function _runBenchmarkBuyListingCosignedTokenLevelPricingConstraints(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary,
@@ -224,19 +252,29 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
         
         _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyer, beneficiary, emptyCosignature);
+        _runBenchmarkBuyListingCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, feeOnTopRate, currency, buyer, beneficiary, emptyCosignature);
     }
 
     function _runBenchmarkBuyListingCosigned(
         uint256 numRuns,
         uint256 marketplaceFeeRate, 
         uint96 royaltyFeeRate,
+        uint96 feeOnTopRate,
         address currency,
         address buyer,
         address beneficiary,
         bool emptyCosignature) internal {
 
         uint256 paymentAmount = 100 ether;
+
+        FeeOnTop memory feeOnTop = FeeOnTop({
+            amount: feeOnTopRate == type(uint96).max ? 0 : paymentAmount * feeOnTopRate / 10_000,
+            recipient: benchmarkFeeRecipient
+        });
+
+        if (feeOnTop.amount == 0) {
+            feeOnTop.recipient = address(0);
+        }
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
             if ((tokenId - 1) % 3 == 0) {
@@ -276,20 +314,40 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: royaltyFeeRate
             });
 
-            if (emptyCosignature) {
-                _buyEmptyCosignedListing(
-                    saleDetails.buyer, 
-                    currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
-                    fuzzedOrderInputs, 
-                    saleDetails, 
-                    EMPTY_SELECTOR);
+            if (feeOnTopRate == type(uint96).max) {
+                if (emptyCosignature) {
+                    _buyEmptyCosignedListing(
+                        saleDetails.buyer, 
+                        currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                        fuzzedOrderInputs, 
+                        saleDetails, 
+                        EMPTY_SELECTOR);
+                } else {
+                    _buyCosignedListing(
+                        saleDetails.buyer, 
+                        currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                        fuzzedOrderInputs, 
+                        saleDetails, 
+                        EMPTY_SELECTOR);
+                }
             } else {
-                _buyCosignedListing(
-                    saleDetails.buyer, 
-                    currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
-                    fuzzedOrderInputs, 
-                    saleDetails, 
-                    EMPTY_SELECTOR);
+                if (emptyCosignature) {
+                    _buyEmptyCosignedListingWithFeeOnTop(
+                        saleDetails.buyer, 
+                        currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                        fuzzedOrderInputs, 
+                        saleDetails, 
+                        feeOnTop,
+                        EMPTY_SELECTOR);
+                } else {
+                    _buyCosignedListingWithFeeOnTop(
+                        saleDetails.buyer, 
+                        currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
+                        fuzzedOrderInputs, 
+                        saleDetails, 
+                        feeOnTop,
+                        EMPTY_SELECTOR);
+                }
             }
         }
     }
