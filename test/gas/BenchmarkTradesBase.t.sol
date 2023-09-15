@@ -93,15 +93,17 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         address currency,
         address buyer,
         address beneficiary) internal {
-        
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-        }
 
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -140,6 +142,10 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 EMPTY_SELECTOR);
         }
     }
+
+    /*******************************/
+    /*     Buy Cosigned Listing    */
+    /*******************************/
 
     function _runBenchmarkBuyListingCosignedAllowAnyPaymentMethod(
         uint256 numRuns,
@@ -229,15 +235,17 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         address buyer,
         address beneficiary,
         bool emptyCosignature) internal {
-        
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-        }
 
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -388,14 +396,16 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint160 buyerKey,
         address beneficiary) internal {
 
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-        }
-
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -431,6 +441,169 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 fuzzedOrderInputs, 
                 saleDetails, 
                 EMPTY_SELECTOR);
+        }
+    }
+
+    /*******************************/
+    /* Accept Cosigned Item Offers */
+    /*******************************/
+
+    function _runBenchmarkAcceptItemOfferCosignedAllowAnyPaymentMethod(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptItemOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptItemOfferCosignedCustomPaymentMethodWhitelist(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptItemOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptItemOfferCosignedCollectionLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkAcceptItemOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptItemOfferCosignedTokenLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
+
+        for (uint256 i = 1; i <= numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkAcceptItemOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptItemOfferCosigned(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature) internal {
+
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: uint160(cosignerPk)
+            });
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
+                marketplace: cal,
+                paymentMethod: currency,
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(vm.addr(buyerKey)),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+
+            if (emptyCosignature) {
+                _acceptEmptyCosignedItemOffer(
+                    alice, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            } else {
+                _acceptCosignedItemOffer(
+                    alice, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            }
         }
     }
 
@@ -536,15 +709,16 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint160 buyerKey,
         address beneficiary
     ) internal {
-        
-        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-        }
-
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -580,6 +754,169 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 fuzzedOrderInputs, 
                 saleDetails, 
                 EMPTY_SELECTOR);
+        }    
+    }
+
+    /*************************************/
+    /* Accept Cosigned Collection Offers */
+    /*************************************/
+
+    function _runBenchmarkAcceptCollectionOfferCosignedAllowAnyPaymentMethod(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptCollectionOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCosignedCustomPaymentMethodWhitelist(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptCollectionOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCosignedCollectionLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkAcceptCollectionOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCosignedTokenLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
+
+        for (uint256 i = 1; i <= numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkAcceptCollectionOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptCollectionOfferCosigned(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: uint160(cosignerPk)
+            });
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
+                marketplace: cal,
+                paymentMethod: currency,
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(vm.addr(buyerKey)),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+
+            if (emptyCosignature) {
+                _acceptEmptyCosignedCollectionOffer(
+                    alice, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            } else {
+                _acceptCosignedCollectionOffer(
+                    alice, 
+                    fuzzedOrderInputs, 
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            }
         }    
     }
 
@@ -688,9 +1025,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256[] memory tokenSetIds = new uint256[](numRuns);
         bytes32[] memory data = new bytes32[](numRuns);
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
-            test721.mint(alice, tokenId);
-            test721.setTokenRoyalty(tokenId, abe, royaltyFeeRate);
-
             tokenSetIds[tokenId - 1] = tokenId;
             data[tokenId - 1] = keccak256(abi.encode(address(test721), tokenId));
         }
@@ -701,6 +1035,13 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
     
         for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
             FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
                 buyerIsContract: false,
                 marketplaceFeeRate: uint24(marketplaceFeeRate),
@@ -740,6 +1081,187 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     proof: merkle.getProof(data, tokenId - 1)
                 }),
                 EMPTY_SELECTOR);
+        }    
+    }
+
+    /*************************************/
+    /* Accept Cosigned Token Set Offers  */
+    /*************************************/
+
+    function _runBenchmarkAcceptTokenSetOfferCosignedAllowAnyPaymentMethod(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_cPort),
+            address(test721), 
+            PaymentSettings.AllowAnyPaymentMethod, 
+            0, 
+            currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptTokenSetOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCosignedCustomPaymentMethodWhitelist(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = 
+            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort),
+                address(test721), 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                currency);
+
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkAcceptTokenSetOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCosignedCollectionLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkAcceptTokenSetOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCosignedTokenLevelPricingConstraints(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](numRuns);
+
+        for (uint256 i = 1; i <= numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkAcceptTokenSetOfferCosigned(numRuns, marketplaceFeeRate, royaltyFeeRate, currency, buyerKey, beneficiary, emptyCosignature);
+    }
+
+    function _runBenchmarkAcceptTokenSetOfferCosigned(
+        uint256 numRuns,
+        uint256 marketplaceFeeRate, 
+        uint96 royaltyFeeRate,
+        address currency,
+        uint160 buyerKey,
+        address beneficiary,
+        bool emptyCosignature
+    ) internal {
+        uint256[] memory tokenSetIds = new uint256[](numRuns);
+        bytes32[] memory data = new bytes32[](numRuns);
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            tokenSetIds[tokenId - 1] = tokenId;
+            data[tokenId - 1] = keccak256(abi.encode(address(test721), tokenId));
+        }
+
+        Merkle merkle = new Merkle();
+        bytes32 root = merkle.getRoot(data);
+
+        uint256 paymentAmount = 100 ether;
+    
+        for (uint256 tokenId = 1; tokenId <= numRuns; tokenId++) {
+            if ((tokenId - 1) % 3 == 0) {
+                for (uint256 i = 0; i < 3; i++) {
+                    test721.mint(alice, tokenId + i);
+                    test721.setTokenRoyalty(tokenId + i, abe, royaltyFeeRate);
+                }
+            }
+
+            FuzzedOrder721 memory fuzzedOrderInputs = FuzzedOrder721({
+                buyerIsContract: false,
+                marketplaceFeeRate: uint24(marketplaceFeeRate),
+                royaltyFeeRate: uint24(royaltyFeeRate),
+                sellerKey: uint160(alicePk),
+                expirationSeconds: 0, 
+                buyerKey: buyerKey,
+                tokenId: tokenId,
+                itemPrice: uint128(paymentAmount),
+                beneficiary: beneficiary,
+                cosignerKey: uint160(cosignerPk)
+            });
+    
+            Order memory saleDetails = Order({
+                protocol: TokenProtocols.ERC721,
+                seller: alice,
+                buyer: vm.addr(buyerKey),
+                beneficiary: beneficiary,
+                marketplace: cal,
+                paymentMethod: currency,
+                tokenAddress: address(test721),
+                tokenId: tokenId,
+                amount: 1,
+                itemPrice: paymentAmount,
+                nonce: _getNextNonce(vm.addr(buyerKey)),
+                expiration: type(uint256).max,
+                marketplaceFeeNumerator: marketplaceFeeRate,
+                maxRoyaltyFeeNumerator: royaltyFeeRate
+            });
+
+            if (emptyCosignature) {
+                _acceptEmptyCosignedTokenSetOffer(
+                    alice,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    TokenSetProof({
+                        rootHash: root,
+                        proof: merkle.getProof(data, tokenId - 1)
+                    }),
+                    EMPTY_SELECTOR);
+            } else {
+                _acceptCosignedTokenSetOffer(
+                    alice,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    TokenSetProof({
+                        rootHash: root,
+                        proof: merkle.getProof(data, tokenId - 1)
+                    }),
+                    EMPTY_SELECTOR);
+            }
         }    
     }
 

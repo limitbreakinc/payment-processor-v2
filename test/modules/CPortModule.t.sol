@@ -721,6 +721,30 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.acceptOfferCosigned(fnCalldata);
     }
 
+    function _acceptEmptyCosignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        Cosignature memory cosignature = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+                address(_cPort), 
+                false,
+                saleDetails, 
+                buyerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }),
+                cosignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOfferCosigned(fnCalldata);
+    }
+
     function _acceptSignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory buyerSignature = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
 
@@ -813,6 +837,30 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.acceptOfferCosigned(fnCalldata);
     }
 
+    function _acceptEmptyCosignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
+        Cosignature memory cosignature = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                TokenSetProof({
+                    rootHash: bytes32(0),
+                    proof: new bytes32[](0)
+                }),
+                cosignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOfferCosigned(fnCalldata);
+    }
+
     function _acceptSignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory buyerSignature = _getSignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
 
@@ -884,6 +932,27 @@ contract cPortModuleTest is Test, cPortEvents {
 
     function _acceptCosignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedTokenSetOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, tokenSetProof);
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+                address(_cPort), 
+                true,
+                saleDetails, 
+                buyerSignature,
+                tokenSetProof,
+                cosignature);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.acceptOfferCosigned(fnCalldata);
+    }
+
+    function _acceptEmptyCosignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA memory buyerSignature = _getSignedTokenSetOffer(fuzzedOrderInputs.buyerKey, saleDetails, tokenSetProof);
+        Cosignature memory cosignature = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
             _cPortEncoder.encodeAcceptOfferCosignedCalldata(
