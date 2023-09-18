@@ -38,7 +38,9 @@ contract ModuleSingleTradesCosigned is cPortModule {
             msg.value,
             saleDetails, 
             sellerSignature,
-            cosignature);
+            cosignature,
+            FeeOnTop({recipient: address(0), amount: 0})
+        );
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();
@@ -58,7 +60,8 @@ contract ModuleSingleTradesCosigned is cPortModule {
             saleDetails, 
             sellerSignature,
             cosignature,
-            feeOnTop);
+            feeOnTop
+        );
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();

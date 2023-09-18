@@ -50,6 +50,7 @@ contract ModuleBulkTradesCosigned is cPortModule {
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
         Cosignature memory cosignature;
+        FeeOnTop memory emptyFeeOnTop = FeeOnTop({recipient: address(0), amount: 0});
         uint256 msgValue;
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
@@ -69,11 +70,11 @@ contract ModuleBulkTradesCosigned is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignature)) {
+                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignature, emptyFeeOnTop)) {
                     revert cPort__DispensingTokenWasUnsuccessful();
                 }
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignature);
+                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignature, emptyFeeOnTop);
             }
 
             unchecked {

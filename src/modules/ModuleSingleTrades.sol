@@ -36,7 +36,8 @@ contract ModuleSingleTrades is cPortModule {
             domainSeparator, 
             msg.value,
             saleDetails, 
-            sellerSignature);
+            sellerSignature
+        );
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();
@@ -54,7 +55,8 @@ contract ModuleSingleTrades is cPortModule {
             msg.value,
             saleDetails, 
             sellerSignature,
-            feeOnTop);
+            feeOnTop
+        );
 
         if (!tokenDispensedSuccessfully) {
             revert cPort__DispensingTokenWasUnsuccessful();

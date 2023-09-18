@@ -288,58 +288,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
-        Cosignature memory cosignature
-    ) internal returns (bool tokenDispensedSuccessfully) {
-        _validateBasicOrderDetails(msgValue, saleDetails);
-
-        if (cosignature.signer != address(0)) {
-            _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
-        } else {
-            _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
-        }
-
-        Order[] memory saleDetailsSingletonBatch = new Order[](1);
-        saleDetailsSingletonBatch[0] = saleDetails;
-
-        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds2(
-            msg.sender,
-            IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetailsSingletonBatch
-        );
-
-        tokenDispensedSuccessfully = !unsuccessfulFills[0];
-
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit BuyListingERC1155(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit BuyListingERC721(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
-        }
-    }
-
-    function _executeOrderBuySide(
-        bytes32 domainSeparator,
-        uint256 msgValue,
-        Order memory saleDetails,
-        SignatureECDSA memory signedSellOrder,
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) internal returns (bool tokenDispensedSuccessfully) {
