@@ -2,7 +2,7 @@ pragma solidity 0.8.19;
 
 import "./BenchmarkTradesBase.t.sol";
 
-contract BenchmarkTradesBuySingleListing is BenchmarkTradesBaseTest {
+contract BenchmarkTradesBuyListing is BenchmarkTradesBaseTest {
 
     /**********************************/
     /*  BUY LISTING FOR SELF WITH ETH */
