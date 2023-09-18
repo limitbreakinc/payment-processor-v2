@@ -20,11 +20,11 @@ forge t --mt ".*MarketplaceAndRoyaltyFees.*" --gas-report
 
 | Benchmark                       | Min             | Avg     | Median  | Max     | # calls |
 |---------------------------------|-----------------|---------|---------|---------|---------|
-| acceptOffer                     | 25537           | 37663   | 37236   | 126357  | 9000    |
-| acceptOfferCosigned             | 25928           | 38709   | 37902   | 126857  | 18000   |
-| acceptOfferCosignedWithFeeOnTop | 26277           | 41709   | 40796   | 139572  | 36000   |
-| acceptOfferWithFeeOnTop         | 25846           | 40615   | 39243   | 139021  | 18000   |
-| buyListing                      | 24740           | 36999   | 36417   | 122046  | 6000    |
-| buyListingCosigned              | 25285           | 38280   | 37118   | 122730  | 6000    |
-| buyListingCosignedWithFeeOnTop  | 25466           | 41419   | 40488   | 133233  | 12000   |
-| buyListingWithFeeOnTop          | 25052           | 40355   | 39953   | 132714  | 12000   |
+| acceptOffer                     | 24367           | 36263   | 35941   | 124799  | 9000    |
+| acceptOfferCosigned             | 24760           | 37312   | 36449   | 125303  | 18000   |
+| acceptOfferCosignedWithFeeOnTop | 25109           | 40305   | 39322   | 138004  | 36000   |
+| acceptOfferWithFeeOnTop         | 24675           | 39208   | 37987   | 137450  | 18000   |
+| buyListing                      | 23567           | 35610   | 34939   | 120487  | 6000    |
+| buyListingCosigned              | 24116           | 36892   | 35738   | 121172  | 6000    |
+| buyListingCosignedWithFeeOnTop  | 24296           | 40028   | 39038   | 131663  | 12000   |
+| buyListingWithFeeOnTop          | 23879           | 38961   | 38500   | 131141  | 12000   |
