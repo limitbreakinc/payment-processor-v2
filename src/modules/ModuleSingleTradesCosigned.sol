@@ -33,18 +33,15 @@ contract ModuleSingleTradesCosigned is cPortModule {
         SignatureECDSA memory sellerSignature,
         Cosignature memory cosignature
     ) public payable {
-        bool tokenDispensedSuccessfully = _executeOrderBuySide(
+        _executeOrderBuySide(
             domainSeparator, 
+            true,
             msg.value,
             saleDetails, 
             sellerSignature,
             cosignature,
             FeeOnTop({recipient: address(0), amount: 0})
         );
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function buyListingCosignedWithFeeOnTop(
@@ -54,18 +51,15 @@ contract ModuleSingleTradesCosigned is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
-        bool tokenDispensedSuccessfully = _executeOrderBuySide(
+        _executeOrderBuySide(
             domainSeparator, 
+            true,
             msg.value,
             saleDetails, 
             sellerSignature,
             cosignature,
             feeOnTop
         );
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function acceptOfferCosigned(
@@ -76,18 +70,15 @@ contract ModuleSingleTradesCosigned is cPortModule {
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
     ) public {
-        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+        _executeOrderSellSide(
             domainSeparator, 
+            true,
             0,
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
             tokenSetProof,
             cosignature);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function acceptOfferCosignedWithFeeOnTop(
@@ -99,8 +90,9 @@ contract ModuleSingleTradesCosigned is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public {
-        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+        _executeOrderSellSide(
             domainSeparator, 
+            true,
             0,
             isCollectionLevelOffer, 
             saleDetails, 
@@ -108,9 +100,5 @@ contract ModuleSingleTradesCosigned is cPortModule {
             tokenSetProof,
             cosignature,
             feeOnTop);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 }

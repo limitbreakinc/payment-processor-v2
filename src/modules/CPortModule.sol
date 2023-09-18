@@ -177,51 +177,52 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _executeOrderBuySide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         _validateBasicOrderDetails(msgValue, saleDetails);
         _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItem(
+        _computeAndDistributeProceedsForOneItem(
+            disablePartialFill,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
             saleDetails);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit BuyListingERC1155(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit BuyListingERC721(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit BuyListingERC1155(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit BuyListingERC721(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderBuySide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
         FeeOnTop memory feeOnTop
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -239,7 +240,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _validateBasicOrderDetails(msgValueItemPrice, saleDetails);
         _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItemWithFeeOnTop(
+        _computeAndDistributeProceedsForOneItemWithFeeOnTop(
+            disablePartialFill,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
@@ -247,38 +249,37 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails,
             feeOnTop);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit BuyListingERC1155(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit BuyListingERC721(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit BuyListingERC1155(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit BuyListingERC721(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderBuySide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -301,7 +302,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
         }
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItemWithFeeOnTop(
+        _computeAndDistributeProceedsForOneItemWithFeeOnTop(
+            disablePartialFill,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
@@ -309,38 +311,37 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails,
             feeOnTop);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit BuyListingERC1155(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit BuyListingERC721(
-                    msg.sender,
-                    saleDetails.seller,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit BuyListingERC1155(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit BuyListingERC721(
+                msg.sender,
+                saleDetails.seller,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderSellSide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
@@ -359,46 +360,46 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
         }
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItem(
+        _computeAndDistributeProceedsForOneItem(
+            disablePartialFill,
             saleDetails.buyer,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
             saleDetails);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit AcceptOfferERC1155(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit AcceptOfferERC721(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit AcceptOfferERC1155(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit AcceptOfferERC721(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderSellSide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof,
         FeeOnTop memory feeOnTop
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -421,7 +422,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
         }
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItemWithFeeOnTop(
+        _computeAndDistributeProceedsForOneItemWithFeeOnTop(
+            disablePartialFill,
             saleDetails.buyer,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
@@ -429,39 +431,38 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails,
             feeOnTop);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit AcceptOfferERC1155(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit AcceptOfferERC721(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit AcceptOfferERC1155(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit AcceptOfferERC721(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderSellSide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         _verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         _validateBasicOrderDetails(msgValue, saleDetails);
@@ -492,39 +493,39 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItem(
+        _computeAndDistributeProceedsForOneItem(
+            disablePartialFill,
             saleDetails.buyer,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
             saleDetails);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit AcceptOfferERC1155(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit AcceptOfferERC721(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit AcceptOfferERC1155(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit AcceptOfferERC721(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
     function _executeOrderSellSide(
         bytes32 domainSeparator,
+        bool disablePartialFill,
         uint256 msgValue,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
@@ -532,7 +533,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
-    ) internal returns (bool tokenDispensedSuccessfully) {
+    ) internal {
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -567,7 +568,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        tokenDispensedSuccessfully = !_computeAndDistributeProceedsForOneItemWithFeeOnTop(
+        _computeAndDistributeProceedsForOneItemWithFeeOnTop(
+            disablePartialFill,
             saleDetails.buyer,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
@@ -575,27 +577,25 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails,
             feeOnTop);
 
-        if (tokenDispensedSuccessfully) {
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                emit AcceptOfferERC1155(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.amount,
-                    saleDetails.itemPrice);
-            } else {
-                emit AcceptOfferERC721(
-                    msg.sender,
-                    saleDetails.buyer,
-                    saleDetails.tokenAddress,
-                    saleDetails.beneficiary,
-                    saleDetails.paymentMethod,
-                    saleDetails.tokenId,
-                    saleDetails.itemPrice);
-            }
+        if (saleDetails.protocol == TokenProtocols.ERC1155) {
+            emit AcceptOfferERC1155(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.amount,
+                saleDetails.itemPrice);
+        } else {
+            emit AcceptOfferERC721(
+                msg.sender,
+                saleDetails.buyer,
+                saleDetails.tokenAddress,
+                saleDetails.beneficiary,
+                saleDetails.paymentMethod,
+                saleDetails.tokenId,
+                saleDetails.itemPrice);
         }
     }
 
@@ -1321,11 +1321,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _computeAndDistributeProceedsForOneItem(
+        bool disablePartialFill,
         address purchaser,
         IERC20 paymentCoin,
         function(address,address,IERC20,uint256,uint256) funcPayout,
         function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
-        Order memory saleDetails) internal returns (bool unsuccessfulFill) {
+        Order memory saleDetails) internal {
 
         if (!funcDispenseToken(
                 saleDetails.seller, 
@@ -1337,7 +1338,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 revert cPort__DispensingTokenWasUnsuccessful();
             }
 
-            unsuccessfulFill = true;
+            if (disablePartialFill) {
+                revert cPort__DispensingTokenWasUnsuccessful();
+            }
         } else {
             SplitProceeds memory proceeds =
                 _computePaymentSplits(
@@ -1361,17 +1364,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 funcPayout(saleDetails.seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
         }
-
-        return unsuccessfulFill;
     }
 
     function _computeAndDistributeProceedsForOneItemWithFeeOnTop(
+        bool disablePartialFill,
         address purchaser,
         IERC20 paymentCoin,
         function(address,address,IERC20,uint256,uint256) funcPayout,
         function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
         Order memory saleDetails,
-        FeeOnTop memory feeOnTop) internal returns (bool unsuccessfulFill) {
+        FeeOnTop memory feeOnTop) internal {
 
         if (!funcDispenseToken(
                 saleDetails.seller, 
@@ -1383,7 +1385,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 revert cPort__DispensingTokenWasUnsuccessful();
             }
 
-            unsuccessfulFill = true;
+            if (disablePartialFill) {
+                revert cPort__DispensingTokenWasUnsuccessful();
+            }
         } else {
             SplitProceeds memory proceeds =
                 _computePaymentSplits(
@@ -1413,17 +1417,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 }
             }
         }
-
-        return unsuccessfulFill;
     }
-
-    /*
-if (feeOnTop.recipient != address(0)) {
-            if (feeOnTop.amount > 0) {
-                funcPayout(feeOnTop.recipient, msg.sender, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
-            }
-        }
-    */
 
     function _computeAndDistributeProceeds2(
         address purchaser,

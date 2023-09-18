@@ -32,16 +32,13 @@ contract ModuleSingleTrades is cPortModule {
         Order memory saleDetails, 
         SignatureECDSA memory sellerSignature
     ) public payable {
-        bool tokenDispensedSuccessfully = _executeOrderBuySide(
+        _executeOrderBuySide(
             domainSeparator, 
+            true,
             msg.value,
             saleDetails, 
             sellerSignature
         );
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function buyListingWithFeeOnTop(
@@ -50,17 +47,14 @@ contract ModuleSingleTrades is cPortModule {
         SignatureECDSA memory sellerSignature,
         FeeOnTop memory feeOnTop
     ) public payable {
-        bool tokenDispensedSuccessfully = _executeOrderBuySide(
+        _executeOrderBuySide(
             domainSeparator, 
+            true,
             msg.value,
             saleDetails, 
             sellerSignature,
             feeOnTop
         );
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function acceptOffer(
@@ -70,17 +64,14 @@ contract ModuleSingleTrades is cPortModule {
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof
     ) public {
-        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+        _executeOrderSellSide(
             domainSeparator, 
+            true,
             0,
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
             tokenSetProof);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 
     function acceptOfferWithFeeOnTop(
@@ -91,17 +82,14 @@ contract ModuleSingleTrades is cPortModule {
         TokenSetProof memory tokenSetProof,
         FeeOnTop memory feeOnTop
     ) public {
-        bool tokenDispensedSuccessfully = _executeOrderSellSide(
+        _executeOrderSellSide(
             domainSeparator, 
+            true,
             0,
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
             tokenSetProof,
             feeOnTop);
-
-        if (!tokenDispensedSuccessfully) {
-            revert cPort__DispensingTokenWasUnsuccessful();
-        }
     }
 }

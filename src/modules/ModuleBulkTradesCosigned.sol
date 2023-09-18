@@ -70,11 +70,9 @@ contract ModuleBulkTradesCosigned is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignature, emptyFeeOnTop)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
+                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature, cosignature, emptyFeeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignature, emptyFeeOnTop);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, cosignature, emptyFeeOnTop);
             }
 
             unchecked {
@@ -133,11 +131,9 @@ contract ModuleBulkTradesCosigned is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, cosignature, feeOnTop)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
+                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature, cosignature, feeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
             }
 
             unchecked {
@@ -181,6 +177,7 @@ contract ModuleBulkTradesCosigned is cPortModule {
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
+                false,
                 0, 
                 isCollectionLevelOfferArray[i], 
                 saleDetailsArray[i], 
@@ -225,6 +222,7 @@ contract ModuleBulkTradesCosigned is cPortModule {
         for (uint256 i = 0; i < params.saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
+                false,
                 0, 
                 params.isCollectionLevelOfferArray[i], 
                 params.saleDetailsArray[i], 

@@ -62,11 +62,10 @@ contract ModuleBulkTrades is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
+                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature);
+
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature);
             }
 
             unchecked {
@@ -121,11 +120,9 @@ contract ModuleBulkTrades is cPortModule {
                     runningBalanceNativeProceeds -= msgValue;
                 }
 
-                if (!_executeOrderBuySide(domainSeparator, msgValue, saleDetails, sellerSignature, feeOnTop)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
+                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature, feeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, 0, saleDetails, sellerSignature, feeOnTop);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, feeOnTop);
             }
 
             unchecked {
@@ -164,6 +161,7 @@ contract ModuleBulkTrades is cPortModule {
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
+                false,
                 0, 
                 isCollectionLevelOfferArray[i], 
                 saleDetailsArray[i], 
@@ -207,6 +205,7 @@ contract ModuleBulkTrades is cPortModule {
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
+                false,
                 0, 
                 isCollectionLevelOfferArray[i], 
                 saleDetailsArray[i], 
