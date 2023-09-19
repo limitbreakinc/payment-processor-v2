@@ -290,14 +290,18 @@ contract cPortEncoder {
         Cosignature[] calldata cosignatures,
         FeeOnTop[] calldata feesOnTop
     ) external view returns (bytes memory) {
+        BulkBuyListingsCosignedWithFeeOnTopParams memory params = BulkBuyListingsCosignedWithFeeOnTopParams({
+            saleDetailsArray: saleDetailsArray,
+            sellerSignatures: signatures,
+            cosignatures: cosignatures,
+            feesOnTop: feesOnTop
+        });
+
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "bulkBuyListingsCosignedWithFeesOnTop(bytes32,((uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
-                saleDetailsArray,
-                signatures,
-                cosignatures,
-                feesOnTop));
+                params));
     }
 
     function encodeBulkAcceptOffersCalldata(
@@ -364,16 +368,20 @@ contract cPortEncoder {
         Cosignature[] memory cosignaturesArray,
         FeeOnTop[] memory feesOnTopArray
     ) external view returns (bytes memory) {
+        BulkAcceptOffersCosignedWithFeeOnTopParams memory params = BulkAcceptOffersCosignedWithFeeOnTopParams({
+            isCollectionLevelOfferArray: isCollectionLevelOfferArray,
+            saleDetailsArray: saleDetailsArray,
+            buyerSignaturesArray: buyerSignaturesArray,
+            tokenSetProofsArray: tokenSetProofsArray,
+            cosignaturesArray: cosignaturesArray,
+            feesOnTopArray: feesOnTopArray
+        });
+
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "bulkAcceptOffersCosignedWithFeesOnTop(bytes32,(bool[],(uint8,address,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
-                isCollectionLevelOfferArray,
-                saleDetailsArray,
-                buyerSignaturesArray,
-                tokenSetProofsArray,
-                cosignaturesArray,
-                feesOnTopArray));
+                params));
     }
 
     function encodeSweepCollectionCalldata(
