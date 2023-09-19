@@ -704,6 +704,87 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
     }
 
+    function _bulkBuyCosignedListingsWithFeesOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            (sellerSignaturesArray[i], cosignatureArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
+
+            if (saleDetailsArray[i].paymentMethod == address(0)) {
+                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+            }
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                cosignatureArray,
+                feesOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _bulkBuyEmptyCosignedListingsWithFeesOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignatureArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+
+            if (saleDetailsArray[i].paymentMethod == address(0)) {
+                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+            }
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                cosignatureArray,
+                feesOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _bulkBuyEmptyCosignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignatureArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsCosignedCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                cosignatureArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
+    }
+
     function _bulkBuySignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
 
@@ -723,6 +804,32 @@ contract cPortModuleTest is Test, cPortEvents {
 
         vm.prank(caller, caller);
         _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _bulkBuySignedListingsWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+
+            if (saleDetailsArray[i].paymentMethod == address(0)) {
+                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+            }
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkBuyListingsWithFeesOnTopCalldata(
+                address(_cPort), 
+                saleDetailsArray, 
+                sellerSignaturesArray,
+                feesOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkBuyListingsWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
     function _acceptCosignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {

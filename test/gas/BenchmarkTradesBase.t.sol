@@ -5,6 +5,29 @@ import {Merkle} from "murky/Merkle.sol";
 
 contract BenchmarkTradesBaseTest is cPortModuleTest {
 
+    struct BulkBenchmarkParams {
+        uint256 batchSize;
+        uint256 numRuns;
+        uint256 marketplaceFeeRate;
+        uint96 royaltyFeeRate;
+        uint96 feeOnTopRate;
+        address currency;
+        address buyer;
+        address beneficiary;
+    }
+
+    struct BulkCosignedBenchmarkParams {
+        uint256 batchSize;
+        uint256 numRuns;
+        uint256 marketplaceFeeRate;
+        uint96 royaltyFeeRate;
+        uint96 feeOnTopRate;
+        address currency;
+        address buyer;
+        address beneficiary;
+        bool emptyCosignature;
+    }
+
     /**********************/
     /*     Buy Listing    */
     /**********************/
@@ -1492,6 +1515,289 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 }
             }
         }    
+    }
+
+    /**********************/
+    /* Bulk Buy Listings  */
+    /**********************/
+
+    function _runBenchmarkBulkBuyListingsAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkBulkBuyListings(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkBulkBuyListings(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkBulkBuyListings(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
+
+        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkBulkBuyListings(params);
+    }
+
+    function _runBenchmarkBulkBuyListings(BulkBenchmarkParams memory params) internal {
+        uint256 paymentAmount = 100 ether;
+
+        FeeOnTop memory feeOnTop = FeeOnTop({
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            recipient: benchmarkFeeRecipient
+        });
+
+        if (feeOnTop.amount == 0) {
+            feeOnTop.recipient = address(0);
+        }
+    
+        for (uint256 run = 0; run < params.numRuns; run++) {
+            FuzzedOrder721[] memory fuzzedOrderInputsArray = new FuzzedOrder721[](params.batchSize); 
+            Order[] memory saleDetailsArray = new Order[](params.batchSize);
+            FeeOnTop[] memory feesOnTop = new FeeOnTop[](params.batchSize);
+
+            for (uint256 batchIndex = 0; batchIndex < params.batchSize; batchIndex++) {
+                uint256 tokenId = run * params.batchSize + batchIndex + 1;
+
+                if ((tokenId - 1) % (3 * params.batchSize) == 0) {
+                    for (uint256 i = 0; i < (3 * params.batchSize); i++) {
+                        test721.mint(alice, tokenId + i);
+                        test721.setTokenRoyalty(tokenId + i, abe, params.royaltyFeeRate);
+                    }
+                }
+
+                fuzzedOrderInputsArray[batchIndex] = FuzzedOrder721({
+                    buyerIsContract: false,
+                    marketplaceFeeRate: uint24(params.marketplaceFeeRate),
+                    royaltyFeeRate: uint24(params.royaltyFeeRate),
+                    sellerKey: uint160(alicePk),
+                    expirationSeconds: 0, 
+                    buyerKey: 0,
+                    tokenId: tokenId,
+                    itemPrice: uint128(paymentAmount),
+                    beneficiary: params.beneficiary,
+                    cosignerKey: 0
+                });
+
+                saleDetailsArray[batchIndex] = Order({
+                    protocol: TokenProtocols.ERC721,
+                    seller: alice,
+                    buyer: params.buyer,
+                    beneficiary: params.beneficiary,
+                    marketplace: cal,
+                    paymentMethod: params.currency,
+                    tokenAddress: address(test721),
+                    tokenId: tokenId,
+                    amount: 1,
+                    itemPrice: paymentAmount,
+                    nonce: _getNextNonce(alice),
+                    expiration: type(uint256).max,
+                    marketplaceFeeNumerator: params.marketplaceFeeRate,
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                });
+
+                feesOnTop[batchIndex] = feeOnTop;
+            }
+    
+            if (params.feeOnTopRate == type(uint96).max) {
+                _bulkBuySignedListings(
+                    params.buyer, 
+                    params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                    fuzzedOrderInputsArray, 
+                    saleDetailsArray, 
+                    EMPTY_SELECTOR);
+            } else {
+                _bulkBuySignedListingsWithFeeOnTop(
+                    params.buyer, 
+                    params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                    fuzzedOrderInputsArray, 
+                    saleDetailsArray, 
+                    feesOnTop, 
+                    EMPTY_SELECTOR);
+            }
+        }
+    }
+
+    /*******************************/
+    /* Cosigned Bulk Buy Listings  */
+    /*******************************/
+
+    function _runBenchmarkBulkBuyListingsCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkBulkBuyListingsCosigned(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        _runBenchmarkBulkBuyListingsCosigned(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency);
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        _runBenchmarkBulkBuyListingsCosigned(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency);
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
+
+        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        _runBenchmarkBulkBuyListingsCosigned(params);
+    }
+
+    function _runBenchmarkBulkBuyListingsCosigned(BulkCosignedBenchmarkParams memory params) internal {
+        uint256 paymentAmount = 100 ether;
+
+        FeeOnTop memory feeOnTop = FeeOnTop({
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            recipient: benchmarkFeeRecipient
+        });
+
+        if (feeOnTop.amount == 0) {
+            feeOnTop.recipient = address(0);
+        }
+    
+        for (uint256 run = 0; run < params.numRuns; run++) {
+            FuzzedOrder721[] memory fuzzedOrderInputsArray = new FuzzedOrder721[](params.batchSize); 
+            Order[] memory saleDetailsArray = new Order[](params.batchSize);
+            FeeOnTop[] memory feesOnTop = new FeeOnTop[](params.batchSize);
+
+            for (uint256 batchIndex = 0; batchIndex < params.batchSize; batchIndex++) {
+                uint256 tokenId = run * params.batchSize + batchIndex + 1;
+
+                if ((tokenId - 1) % (3 * params.batchSize) == 0) {
+                    for (uint256 i = 0; i < (3 * params.batchSize); i++) {
+                        test721.mint(alice, tokenId + i);
+                        test721.setTokenRoyalty(tokenId + i, abe, params.royaltyFeeRate);
+                    }
+                }
+
+                fuzzedOrderInputsArray[batchIndex] = FuzzedOrder721({
+                    buyerIsContract: false,
+                    marketplaceFeeRate: uint24(params.marketplaceFeeRate),
+                    royaltyFeeRate: uint24(params.royaltyFeeRate),
+                    sellerKey: uint160(alicePk),
+                    expirationSeconds: 0, 
+                    buyerKey: 0,
+                    tokenId: tokenId,
+                    itemPrice: uint128(paymentAmount),
+                    beneficiary: params.beneficiary,
+                    cosignerKey: uint160(cosignerPk)
+                });
+
+                saleDetailsArray[batchIndex] = Order({
+                    protocol: TokenProtocols.ERC721,
+                    seller: alice,
+                    buyer: params.buyer,
+                    beneficiary: params.beneficiary,
+                    marketplace: cal,
+                    paymentMethod: params.currency,
+                    tokenAddress: address(test721),
+                    tokenId: tokenId,
+                    amount: 1,
+                    itemPrice: paymentAmount,
+                    nonce: _getNextNonce(alice),
+                    expiration: type(uint256).max,
+                    marketplaceFeeNumerator: params.marketplaceFeeRate,
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                });
+
+                feesOnTop[batchIndex] = feeOnTop;
+            }
+
+            if (params.feeOnTopRate == type(uint96).max) {
+                if (params.emptyCosignature) {
+                    _bulkBuyEmptyCosignedListings(
+                        params.buyer, 
+                        params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                        fuzzedOrderInputsArray, 
+                        saleDetailsArray, 
+                        EMPTY_SELECTOR);
+                } else {
+                    _bulkBuyCosignedListings(
+                        params.buyer, 
+                        params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                        fuzzedOrderInputsArray, 
+                        saleDetailsArray, 
+                        EMPTY_SELECTOR);
+                }
+            } else {
+                if (params.emptyCosignature) {
+                    _bulkBuyEmptyCosignedListingsWithFeesOnTop(
+                        params.buyer, 
+                        params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                        fuzzedOrderInputsArray, 
+                        saleDetailsArray, 
+                        feesOnTop,
+                        EMPTY_SELECTOR);
+                } else {
+                    _bulkBuyCosignedListingsWithFeesOnTop(
+                        params.buyer, 
+                        params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
+                        fuzzedOrderInputsArray, 
+                        saleDetailsArray, 
+                        feesOnTop,
+                        EMPTY_SELECTOR);
+                }
+            }
+        }
     }
 
     /*
