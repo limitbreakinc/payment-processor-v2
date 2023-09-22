@@ -497,4 +497,49 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
             }
         }
     }
+
+    function sweepCollectionWithFeeOnTop(bytes calldata data) external payable {
+        address module = moduleSweepCollection;
+        assembly {
+            mstore(0x00, hex"57f2b1ef")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function sweepCollectionCosigned(bytes calldata data) external payable {
+        address module = moduleSweepCollection;
+        assembly {
+            mstore(0x00, hex"75192b1a")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function sweepCollectionCosignedWithFeeOnTop(bytes calldata data) external payable {
+        address module = moduleSweepCollection;
+        assembly {
+            mstore(0x00, hex"367cd190")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
 }

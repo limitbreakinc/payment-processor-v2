@@ -386,17 +386,70 @@ contract cPortEncoder {
 
     function encodeSweepCollectionCalldata(
         address cPortAddress, 
-        BundledOrderBase memory bundleDetails,
-        BundledItem[] calldata items,
-        SignatureECDSA[] calldata signatures
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "sweepCollection(bytes32,(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
-                bundleDetails,
+                sweepOrder,
                 items,
-                signatures));
+                signedSellOrders));
+    }
+
+    function encodeSweepCollectionWithFeeOnTopCalldata(
+        address cPortAddress, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "sweepCollectionWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                IcPort(cPortAddress).getDomainSeparator(),
+                feeOnTop,
+                sweepOrder,
+                items,
+                signedSellOrders));
+    }
+
+    function encodeSweepCollectionCosignedCalldata(
+        address cPortAddress, 
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] calldata cosignatures
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "sweepCollectionCosigned(bytes32,(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,uint256,uint8,bytes32,bytes32)[])",
+                IcPort(cPortAddress).getDomainSeparator(),
+                sweepOrder,
+                items,
+                signedSellOrders,
+                cosignatures));
+    }
+
+    function encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] calldata cosignatures
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "sweepCollectionCosignedWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address,address,uint256),(address,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,uint256,uint8,bytes32,bytes32)[])",
+                IcPort(cPortAddress).getDomainSeparator(),
+                feeOnTop,
+                sweepOrder,
+                items,
+                signedSellOrders,
+                cosignatures));
     }
 
     /**************************************************************/

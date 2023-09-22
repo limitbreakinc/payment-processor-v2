@@ -63,21 +63,33 @@ struct TokenSetProof {
     bytes32[] proof;
 }
 
-struct BundledOrderBase {
+struct SweepOrder {
     TokenProtocols protocol;
-    address buyer;
+    address beneficiary;
     address marketplace;
     address paymentMethod;
     address tokenAddress;
     uint256 marketplaceFeeNumerator;
 }
 
+struct SweepItem {
+    address seller;
+    uint256 tokenId;
+    uint256 amount;
+    uint256 itemPrice;
+    uint256 nonce;
+    uint256 expiration;
+    uint256 maxRoyaltyFeeNumerator;
+}
+
+/*
 struct BundledOrderExtended {
     BundledOrderBase bundleBase; 
     address seller;
     uint256 nonce;
     uint256 expiration;
 }
+*/
 
 struct BundledItem {
     address seller;

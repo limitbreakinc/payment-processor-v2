@@ -29,72 +29,71 @@ contract ModuleSweepCollection is cPortModule {
 
     function sweepCollection(
         bytes32 domainSeparator, 
-        BundledOrderBase memory bundleDetails,
-        BundledItem[] calldata items,
-        SignatureECDSA[] calldata signatures) public payable {
-
-        _verifyCallerIsBuyerAndTxOrigin(bundleDetails.buyer);
-
-        if (items.length != signatures.length) {
-            revert cPort__InputArrayLengthMismatch();
-        }
-
-        if (items.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
-        }
-
-        (Accumulator memory accumulator, Order[] memory saleDetailsBatch) = 
-        _validateBundledItems(
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders
+    ) public payable {
+        _executeSweepOrder(
             domainSeparator,
-            true,
-            BundledOrderExtended({
-                bundleBase: bundleDetails,
-                seller: address(0),
-                nonce: 0,
-                expiration: 0
-            }),
+            msg.value,
+            FeeOnTop({recipient: address(0), amount: 0}),
+            sweepOrder,
             items,
-            signatures
+            signedSellOrders
         );
+    }
 
-        if (bundleDetails.paymentMethod == address(0)) {
-            if (accumulator.sumListingPrices != msg.value) {
-                revert cPort__OfferPriceMustEqualSalePrice();
-            }
-        } else {
-            if (msg.value > 0) {
-                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
-            }
-        }
+    function sweepCollectionWithFeeOnTop(
+        bytes32 domainSeparator, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders
+    ) public payable {
+        _executeSweepOrder(
+            domainSeparator,
+            msg.value,
+            feeOnTop,
+            sweepOrder,
+            items,
+            signedSellOrders
+        );
+    }
 
-        bool[] memory unsuccessfulFills = _computeAndDistributeProceeds(
-            bundleDetails.buyer, 
-            IERC20(bundleDetails.paymentMethod),
-            bundleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            bundleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetailsBatch);
+    function sweepCollectionCosigned(
+        bytes32 domainSeparator, 
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] memory cosignatures
+    ) public payable {
+        _executeSweepOrder(
+            domainSeparator,
+            msg.value,
+            FeeOnTop({recipient: address(0), amount: 0}),
+            sweepOrder,
+            items,
+            signedSellOrders,
+            cosignatures
+        );
+    }
 
-        if (bundleDetails.protocol == TokenProtocols.ERC1155) {
-            emit SweepCollectionERC1155(
-                    bundleDetails.marketplace,
-                    bundleDetails.tokenAddress,
-                    bundleDetails.paymentMethod,
-                    bundleDetails.buyer,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.amounts,
-                    accumulator.salePrices);
-        } else {
-            emit SweepCollectionERC721(
-                    bundleDetails.marketplace,
-                    bundleDetails.tokenAddress,
-                    bundleDetails.paymentMethod,
-                    bundleDetails.buyer,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.salePrices);
-        }
+    function sweepCollectionCosignedWithFeeOnTop(
+        bytes32 domainSeparator, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] memory cosignatures
+    ) public payable {
+        _executeSweepOrder(
+            domainSeparator,
+            msg.value,
+            feeOnTop,
+            sweepOrder,
+            items,
+            signedSellOrders,
+            cosignatures
+        );
     }
 }

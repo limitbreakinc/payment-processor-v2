@@ -520,7 +520,7 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
-
+    /*
     function _getSignedBundledListing(
         uint256 sellerKey_, 
         AccumulatorHashes memory accumulatorHashes,
@@ -557,6 +557,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
         return signedListing;
     }
+    */
 
     function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails);

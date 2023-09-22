@@ -599,36 +599,40 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
-    function _validateBundledItems(
+    function _executeSweepOrder(
         bytes32 domainSeparator,
-        bool individualListings,
-        BundledOrderExtended memory bundleDetails,
-        BundledItem[] memory items,
-        SignatureECDSA[] memory signatures) 
-        internal returns (Accumulator memory accumulator, Order[] memory saleDetailsBatch) {
+        uint256 msgValue,
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders) internal {
 
-        // TODO
+        if (items.length != signedSellOrders.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
 
-        /*
+        if (items.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[bundleDetails.bundleBase.tokenAddress];
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
 
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
-            if (!isDefaultPaymentMethod(bundleDetails.bundleBase.paymentMethod)) {
+            if (!isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][bundleDetails.bundleBase.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
-            if (paymentSettingsForCollection.constrainedPricingPaymentMethod != bundleDetails.bundleBase.paymentMethod) {
+            if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         }
 
-        saleDetailsBatch = new Order[](items.length);
-        accumulator = Accumulator({
+        Order[] memory saleDetailsBatch = new Order[](items.length);
+        Accumulator memory accumulator = Accumulator({
             tokenIds: new uint256[](items.length),
             amounts: new uint256[](items.length),
             salePrices: new uint256[](items.length),
@@ -638,33 +642,21 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         });
 
         for (uint256 i = 0; i < items.length;) {
-
-            address seller = bundleDetails.seller;
-            uint256 nonce = bundleDetails.nonce;
-            uint256 expiration = bundleDetails.expiration;
-
-            if (individualListings) {
-                seller = items[i].seller;
-                nonce = items[i].nonce;
-                expiration = items[i].expiration;
-            }
-            
             Order memory saleDetails = 
                 Order({
-                    protocol: bundleDetails.bundleBase.protocol,
-                    seller: seller,
-                    buyer: bundleDetails.bundleBase.buyer,
-                    beneficiary: bundleDetails.bundleBase.buyer,
-                    marketplace: bundleDetails.bundleBase.marketplace,
-                    paymentMethod: bundleDetails.bundleBase.paymentMethod,
-                    tokenAddress: bundleDetails.bundleBase.tokenAddress,
-                    cosigner: address(0), // TODO
+                    protocol: sweepOrder.protocol,
+                    seller: items[i].seller,
+                    buyer: msg.sender,
+                    beneficiary: sweepOrder.beneficiary,
+                    marketplace: sweepOrder.marketplace,
+                    paymentMethod: sweepOrder.paymentMethod,
+                    tokenAddress: sweepOrder.tokenAddress,
                     tokenId: items[i].tokenId,
                     amount: items[i].amount,
                     itemPrice: items[i].itemPrice,
-                    nonce: nonce,
-                    expiration: expiration,
-                    marketplaceFeeNumerator: bundleDetails.bundleBase.marketplaceFeeNumerator,
+                    nonce: items[i].nonce,
+                    expiration: items[i].expiration,
+                    marketplaceFeeNumerator: sweepOrder.marketplaceFeeNumerator,
                     maxRoyaltyFeeNumerator: items[i].maxRoyaltyFeeNumerator
                 });
 
@@ -698,13 +690,171 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.amount, 
                     saleDetails.itemPrice);
             }
-   
-            if (individualListings) {
-                if (block.timestamp > saleDetails.expiration) {
-                    revert cPort__OrderHasExpired();
-                }
 
-                _verifySignedItemOrder(domainSeparator, saleDetails.seller, saleDetails, signatures[i]);
+            if (block.timestamp > saleDetails.expiration) {
+                    revert cPort__OrderHasExpired();
+            }
+
+            _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrders[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if (feeOnTop.amount > accumulator.sumListingPrices) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        if (sweepOrder.paymentMethod == address(0)) {
+            if (feeOnTop.amount + accumulator.sumListingPrices != msgValue) {
+                revert cPort__IncorrectFundsToCoverFeeOnTop();
+            }
+        } else {
+            if (msgValue > 0) {
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+            }
+        }
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            msg.sender, 
+            IERC20(sweepOrder.paymentMethod),
+            sweepOrder.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            sweepOrder.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
+            saleDetailsBatch);
+
+        if (sweepOrder.protocol == TokenProtocols.ERC1155) {
+            emit SweepCollectionERC1155(
+                    sweepOrder.marketplace,
+                    sweepOrder.tokenAddress,
+                    sweepOrder.paymentMethod,
+                    msg.sender,
+                    unsuccessfulFills,
+                    accumulator.sellers,
+                    accumulator.tokenIds,
+                    accumulator.amounts,
+                    accumulator.salePrices);
+        } else {
+            emit SweepCollectionERC721(
+                    sweepOrder.marketplace,
+                    sweepOrder.tokenAddress,
+                    sweepOrder.paymentMethod,
+                    msg.sender,
+                    unsuccessfulFills,
+                    accumulator.sellers,
+                    accumulator.tokenIds,
+                    accumulator.salePrices);
+        }
+    }
+
+    function _executeSweepOrder(
+        bytes32 domainSeparator,
+        uint256 msgValue,
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] memory cosignatures) internal {
+
+        if (items.length != signedSellOrders.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (items.length != cosignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (items.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
+
+        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+            if (!isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+            if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
+                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        }
+
+        Order[] memory saleDetailsBatch = new Order[](items.length);
+        Accumulator memory accumulator = Accumulator({
+            tokenIds: new uint256[](items.length),
+            amounts: new uint256[](items.length),
+            salePrices: new uint256[](items.length),
+            maxRoyaltyFeeNumerators: new uint256[](items.length),
+            sellers: new address[](items.length),
+            sumListingPrices: 0
+        });
+
+        for (uint256 i = 0; i < items.length;) {
+            Order memory saleDetails = 
+                Order({
+                    protocol: sweepOrder.protocol,
+                    seller: items[i].seller,
+                    buyer: msg.sender,
+                    beneficiary: sweepOrder.beneficiary,
+                    marketplace: sweepOrder.marketplace,
+                    paymentMethod: sweepOrder.paymentMethod,
+                    tokenAddress: sweepOrder.tokenAddress,
+                    tokenId: items[i].tokenId,
+                    amount: items[i].amount,
+                    itemPrice: items[i].itemPrice,
+                    nonce: items[i].nonce,
+                    expiration: items[i].expiration,
+                    marketplaceFeeNumerator: sweepOrder.marketplaceFeeNumerator,
+                    maxRoyaltyFeeNumerator: items[i].maxRoyaltyFeeNumerator
+                });
+
+            saleDetailsBatch[i] = saleDetails;
+
+            accumulator.tokenIds[i] = saleDetails.tokenId;
+            accumulator.amounts[i] = saleDetails.amount;
+            accumulator.salePrices[i] = saleDetails.itemPrice;
+            accumulator.maxRoyaltyFeeNumerators[i] = saleDetails.maxRoyaltyFeeNumerator;
+            accumulator.sellers[i] = saleDetails.seller;
+            accumulator.sumListingPrices += saleDetails.itemPrice;
+
+            if (saleDetails.protocol == TokenProtocols.ERC1155) {
+                if (saleDetails.amount == 0) {
+                    revert cPort__AmountForERC1155SalesGreaterThanZero();
+                }
+            } else {
+                if (saleDetails.amount != ONE) {
+                    revert cPort__AmountForERC721SalesMustEqualOne();
+                }
+            }
+
+            if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
+                revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+            }
+
+            if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+                _verifySalePriceInRange(
+                    saleDetails.tokenAddress, 
+                    saleDetails.tokenId, 
+                    saleDetails.amount, 
+                    saleDetails.itemPrice);
+            }
+
+            if (block.timestamp > saleDetails.expiration) {
+                    revert cPort__OrderHasExpired();
+            }
+
+            Cosignature memory cosignature = cosignatures[i];
+
+            if (cosignature.signer != address(0)) {
+                _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrders[i], cosignature);
+            } else {
+                _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrders[i]);
             }
 
             unchecked {
@@ -712,25 +862,53 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        if(!individualListings) {
-            if (block.timestamp > bundleDetails.expiration) {
-                revert cPort__OrderHasExpired();
-            }
-
-            _verifySignedBundleListing(
-                domainSeparator,
-                bundleDetails.seller,
-                AccumulatorHashes({
-                    tokenIdsKeccakHash: keccak256(abi.encodePacked(accumulator.tokenIds)),
-                    amountsKeccakHash: keccak256(abi.encodePacked(accumulator.amounts)),
-                    maxRoyaltyFeeNumeratorsKeccakHash: keccak256(abi.encodePacked(accumulator.maxRoyaltyFeeNumerators)),
-                    itemPricesKeccakHash: keccak256(abi.encodePacked(accumulator.salePrices))
-                }),
-                bundleDetails, 
-                signatures[0]);
+        if (feeOnTop.amount > accumulator.sumListingPrices) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
-        */
+
+        if (sweepOrder.paymentMethod == address(0)) {
+            if (feeOnTop.amount + accumulator.sumListingPrices != msgValue) {
+                revert cPort__IncorrectFundsToCoverFeeOnTop();
+            }
+        } else {
+            if (msgValue > 0) {
+                revert cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
+            }
+        }
+
+        bool[] memory unsuccessfulFills = _computeAndDistributeProceedsWithFeeOnTop(
+            msg.sender, 
+            IERC20(sweepOrder.paymentMethod),
+            sweepOrder.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            sweepOrder.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
+            feeOnTop,
+            saleDetailsBatch);
+
+        if (sweepOrder.protocol == TokenProtocols.ERC1155) {
+            emit SweepCollectionERC1155(
+                    sweepOrder.marketplace,
+                    sweepOrder.tokenAddress,
+                    sweepOrder.paymentMethod,
+                    msg.sender,
+                    unsuccessfulFills,
+                    accumulator.sellers,
+                    accumulator.tokenIds,
+                    accumulator.amounts,
+                    accumulator.salePrices);
+        } else {
+            emit SweepCollectionERC721(
+                    sweepOrder.marketplace,
+                    sweepOrder.tokenAddress,
+                    sweepOrder.paymentMethod,
+                    msg.sender,
+                    unsuccessfulFills,
+                    accumulator.sellers,
+                    accumulator.tokenIds,
+                    accumulator.salePrices);
+        }
     }
+
+    
 
     function _verifySignedCollectionOffer(
         bytes32 domainSeparator,
@@ -1114,88 +1292,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
-    /*
-    function _verifySignedItemOrder(
-        bytes32 domainSeparator,
-        address signer,
-        Order memory saleDetails,
-        SignatureECDSA memory signedOrder) internal {
-        bytes32 digest = 
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        ORDER_APPROVAL_HASH,
-                        uint8(saleDetails.protocol),
-                        signer,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.tokenId,
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.nonce,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator,
-                        _checkAndInvalidateNonce(
-                            signer,
-                            saleDetails.nonce,
-                            false
-                        )
-                    )
-                )
-            )
-        );
-
-        if (signer != ECDSA.recover(digest, signedOrder.v, signedOrder.r, signedOrder.s)) {
-            revert cPort__UnauthorizeSale();
-        }
-    }
-    */
-
-    function _verifySignedBundleListing(
-        bytes32 domainSeparator,
-        address signer,
-        AccumulatorHashes memory accumulatorHashes,
-        BundledOrderExtended memory bundleDetails,
-        SignatureECDSA memory signedListing) internal {
-
-        bytes32 digest = 
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        BUNDLED_SALE_APPROVAL_HASH,
-                        uint8(bundleDetails.bundleBase.protocol),
-                        signer,
-                        bundleDetails.bundleBase.marketplace,
-                        bundleDetails.bundleBase.paymentMethod,
-                        bundleDetails.bundleBase.tokenAddress
-                    ),
-                    abi.encode(
-                        bundleDetails.expiration,
-                        bundleDetails.nonce,
-                        bundleDetails.bundleBase.marketplaceFeeNumerator,
-                        _checkAndInvalidateNonce(
-                            signer,
-                            bundleDetails.nonce,
-                            false
-                        ),
-                        accumulatorHashes.tokenIdsKeccakHash,
-                        accumulatorHashes.amountsKeccakHash,
-                        accumulatorHashes.maxRoyaltyFeeNumeratorsKeccakHash,
-                        accumulatorHashes.itemPricesKeccakHash
-                    )
-                )
-            )
-        );
-
-        if (signer != ECDSA.recover(digest, signedListing.v, signedListing.r, signedListing.s)) {
-            revert cPort__UnauthorizeSale();
-        }
-    }
-
     function _checkAndInvalidateNonce(
         address account, 
         uint256 nonce, 
@@ -1218,106 +1314,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         emit NonceInvalidated(nonce, account, wasCancellation);
 
         return appStorage().masterNonces[account];
-    }
-
-    function _computeAndDistributeProceeds(
-        address buyer,
-        IERC20 paymentCoin,
-        function(address,address,IERC20,uint256,uint256) funcPayout,
-        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
-        Order[] memory saleDetailsBatch) internal returns (bool[] memory unsuccessfulFills) {
-
-        unsuccessfulFills = new bool[](saleDetailsBatch.length);
-
-        PayoutsAccumulator memory accumulator = PayoutsAccumulator({
-            lastSeller: address(0),
-            lastMarketplace: address(0),
-            lastRoyaltyRecipient: address(0),
-            accumulatedSellerProceeds: 0,
-            accumulatedMarketplaceProceeds: 0,
-            accumulatedRoyaltyProceeds: 0
-        });
-
-        for (uint256 i = 0; i < saleDetailsBatch.length;) {
-            Order memory saleDetails = saleDetailsBatch[i];
-
-            bool successfullyDispensedToken = 
-                funcDispenseToken(
-                    saleDetails.seller, 
-                    buyer, 
-                    saleDetails.tokenAddress, 
-                    saleDetails.tokenId, 
-                    saleDetails.amount);
-
-            if (!successfullyDispensedToken) {
-                if (address(paymentCoin) == address(0)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
-
-                unsuccessfulFills[i] = true;
-            } else {
-                SplitProceeds memory proceeds =
-                    _computePaymentSplits(
-                        saleDetails.itemPrice,
-                        saleDetails.tokenAddress,
-                        saleDetails.tokenId,
-                        saleDetails.marketplace,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator
-                    );
-    
-                if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
-                    if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        funcPayout(accumulator.lastRoyaltyRecipient, buyer, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
-                    accumulator.accumulatedRoyaltyProceeds = 0;
-                }
-    
-                if (saleDetails.marketplace != accumulator.lastMarketplace) {
-                    if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        funcPayout(accumulator.lastMarketplace, buyer, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastMarketplace = saleDetails.marketplace;
-                    accumulator.accumulatedMarketplaceProceeds = 0;
-                }
-    
-                if (saleDetails.seller != accumulator.lastSeller) {
-                    if(accumulator.accumulatedSellerProceeds > 0) {
-                        funcPayout(accumulator.lastSeller, buyer, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastSeller = saleDetails.seller;
-                    accumulator.accumulatedSellerProceeds = 0;
-                }
-
-                unchecked {
-                    accumulator.accumulatedRoyaltyProceeds += proceeds.royaltyProceeds;
-                    accumulator.accumulatedMarketplaceProceeds += proceeds.marketplaceProceeds;
-                    accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
-                }
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            funcPayout(accumulator.lastRoyaltyRecipient, buyer, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
-        }
-
-        if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            funcPayout(accumulator.lastMarketplace, buyer, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
-        }
-
-        if(accumulator.accumulatedSellerProceeds > 0) {
-            funcPayout(accumulator.lastSeller, buyer, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
-        }
-
-        return unsuccessfulFills;
     }
 
     function _computeAndDistributeProceedsForOneItem(
@@ -1417,106 +1413,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 }
             }
         }
-    }
-
-    function _computeAndDistributeProceeds2(
-        address purchaser,
-        IERC20 paymentCoin,
-        function(address,address,IERC20,uint256,uint256) funcPayout,
-        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
-        Order[] memory saleDetailsBatch) internal returns (bool[] memory unsuccessfulFills) {
-
-        unsuccessfulFills = new bool[](saleDetailsBatch.length);
-
-        PayoutsAccumulator memory accumulator = PayoutsAccumulator({
-            lastSeller: address(0),
-            lastMarketplace: address(0),
-            lastRoyaltyRecipient: address(0),
-            accumulatedSellerProceeds: 0,
-            accumulatedMarketplaceProceeds: 0,
-            accumulatedRoyaltyProceeds: 0
-        });
-
-        for (uint256 i = 0; i < saleDetailsBatch.length;) {
-            Order memory saleDetails = saleDetailsBatch[i];
-
-            bool successfullyDispensedToken = 
-                funcDispenseToken(
-                    saleDetails.seller, 
-                    saleDetails.beneficiary, 
-                    saleDetails.tokenAddress, 
-                    saleDetails.tokenId, 
-                    saleDetails.amount);
-
-            if (!successfullyDispensedToken) {
-                if (address(paymentCoin) == address(0)) {
-                    revert cPort__DispensingTokenWasUnsuccessful();
-                }
-
-                unsuccessfulFills[i] = true;
-            } else {
-                SplitProceeds memory proceeds =
-                    _computePaymentSplits(
-                        saleDetails.itemPrice,
-                        saleDetails.tokenAddress,
-                        saleDetails.tokenId,
-                        saleDetails.marketplace,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator
-                    );
-    
-                if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
-                    if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
-                    accumulator.accumulatedRoyaltyProceeds = 0;
-                }
-    
-                if (saleDetails.marketplace != accumulator.lastMarketplace) {
-                    if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastMarketplace = saleDetails.marketplace;
-                    accumulator.accumulatedMarketplaceProceeds = 0;
-                }
-    
-                if (saleDetails.seller != accumulator.lastSeller) {
-                    if(accumulator.accumulatedSellerProceeds > 0) {
-                        funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
-                    }
-    
-                    accumulator.lastSeller = saleDetails.seller;
-                    accumulator.accumulatedSellerProceeds = 0;
-                }
-
-                unchecked {
-                    accumulator.accumulatedRoyaltyProceeds += proceeds.royaltyProceeds;
-                    accumulator.accumulatedMarketplaceProceeds += proceeds.marketplaceProceeds;
-                    accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
-                }
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            funcPayout(accumulator.lastRoyaltyRecipient, purchaser, paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
-        }
-
-        if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            funcPayout(accumulator.lastMarketplace, purchaser, paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
-        }
-
-        if(accumulator.accumulatedSellerProceeds > 0) {
-            funcPayout(accumulator.lastSeller, purchaser, paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
-        }
-
-        return unsuccessfulFills;
     }
 
     function _computeAndDistributeProceedsWithFeeOnTop(
