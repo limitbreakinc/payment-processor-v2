@@ -786,6 +786,225 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
     }
 
+    function _sweepSignedListings(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionCalldata(
+                address(_cPort), 
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _sweepSignedListingsWithFeeOnTop(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        if (saleDetailsArray[0].paymentMethod == address(0)) {
+            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+        }
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionWithFeeOnTopCalldata(
+                address(_cPort), 
+                feeOnTop,
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollectionWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _sweepCosignedListings(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionCosignedCalldata(
+                address(_cPort), 
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray,
+                cosignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollectionCosigned{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _sweepEmptyCosignedListings(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignaturesArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionCosignedCalldata(
+                address(_cPort), 
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray,
+                cosignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollectionCosigned{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _sweepCosignedListingsWithFeeOnTop(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        if (saleDetailsArray[0].paymentMethod == address(0)) {
+            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+        }
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+                address(_cPort), 
+                feeOnTop,
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray,
+                cosignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollectionCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
+    function _sweepEmptyCosignedListingsWithFeeOnTop(address caller, uint128 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+        SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
+        SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+
+        if (saleDetailsArray[0].paymentMethod == address(0)) {
+            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+        }
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignaturesArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            
+            sweepItems[i] = SweepItem({
+                seller: saleDetailsArray[i].seller,
+                tokenId: saleDetailsArray[i].tokenId,
+                amount: saleDetailsArray[i].amount,
+                itemPrice: saleDetailsArray[i].itemPrice,
+                nonce: saleDetailsArray[i].nonce,
+                expiration: saleDetailsArray[i].expiration,
+                maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
+            });
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+                address(_cPort), 
+                feeOnTop,
+                sweepOrder,
+                sweepItems, 
+                sellerSignaturesArray,
+                cosignaturesArray);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.sweepCollectionCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+    }
+
     function _bulkBuySignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
 
