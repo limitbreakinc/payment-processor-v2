@@ -632,14 +632,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         Order[] memory saleDetailsBatch = new Order[](items.length);
-        Accumulator memory accumulator = Accumulator({
-            tokenIds: new uint256[](items.length),
-            amounts: new uint256[](items.length),
-            salePrices: new uint256[](items.length),
-            maxRoyaltyFeeNumerators: new uint256[](items.length),
-            sellers: new address[](items.length),
-            sumListingPrices: 0
-        });
+        uint256 sumListingPrices;
 
         for (uint256 i = 0; i < items.length;) {
             Order memory saleDetails = 
@@ -661,13 +654,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 });
 
             saleDetailsBatch[i] = saleDetails;
-
-            accumulator.tokenIds[i] = saleDetails.tokenId;
-            accumulator.amounts[i] = saleDetails.amount;
-            accumulator.salePrices[i] = saleDetails.itemPrice;
-            accumulator.maxRoyaltyFeeNumerators[i] = saleDetails.maxRoyaltyFeeNumerator;
-            accumulator.sellers[i] = saleDetails.seller;
-            accumulator.sumListingPrices += saleDetails.itemPrice;
+            sumListingPrices += saleDetails.itemPrice;
 
             if (saleDetails.protocol == TokenProtocols.ERC1155) {
                 if (saleDetails.amount == 0) {
@@ -702,12 +689,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        if (feeOnTop.amount > accumulator.sumListingPrices) {
+        if (feeOnTop.amount > sumListingPrices) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         if (sweepOrder.paymentMethod == address(0)) {
-            if (feeOnTop.amount + accumulator.sumListingPrices != msgValue) {
+            if (feeOnTop.amount + sumListingPrices != msgValue) {
                 revert cPort__IncorrectFundsToCoverFeeOnTop();
             }
         } else {
@@ -725,26 +712,40 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetailsBatch);
 
         if (sweepOrder.protocol == TokenProtocols.ERC1155) {
-            emit SweepCollectionERC1155(
-                    sweepOrder.marketplace,
-                    sweepOrder.tokenAddress,
-                    sweepOrder.paymentMethod,
-                    msg.sender,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.amounts,
-                    accumulator.salePrices);
+            for (uint i = 0; i < items.length;) {
+                if (!unsuccessfulFills[i]) {
+                    emit BuyListingERC1155(
+                        msg.sender,
+                        saleDetailsBatch[i].seller,
+                        sweepOrder.tokenAddress,
+                        saleDetailsBatch[i].beneficiary,
+                        sweepOrder.paymentMethod,
+                        saleDetailsBatch[i].tokenId,
+                        saleDetailsBatch[i].amount,
+                        saleDetailsBatch[i].itemPrice);
+                }
+                
+                unchecked {
+                    ++i;
+                }
+            }
         } else {
-            emit SweepCollectionERC721(
-                    sweepOrder.marketplace,
-                    sweepOrder.tokenAddress,
-                    sweepOrder.paymentMethod,
-                    msg.sender,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.salePrices);
+            for (uint i = 0; i < items.length;) {
+                if (!unsuccessfulFills[i]) {
+                    emit BuyListingERC721(
+                        msg.sender,
+                        saleDetailsBatch[i].seller,
+                        sweepOrder.tokenAddress,
+                        saleDetailsBatch[i].beneficiary,
+                        sweepOrder.paymentMethod,
+                        saleDetailsBatch[i].tokenId,
+                        saleDetailsBatch[i].itemPrice);
+                }
+                
+                unchecked {
+                    ++i;
+                }
+            }
         }
     }
 
@@ -786,14 +787,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         Order[] memory saleDetailsBatch = new Order[](items.length);
-        Accumulator memory accumulator = Accumulator({
-            tokenIds: new uint256[](items.length),
-            amounts: new uint256[](items.length),
-            salePrices: new uint256[](items.length),
-            maxRoyaltyFeeNumerators: new uint256[](items.length),
-            sellers: new address[](items.length),
-            sumListingPrices: 0
-        });
+        uint256 sumListingPrices;
 
         for (uint256 i = 0; i < items.length;) {
             Order memory saleDetails = 
@@ -815,13 +809,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 });
 
             saleDetailsBatch[i] = saleDetails;
-
-            accumulator.tokenIds[i] = saleDetails.tokenId;
-            accumulator.amounts[i] = saleDetails.amount;
-            accumulator.salePrices[i] = saleDetails.itemPrice;
-            accumulator.maxRoyaltyFeeNumerators[i] = saleDetails.maxRoyaltyFeeNumerator;
-            accumulator.sellers[i] = saleDetails.seller;
-            accumulator.sumListingPrices += saleDetails.itemPrice;
+            sumListingPrices += saleDetails.itemPrice;
 
             if (saleDetails.protocol == TokenProtocols.ERC1155) {
                 if (saleDetails.amount == 0) {
@@ -862,12 +850,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        if (feeOnTop.amount > accumulator.sumListingPrices) {
+        if (feeOnTop.amount > sumListingPrices) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         if (sweepOrder.paymentMethod == address(0)) {
-            if (feeOnTop.amount + accumulator.sumListingPrices != msgValue) {
+            if (feeOnTop.amount + sumListingPrices != msgValue) {
                 revert cPort__IncorrectFundsToCoverFeeOnTop();
             }
         } else {
@@ -885,30 +873,42 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetailsBatch);
 
         if (sweepOrder.protocol == TokenProtocols.ERC1155) {
-            emit SweepCollectionERC1155(
-                    sweepOrder.marketplace,
-                    sweepOrder.tokenAddress,
-                    sweepOrder.paymentMethod,
-                    msg.sender,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.amounts,
-                    accumulator.salePrices);
+            for (uint i = 0; i < items.length;) {
+                if (!unsuccessfulFills[i]) {
+                    emit BuyListingERC1155(
+                        msg.sender,
+                        saleDetailsBatch[i].seller,
+                        sweepOrder.tokenAddress,
+                        saleDetailsBatch[i].beneficiary,
+                        sweepOrder.paymentMethod,
+                        saleDetailsBatch[i].tokenId,
+                        saleDetailsBatch[i].amount,
+                        saleDetailsBatch[i].itemPrice);
+                }
+                
+                unchecked {
+                    ++i;
+                }
+            }
         } else {
-            emit SweepCollectionERC721(
-                    sweepOrder.marketplace,
-                    sweepOrder.tokenAddress,
-                    sweepOrder.paymentMethod,
-                    msg.sender,
-                    unsuccessfulFills,
-                    accumulator.sellers,
-                    accumulator.tokenIds,
-                    accumulator.salePrices);
+            for (uint i = 0; i < items.length;) {
+                if (!unsuccessfulFills[i]) {
+                    emit BuyListingERC721(
+                        msg.sender,
+                        saleDetailsBatch[i].seller,
+                        sweepOrder.tokenAddress,
+                        saleDetailsBatch[i].beneficiary,
+                        sweepOrder.paymentMethod,
+                        saleDetailsBatch[i].tokenId,
+                        saleDetailsBatch[i].itemPrice);
+                }
+                
+                unchecked {
+                    ++i;
+                }
+            }
         }
     }
-
-    
 
     function _verifySignedCollectionOffer(
         bytes32 domainSeparator,

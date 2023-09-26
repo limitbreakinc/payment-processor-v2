@@ -69,29 +69,6 @@ interface cPortEvents {
         uint88 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
 
-    /// @notice Emitted when a collection of ERC-721 tokens is successfully swept using `sweepCollection`
-    event SweepCollectionERC721(
-        address indexed marketplace,
-        address indexed tokenAddress,
-        address indexed paymentCoin,
-        address buyer,
-        bool[] unsuccessfulFills,
-        address[] sellers,
-        uint256[] tokenIds,
-        uint256[] salePrices);
-
-    /// @notice Emitted when a collection of ERC-1155 tokens is successfully swept using `sweepCollection`
-    event SweepCollectionERC1155(
-        address indexed marketplace,
-        address indexed tokenAddress,
-        address indexed paymentCoin,
-        address buyer,
-        bool[] unsuccessfulFills,
-        address[] sellers,
-        uint256[] tokenIds,
-        uint256[] amounts,
-        uint256[] salePrices);
-
     /// @notice Emitted whenever pricing bounds change at a collection level for price-constrained collections.
     event UpdatedCollectionLevelPricingBoundaries(
         address indexed tokenAddress, 

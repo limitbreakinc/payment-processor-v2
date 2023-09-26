@@ -82,25 +82,6 @@ struct SweepItem {
     uint256 maxRoyaltyFeeNumerator;
 }
 
-/*
-struct BundledOrderExtended {
-    BundledOrderBase bundleBase; 
-    address seller;
-    uint256 nonce;
-    uint256 expiration;
-}
-*/
-
-struct BundledItem {
-    address seller;
-    uint256 tokenId;
-    uint256 amount;
-    uint256 maxRoyaltyFeeNumerator;
-    uint256 itemPrice;
-    uint256 nonce;
-    uint256 expiration;
-}
-
 /**
  * @dev This struct is used to define pricing constraints for a collection or individual token.
  *
@@ -142,28 +123,6 @@ struct SplitProceeds {
     uint256 royaltyProceeds;
     uint256 marketplaceProceeds;
     uint256 sellerProceeds;
-}
-
-/** 
- * @dev Internal contract use only - this is not a public-facing struct
- */
-struct Accumulator {
-    uint256[] tokenIds;
-    uint256[] amounts;
-    uint256[] salePrices;
-    uint256[] maxRoyaltyFeeNumerators;
-    address[] sellers;
-    uint256 sumListingPrices;
-}
-
-/** 
- * @dev Internal contract use only - this is not a public-facing struct
- */
-struct AccumulatorHashes {
-    bytes32 tokenIdsKeccakHash;
-    bytes32 amountsKeccakHash;
-    bytes32 maxRoyaltyFeeNumeratorsKeccakHash;
-    bytes32 itemPricesKeccakHash;
 }
 
 /** 
