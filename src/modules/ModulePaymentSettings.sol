@@ -27,7 +27,7 @@ contract ModulePaymentSettings is cPortModule {
         address dai_) 
     cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
 
-    function createPaymentMethodWhitelist(string calldata whitelistName) external returns (uint88 paymentMethodWhitelistId) {
+    function createPaymentMethodWhitelist(string calldata whitelistName) external returns (uint64 paymentMethodWhitelistId) {
         unchecked {
             paymentMethodWhitelistId = ++appStorage().lastPaymentMethodWhitelistId;
         }
@@ -37,7 +37,7 @@ contract ModulePaymentSettings is cPortModule {
         emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
     }
 
-    function whitelistPaymentMethod(uint88 paymentMethodWhitelistId, address paymentMethod) external {
+    function whitelistPaymentMethod(uint64 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
         mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
@@ -50,7 +50,7 @@ contract ModulePaymentSettings is cPortModule {
         emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
-    function unwhitelistPaymentMethod(uint88 paymentMethodWhitelistId, address paymentMethod) external {
+    function unwhitelistPaymentMethod(uint64 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
         mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
@@ -66,8 +66,10 @@ contract ModulePaymentSettings is cPortModule {
     function setCollectionPaymentSettings(
         address tokenAddress, 
         PaymentSettings paymentSettings,
-        uint88 paymentMethodWhitelistId,
-        address constrainedPricingPaymentMethod) external {
+        uint64 paymentMethodWhitelistId,
+        address constrainedPricingPaymentMethod,
+        uint16 royaltyBountyNumerator,
+        address exclusiveBountyReceiver) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (
@@ -86,16 +88,22 @@ contract ModulePaymentSettings is cPortModule {
                 revert cPort__PaymentMethodWhitelistDoesNotExist();
             }
 
+            appStorage().collectionExclusiveBountyReceivers[tokenAddress] = exclusiveBountyReceiver;
+
             appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
                 paymentSettings,
                 paymentMethodWhitelistId,
-                constrainedPricingPaymentMethod);
+                constrainedPricingPaymentMethod,
+                royaltyBountyNumerator,
+                exclusiveBountyReceiver != address(0));
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
                 paymentSettings, 
                 paymentMethodWhitelistId, 
-                constrainedPricingPaymentMethod);
+                constrainedPricingPaymentMethod,
+                royaltyBountyNumerator,
+                exclusiveBountyReceiver);
     }
 
     function setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds) external {

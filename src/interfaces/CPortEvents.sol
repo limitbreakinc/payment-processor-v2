@@ -79,8 +79,10 @@ interface cPortEvents {
     event UpdatedCollectionPaymentSettings(
         address indexed tokenAddress, 
         PaymentSettings paymentSettings, 
-        uint88 paymentMethodWhitelistId, 
-        address constrainedPricingPaymentMethod);
+        uint64 paymentMethodWhitelistId, 
+        address constrainedPricingPaymentMethod,
+        uint16 royaltyBountyNumerator,
+        address exclusiveBountyReceiver);
 
     /// @notice Emitted whenever pricing bounds change at a token level for price-constrained collections.
     event UpdatedTokenLevelPricingBoundaries(

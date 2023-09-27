@@ -1647,7 +1647,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         return ECDSA.toTypedDataHash(domainSeparator, structHash);
     }
 
-    function _requireCallerOwnsPaymentMethodWhitelist(uint88 paymentMethodWhitelistId) internal view {
+    function _requireCallerOwnsPaymentMethodWhitelist(uint64 paymentMethodWhitelistId) internal view {
         if(msg.sender != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
             revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
         }

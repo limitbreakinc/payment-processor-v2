@@ -14,8 +14,10 @@ enum PaymentSettings {
 
 struct CollectionPaymentSettings {
     PaymentSettings paymentSettings;
-    uint88 paymentMethodWhitelistId;
+    uint64 paymentMethodWhitelistId;
     address constrainedPricingPaymentMethod;
+    uint16 royaltyBountyNumerator;
+    bool isRoyaltyBountyExclusive;
 }
 
 /**
@@ -139,7 +141,7 @@ struct PayoutsAccumulator {
 
 struct cPortStorage {
     /// @dev Tracks the most recently created payment method whitelist id
-    uint88 lastPaymentMethodWhitelistId;
+    uint64 lastPaymentMethodWhitelistId;
 
     /**
      * @notice User-specific master nonce that allows buyers and sellers to efficiently cancel all listings or offers
@@ -171,8 +173,8 @@ struct cPortStorage {
     mapping(address => mapping(uint256 => uint256)) invalidatedSignatures;
     
     mapping (address => CollectionPaymentSettings) collectionPaymentSettings;
-    mapping (uint88 => address) paymentMethodWhitelistOwners;
-    mapping (uint88 => mapping (address => bool)) collectionPaymentMethodWhitelists;
+    mapping (uint64 => address) paymentMethodWhitelistOwners;
+    mapping (uint64 => mapping (address => bool)) collectionPaymentMethodWhitelists;
 
     /**
      * @dev Mapping of token contract addresses to the collection-level pricing boundaries (floor and ceiling price).
@@ -183,4 +185,6 @@ struct cPortStorage {
      * @dev Mapping of token contract addresses to the token-level pricing boundaries (floor and ceiling price).
      */
     mapping (address => mapping (uint256 => PricingBounds)) tokenPricingBounds;
+
+    mapping (address => address) collectionExclusiveBountyReceivers;
 }

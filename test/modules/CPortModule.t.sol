@@ -75,7 +75,7 @@ contract cPortModuleTest is Test, cPortEvents {
     cPortModule public moduleBulkTradesCosigned;
     cPortModule public moduleSweepCollection;
 
-    uint88 public customPaymentMethodWhitelistId;
+    uint64 public customPaymentMethodWhitelistId;
 
     mapping (address => uint256) internal _nextAvailableTokenId;
     mapping (address => uint256) internal _nonces;
@@ -976,7 +976,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             cosignaturesArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
-            
+
             sweepItems[i] = SweepItem({
                 seller: saleDetailsArray[i].seller,
                 tokenId: saleDetailsArray[i].tokenId,

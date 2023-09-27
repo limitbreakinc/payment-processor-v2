@@ -31,18 +31,18 @@ contract cPortEncoder {
                 whitelistName));
     }
 
-    function encodeWhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint88 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeWhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint64 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "whitelistPaymentMethod(uint88,address)",
+                "whitelistPaymentMethod(uint64,address)",
                 paymentMethodWhitelistId,
                 paymentMethod));
     }
 
-    function encodeUnwhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint88 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeUnwhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint64 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "unwhitelistPaymentMethod(uint88,address)",
+                "unwhitelistPaymentMethod(uint64,address)",
                 paymentMethodWhitelistId,
                 paymentMethod));
     }
@@ -51,16 +51,20 @@ contract cPortEncoder {
         address /*cPortAddress*/, 
         address tokenAddress, 
         PaymentSettings paymentSettings,
-        uint88 paymentMethodWhitelistId,
-        address constrainedPricingPaymentMethod
+        uint64 paymentMethodWhitelistId,
+        address constrainedPricingPaymentMethod,
+        uint16 royaltyBountyNumerator,
+        address exclusiveBountyReceiver
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setCollectionPaymentSettings(address,uint8,uint88,address)",
+                "setCollectionPaymentSettings(address,uint8,uint64,address,uint16,address)",
                 tokenAddress,
                 paymentSettings,
                 paymentMethodWhitelistId,
-                constrainedPricingPaymentMethod));
+                constrainedPricingPaymentMethod,
+                royaltyBountyNumerator,
+                exclusiveBountyReceiver));
     }
 
     function encodeSetCollectionPricingBoundsCalldata(
