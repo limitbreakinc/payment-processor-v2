@@ -3459,4 +3459,3460 @@ contract BenchmarkTradesBulkAcceptOffers is BenchmarkTradesBaseTest {
     function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop() public {
         _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 0, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
     }
+
+    /**********************************/
+    /*     ACCEPT ITEM OFFER FOR SELF */
+    /**********************************/
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /*****************************************/
+    /*     ACCEPT ITEM OFFER FOR BENEFICIARY */
+    /*****************************************/
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /*************************************/
+    /*  ACCEPT COLLECTION OFFER FOR SELF */
+    /*************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /********************************************/
+    /*  ACCEPT COLLECTION OFFER FOR BENEFICIARY */
+    /********************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /***************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR SELF */
+    /***************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /**********************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR BENEFICIARY */
+    /**********************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /*******************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR SELF */
+    /*******************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /**************************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR BENEFICIARY */
+    /**************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /*************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR SELF */
+    /*************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /********************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR BENEFICIARY */
+    /********************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /*************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR SELF  */
+    /*************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /********************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR BENEFICIARY  */
+    /********************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /*************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR SELF */
+    /*************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /********************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR BENEFICIARY */
+    /********************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /*******************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR SELF */
+    /*******************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /**************************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR BENEFICIARY */
+    /**************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /*******************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR SELF  */
+    /*******************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /**************************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR BENEFICIARY  */
+    /**************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, type(uint96).max, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /*********************************************/
+    /*     ACCEPT ITEM OFFER FOR SELF FEE ON TOP */
+    /*********************************************/
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /****************************************************/
+    /*     ACCEPT ITEM OFFER FOR BENEFICIARY FEE ON TOP */
+    /****************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /************************************************/
+    /*  ACCEPT COLLECTION OFFER FOR SELF FEE ON TOP */
+    /************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /*******************************************************/
+    /*  ACCEPT COLLECTION OFFER FOR BENEFICIARY FEE ON TOP */
+    /*******************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /**************************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR SELF FEE ON TOP */
+    /**************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /*********************************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR BENEFICIARY FEE ON TOP */
+    /*********************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /******************************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR SELF FEE ON TOP */
+    /******************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /*************************************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR BENEFICIARY FEE ON TOP */
+    /*************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /************************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR SELF FEE ON TOP */
+    /************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /*******************************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR BENEFICIARY FEE ON TOP */
+    /*******************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /************************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR SELF  FEE ON TOP */
+    /************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /******************************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR BENEFICIARY FEE ON TOP */
+    /******************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /************************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR SELF FEE ON TOP */
+    /************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /*******************************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR BENEFICIARY FEE ON TOP */
+    /*******************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /******************************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR SELF FEE ON TOP */
+    /******************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /*************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR BENEFICIARY FEE ON TOP */
+    /*************************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /*****************************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR SELF FEE ON TOP */
+    /*****************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR BENEFICIARY FEE ON TOP */
+    /************************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_FeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 1000, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /***************************************************/
+    /*     ACCEPT ITEM OFFER FOR SELF EMPTY FEE ON TOP */
+    /***************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /**********************************************************/
+    /*     ACCEPT ITEM OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /**********************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /******************************************************/
+    /*  ACCEPT COLLECTION OFFER FOR SELF EMPTY FEE ON TOP */
+    /******************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /*************************************************************/
+    /*  ACCEPT COLLECTION OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /*************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /********************************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR SELF EMPTY FEE ON TOP */
+    /********************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob));
+    }
+
+    /***************************************************************/
+    /*     ACCEPT TOKEN SET OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /***************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary));
+    }
+
+    /************************************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR SELF EMPTY FEE ON TOP */
+    /************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /*******************************************************************/
+    /*     ACCEPT COSIGNED ITEM OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /*******************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /******************************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR SELF EMPTY FEE ON TOP */
+    /******************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /*************************************************************************/
+    /*     ACCEPT COSIGNED COLLECTION OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /*************************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /*****************************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR SELF EMPTY FEE ON TOP */
+    /*****************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, false));
+    }
+
+    /************************************************************************/
+    /*     ACCEPT COSIGNED TOKEN SET OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /************************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, false));
+    }
+
+    /******************************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR SELF EMPTY FEE ON TOP */
+    /******************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /*************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED ITEM OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /*************************************************************************/
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptItemOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR SELF EMPTY FEE ON TOP */
+    /************************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /*******************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED COLLECTION OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /*******************************************************************************/
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptCollectionOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    /***********************************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR SELF EMPTY FEE ON TOP */
+    /***********************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true));
+    }
+
+    /******************************************************************************/
+    /*     ACCEPT EMPTY COSIGNED TOKEN SET OFFER FOR BENEFICIARY EMPTY FEE ON TOP */
+    /******************************************************************************/
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesDefaultPaymentMethods_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryNoFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 0, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 0, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
+
+    function testBenchmarkBulkAcceptTokenSetOffersEmptyCosignedForBeneficiaryMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_EmptyFeeOnTop_WithRoyaltyBounty() public {
+        _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams(10, 10, 500, 1000, 0, 300, address(weth), uint160(bobPk), benchmarkBeneficiary, true));
+    }
 }

@@ -72,6 +72,10 @@ contract ModulePaymentSettings is cPortModule {
         address exclusiveBountyReceiver) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
+            if (royaltyBountyNumerator > FEE_DENOMINATOR) {
+                revert cPort__RoyaltyBountyNumeratorCannotExceedFeeDenominator();
+            }
+
             if (
                 paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist || 
                 paymentSettings == PaymentSettings.AllowAnyPaymentMethod

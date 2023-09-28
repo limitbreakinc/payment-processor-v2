@@ -65,6 +65,11 @@ struct TokenSetProof {
     bytes32[] proof;
 }
 
+struct RoyaltyBounty {
+    uint16 numerator;
+    address exclusiveMarketplace;
+}
+
 struct SweepOrder {
     TokenProtocols protocol;
     address beneficiary;
@@ -137,6 +142,19 @@ struct PayoutsAccumulator {
     uint256 accumulatedSellerProceeds;
     uint256 accumulatedMarketplaceProceeds;
     uint256 accumulatedRoyaltyProceeds;
+}
+
+/** 
+ * @dev Internal contract use only - this is not a public-facing struct
+ */
+struct SweepCollectionComputeAndDistributeProceedsParams {
+    IERC20 paymentCoin;
+    function(address,address,IERC20,uint256,uint256) funcPayout;
+    function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
+    function(Order memory) funcEmitOrderExecutionEvent;
+    FeeOnTop feeOnTop;
+    RoyaltyBounty royaltyBounty;
+    Order[] saleDetailsBatch;
 }
 
 struct cPortStorage {
