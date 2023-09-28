@@ -1,6 +1,6 @@
 forge coverage --report lcov
 
-lcov --remove ./lcov.info -o ./lcov.info.pruned '/test/mocks/*' 'test/mocks/*' '/test/foundry/*' 'test/foundry/*'
+lcov --remove ./lcov.info -o ./lcov.info.pruned '/test/**/*' 'test/**/*'
 
 genhtml lcov.info.pruned --output-directory coverage
 
