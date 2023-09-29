@@ -220,7 +220,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             SALE_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
-                            saleDetails.seller,
+                            saleDetails.maker,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
@@ -233,7 +233,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
-                            _cPort.masterNonces(saleDetails.seller)
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -284,7 +284,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             SALE_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
-                            saleDetails.seller,
+                            saleDetails.maker,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
@@ -319,7 +319,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             ITEM_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -355,7 +355,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -390,7 +390,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -425,7 +425,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             ITEM_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -439,7 +439,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
-                            _cPort.masterNonces(saleDetails.buyer)
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -460,7 +460,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             COLLECTION_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -473,7 +473,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
-                            _cPort.masterNonces(saleDetails.buyer)
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -494,7 +494,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             TOKEN_SET_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
@@ -507,7 +507,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.marketplaceFeeNumerator,
                             saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
-                            _cPort.masterNonces(saleDetails.buyer),
+                            _cPort.masterNonces(saleDetails.maker),
                             tokenSetProof.rootHash
                         )
                     )
@@ -793,7 +793,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -829,7 +829,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -863,7 +863,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -899,7 +899,7 @@ contract cPortModuleTest is Test, cPortEvents {
             cosignaturesArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -937,7 +937,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -978,7 +978,7 @@ contract cPortModuleTest is Test, cPortEvents {
             cosignaturesArray[i] = Cosignature({signer: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
             sweepItems[i] = SweepItem({
-                seller: saleDetailsArray[i].seller,
+                maker: saleDetailsArray[i].maker,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,

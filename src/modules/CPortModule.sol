@@ -126,7 +126,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _emitBuyListingERC721Event(Order memory saleDetails) internal {
         emit BuyListingERC721(
                 msg.sender,
-                saleDetails.seller,
+                saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
                 saleDetails.paymentMethod,
@@ -137,7 +137,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _emitBuyListingERC1155Event(Order memory saleDetails) internal {
         emit BuyListingERC1155(
                 msg.sender,
-                saleDetails.seller,
+                saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
                 saleDetails.paymentMethod,
@@ -149,7 +149,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _emitAcceptOfferERC721Event(Order memory saleDetails) internal {
         emit AcceptOfferERC721(
                 msg.sender,
-                saleDetails.buyer,
+                saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
                 saleDetails.paymentMethod,
@@ -160,7 +160,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _emitAcceptOfferERC1155Event(Order memory saleDetails) internal {
         emit AcceptOfferERC1155(
                 msg.sender,
-                saleDetails.buyer,
+                saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
                 saleDetails.paymentMethod,
@@ -243,6 +243,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSingleOrder(
             disablePartialFill,
             msg.sender,
+            saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -279,6 +280,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
             msg.sender,
+            saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -322,6 +324,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
             msg.sender,
+            saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -340,7 +343,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof
     ) internal {
-        _verifyCallerIsSeller(saleDetails.seller);
+        //_verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         RoyaltyBounty memory royaltyBounty = _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -360,7 +363,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         _fulfillSingleOrder(
             disablePartialFill,
-            saleDetails.buyer,
+            saleDetails.maker,
+            msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -383,7 +387,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
-        _verifyCallerIsSeller(saleDetails.seller);
+        //_verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         RoyaltyBounty memory royaltyBounty = _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -403,7 +407,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
-            saleDetails.buyer,
+            saleDetails.maker,
+            msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -423,7 +428,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
     ) internal {
-        _verifyCallerIsSeller(saleDetails.seller);
+        //_verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         RoyaltyBounty memory royaltyBounty = _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -455,7 +460,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         _fulfillSingleOrder(
             disablePartialFill,
-            saleDetails.buyer,
+            saleDetails.maker,
+            msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -479,7 +485,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
-        _verifyCallerIsSeller(saleDetails.seller);
+        //_verifyCallerIsSeller(saleDetails.seller);
         _verifyPaymentMethodIsNonNative(saleDetails.paymentMethod);
         RoyaltyBounty memory royaltyBounty = _validateBasicOrderDetails(msgValue, saleDetails);
 
@@ -511,7 +517,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
-            saleDetails.buyer,
+            saleDetails.maker,
+            msg.sender,
             IERC20(saleDetails.paymentMethod),
             saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
@@ -641,8 +648,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             Order memory saleDetails = 
                 Order({
                     protocol: sweepOrder.protocol,
-                    seller: items[i].seller,
-                    buyer: msg.sender,
+                    maker: items[i].maker,
                     beneficiary: sweepOrder.beneficiary,
                     marketplace: sweepOrder.marketplace,
                     paymentMethod: sweepOrder.paymentMethod,
@@ -722,7 +728,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         COLLECTION_OFFER_APPROVAL_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -736,7 +742,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.nonce,
                             false
                         )
@@ -745,9 +751,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__UnauthorizeSale();
         }
     }
@@ -765,7 +771,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
                         cosignature.signer,
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -798,9 +804,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, orderDigest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(orderDigest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, orderDigest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(orderDigest, signature.v, signature.r, signature.s)) {
             revert cPort__BuyerDidNotAuthorizePurchase();
         }
     }
@@ -816,7 +822,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         ITEM_OFFER_APPROVAL_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -831,7 +837,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.nonce,
                             false
                         )
@@ -840,9 +846,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__UnauthorizeSale();
         }
     }
@@ -860,7 +866,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         ITEM_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
                         cosignature.signer,
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -894,9 +900,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__BuyerDidNotAuthorizePurchase();
         }
     }
@@ -913,7 +919,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         TOKEN_SET_OFFER_APPROVAL_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -927,7 +933,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
-                            saleDetails.buyer,
+                            saleDetails.maker,
                             saleDetails.nonce,
                             false
                         ),
@@ -937,9 +943,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__UnauthorizeSale();
         }
     }
@@ -958,7 +964,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
                         cosignature.signer,
-                        saleDetails.buyer,
+                        saleDetails.maker,
                         saleDetails.beneficiary,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
@@ -992,9 +998,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
-        if(saleDetails.buyer.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.buyer, digest, signature);
-        } else if (saleDetails.buyer != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__UnauthorizeSale();
         }
     }
@@ -1010,7 +1016,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     abi.encode(
                         SALE_APPROVAL_HASH,
                         uint8(saleDetails.protocol),
-                        saleDetails.seller,
+                        saleDetails.maker,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
                         saleDetails.tokenAddress
@@ -1024,7 +1030,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
-                            saleDetails.seller,
+                            saleDetails.maker,
                             saleDetails.nonce,
                             false
                         )
@@ -1033,9 +1039,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         );
 
-        if(saleDetails.seller.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.seller, digest, signature);
-        } else if (saleDetails.seller != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__UnauthorizeSale();
         }
     }
@@ -1053,7 +1059,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         SALE_APPROVAL_COSIGNED_HASH,
                         uint8(saleDetails.protocol),
                         cosignature.signer,
-                        saleDetails.seller,
+                        saleDetails.maker,
                         saleDetails.marketplace,
                         saleDetails.paymentMethod,
                         saleDetails.tokenAddress
@@ -1086,9 +1092,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__NotAuthorizedByCoSigner();
         }
 
-        if(saleDetails.seller.code.length > 0) {
-            _verifyEIP1271Signature(saleDetails.seller, digest, signature);
-        } else if (saleDetails.seller != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
+        if(saleDetails.maker.code.length > 0) {
+            _verifyEIP1271Signature(saleDetails.maker, digest, signature);
+        } else if (saleDetails.maker != ECDSA.recover(digest, signature.v, signature.r, signature.s)) {
             revert cPort__SellerDidNotAuthorizeSale();
         }
     }
@@ -1120,6 +1126,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _fulfillSingleOrder(
         bool disablePartialFill,
         address purchaser,
+        address seller,
         IERC20 paymentCoin,
         function(address,address,IERC20,uint256,uint256) funcPayout,
         function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
@@ -1128,7 +1135,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         RoyaltyBounty memory royaltyBounty) internal {
 
         if (!funcDispenseToken(
-                saleDetails.seller, 
+                seller, 
                 saleDetails.beneficiary, 
                 saleDetails.tokenAddress, 
                 saleDetails.tokenId, 
@@ -1161,7 +1168,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
 
             if (proceeds.sellerProceeds > 0) {
-                funcPayout(saleDetails.seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
+                funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
 
             funcEmitOrderExecutionEvent(saleDetails);
@@ -1171,6 +1178,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _fulfillSingleOrderWithFeeOnTop(
         bool disablePartialFill,
         address purchaser,
+        address seller,
         IERC20 paymentCoin,
         function(address,address,IERC20,uint256,uint256) funcPayout,
         function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
@@ -1180,7 +1188,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         FeeOnTop memory feeOnTop) internal {
 
         if (!funcDispenseToken(
-                saleDetails.seller, 
+                seller, 
                 saleDetails.beneficiary, 
                 saleDetails.tokenAddress, 
                 saleDetails.tokenId, 
@@ -1213,7 +1221,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
 
             if (proceeds.sellerProceeds > 0) {
-                funcPayout(saleDetails.seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
+                funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
 
             if (feeOnTop.recipient != address(0)) {
@@ -1240,7 +1248,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             Order memory saleDetails = params.saleDetailsBatch[i];
 
             if (!params.funcDispenseToken(
-                    saleDetails.seller, 
+                    saleDetails.maker, 
                     saleDetails.beneficiary, 
                     saleDetails.tokenAddress, 
                     saleDetails.tokenId, 
@@ -1278,12 +1286,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     accumulator.accumulatedMarketplaceProceeds = 0;
                 }
     
-                if (saleDetails.seller != accumulator.lastSeller) {
+                if (saleDetails.maker != accumulator.lastSeller) {
                     if(accumulator.accumulatedSellerProceeds > 0) {
                         params.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
                     }
     
-                    accumulator.lastSeller = saleDetails.seller;
+                    accumulator.lastSeller = saleDetails.maker;
                     accumulator.accumulatedSellerProceeds = 0;
                 }
 

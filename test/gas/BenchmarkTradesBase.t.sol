@@ -381,8 +381,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: alice,
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -398,14 +397,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _buySignedListing(
-                    saleDetails.buyer, 
+                    vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     EMPTY_SELECTOR);
             } else {
                 _buySignedListingWithFeeOnTop(
-                    saleDetails.buyer, 
+                    vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -455,8 +454,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: alice,
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -473,14 +471,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListing(
-                        saleDetails.buyer, 
+                        vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListing(
-                        saleDetails.buyer, 
+                        vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -489,7 +487,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListingWithFeeOnTop(
-                        saleDetails.buyer, 
+                        vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -497,7 +495,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListingWithFeeOnTop(
-                        saleDetails.buyer, 
+                        vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -548,8 +546,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -620,8 +617,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -708,8 +704,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -779,8 +774,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -874,8 +868,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -960,8 +953,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: alice,
-                buyer: vm.addr(params.buyerKey),
+                maker: vm.addr(params.buyerKey),
                 beneficiary: params.beneficiary,
                 marketplace: cal,
                 paymentMethod: params.currency,
@@ -1071,8 +1063,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: alice,
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1154,8 +1145,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: alice,
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1256,8 +1246,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1337,8 +1326,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1435,8 +1423,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1516,8 +1503,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1620,8 +1606,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1714,8 +1699,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: vm.addr(params.buyerKey),
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1829,8 +1813,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: alice,
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,
@@ -1920,8 +1903,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
                 saleDetailsArray[batchIndex] = Order({
                     protocol: TokenProtocols.ERC721,
-                    seller: alice,
-                    buyer: vm.addr(params.buyerKey),
+                    maker: alice,
                     beneficiary: params.beneficiary,
                     marketplace: cal,
                     paymentMethod: params.currency,

@@ -32,8 +32,7 @@ struct SignatureECDSA {
 
 struct Order {
     TokenProtocols protocol;
-    address seller;
-    address buyer;
+    address maker;
     address beneficiary;
     address marketplace;
     address paymentMethod;
@@ -80,7 +79,7 @@ struct SweepOrder {
 }
 
 struct SweepItem {
-    address seller;
+    address maker;
     uint256 tokenId;
     uint256 amount;
     uint256 itemPrice;

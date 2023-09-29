@@ -255,7 +255,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function buyListing(bytes calldata data) external payable {
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"d1639878")
+            mstore(0x00, hex"be0af963")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -270,7 +270,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function buyListingWithFeeOnTop(bytes calldata data) external payable {
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"1474c6b8")
+            mstore(0x00, hex"a59eda2d")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -285,7 +285,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function buyListingCosigned(bytes calldata data) external payable {
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"ad302f53")
+            mstore(0x00, hex"646f262d")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -300,7 +300,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable {
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"9f7a9ef1")
+            mstore(0x00, hex"be49815a")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -315,7 +315,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function acceptOffer(bytes calldata data) external {
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"35ccaf7c")
+            mstore(0x00, hex"208cad1a")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -330,7 +330,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function acceptOfferWithFeeOnTop(bytes calldata data) external {
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"1977a3ee")
+            mstore(0x00, hex"a9427fc4")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -345,7 +345,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function acceptOfferCosigned(bytes calldata data) external {
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"33ce5795")
+            mstore(0x00, hex"c39be402")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -360,7 +360,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external {
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"86a0c899")
+            mstore(0x00, hex"98031370")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -375,7 +375,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkBuyListings(bytes calldata data) external payable {
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"2afc6098")
+            mstore(0x00, hex"ec5b058f")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -390,7 +390,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkBuyListingsWithFeesOnTop(bytes calldata data) external payable {
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"59f1296e")
+            mstore(0x00, hex"fcf3e6f5")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -405,7 +405,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkBuyListingsCosigned(bytes calldata data) external payable {
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"0a2a1a96")
+            mstore(0x00, hex"a92b14f6")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -420,7 +420,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkBuyListingsCosignedWithFeesOnTop(bytes calldata data) external payable {
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"2c1d5fd3")
+            mstore(0x00, hex"7ff7cc74")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -435,7 +435,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkAcceptOffers(bytes calldata data) external {
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"ecfb09a8")
+            mstore(0x00, hex"babbda57")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -450,7 +450,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkAcceptOffersWithFeesOnTop(bytes calldata data) external {
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"408c170a")
+            mstore(0x00, hex"54eccc1d")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -465,7 +465,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkAcceptOffersCosigned(bytes calldata data) external {
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"4ee5b18c")
+            mstore(0x00, hex"159fc511")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -480,7 +480,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     function bulkAcceptOffersCosignedWithFeesOnTop(bytes calldata data) external {
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"96137a7c")
+            mstore(0x00, hex"08143fce")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

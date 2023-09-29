@@ -29,8 +29,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -44,10 +43,10 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
-            test721.mint(saleDetails.seller, saleDetails.tokenId);
+            test721.mint(seller, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             saleDetailsArray[i] = saleDetails;
@@ -86,8 +85,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -101,10 +99,10 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
-            test721.mint(saleDetails.seller, saleDetails.tokenId);
+            test721.mint(seller, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             saleDetailsArray[i] = saleDetails;
@@ -143,8 +141,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -158,10 +155,10 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
-            test721.mint(saleDetails.seller, saleDetails.tokenId);
+            test721.mint(seller, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             saleDetailsArray[i] = saleDetails;
@@ -200,8 +197,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -215,10 +211,10 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
-            test721.mint(saleDetails.seller, saleDetails.tokenId);
+            test721.mint(seller, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             saleDetailsArray[i] = saleDetails;
@@ -275,8 +271,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -290,8 +285,8 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
             saleDetailsArray[i] = saleDetails;
             dynamicFuzzedOrderInputsArray[i] = fuzzedOrderInputs;
@@ -357,8 +352,7 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
 
             Order memory saleDetails = Order({
                 protocol: TokenProtocols.ERC721,
-                seller: seller,
-                buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+                maker: vm.addr(fuzzedOrderInputs.buyerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
                 paymentMethod: address(weth),
@@ -372,8 +366,8 @@ contract ModuleBulkAcceptOffersTest is cPortModuleTest {
                 maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
             });
 
-            _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-            _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+            _allocateTokensAndApprovals(seller, uint128(MAX_INT));
+            _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
 
             saleDetailsArray[i] = saleDetails;
             dynamicFuzzedOrderInputsArray[i] = fuzzedOrderInputs;

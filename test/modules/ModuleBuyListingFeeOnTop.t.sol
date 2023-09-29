@@ -13,6 +13,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyListingForSelfFeeOnTop_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -23,8 +25,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(0),
@@ -38,16 +39,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs,
             saleDetails, 
@@ -61,6 +62,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyListingForSelfFeeOnTop_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -71,8 +74,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(weth),
@@ -86,16 +88,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(0),
             fuzzedOrderInputs,
             saleDetails, 
@@ -113,6 +115,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyCosignedListingForSelfFeeOnTop_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -123,8 +127,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(0),
@@ -138,16 +141,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs,
             saleDetails, 
@@ -161,6 +164,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyCosignedListingForSelfFeeOnTop_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -171,8 +176,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(weth),
@@ -186,16 +190,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(0),
             fuzzedOrderInputs,
             saleDetails, 
@@ -213,6 +217,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyListingForSelfWithEOAFeeOnTop_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -223,8 +229,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(0),
@@ -238,16 +243,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -261,6 +266,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyListingForSelfWithEOAFeeOnTop_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -271,8 +278,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(weth),
@@ -286,16 +292,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(0),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -313,6 +319,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyCosignedListingForSelfWithEOAFeeOnTop_ETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -323,8 +331,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(0),
@@ -338,16 +345,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -361,6 +368,8 @@ contract ModuleBuyListingTest is cPortModuleTest {
     function testBuyCosignedListingForSelfWithEOAFeeOnTop_WETH(FuzzedOrder721 memory fuzzedOrderInputs) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
+        address buyer = vm.addr(fuzzedOrderInputs.buyerKey);
+
         uint256 feeOnTopAmount = uint256(fuzzedOrderInputs.itemPrice) * 10 / 100;
         fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - uint128(feeOnTopAmount);
 
@@ -371,8 +380,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: vm.addr(fuzzedOrderInputs.buyerKey),
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: address(0),
             marketplace: cal,
             paymentMethod: address(weth),
@@ -386,16 +394,16 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        saleDetails.beneficiary = saleDetails.buyer;
+        saleDetails.beneficiary = buyer;
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
-        _allocateTokensAndApprovals(saleDetails.buyer, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
+        _allocateTokensAndApprovals(buyer, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            buyer,
             uint128(0),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -425,8 +433,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: purchaser,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(0),
@@ -440,14 +447,14 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
         _allocateTokensAndApprovals(purchaser, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            purchaser,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -473,8 +480,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: purchaser,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(weth),
@@ -488,14 +494,14 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
         _allocateTokensAndApprovals(purchaser, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buySignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            purchaser,
             uint128(0),
             fuzzedOrderInputs,
             saleDetails,
@@ -526,8 +532,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: purchaser,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(0),
@@ -541,14 +546,14 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
         _allocateTokensAndApprovals(purchaser, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            purchaser,
             uint128(saleDetails.itemPrice),
             fuzzedOrderInputs, 
             saleDetails, 
@@ -574,8 +579,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
 
         Order memory saleDetails = Order({
             protocol: TokenProtocols.ERC721,
-            seller: vm.addr(fuzzedOrderInputs.sellerKey),
-            buyer: purchaser,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
             paymentMethod: address(weth),
@@ -589,14 +593,14 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
         });
 
-        _allocateTokensAndApprovals(saleDetails.seller, uint128(MAX_INT));
+        _allocateTokensAndApprovals(saleDetails.maker, uint128(MAX_INT));
         _allocateTokensAndApprovals(purchaser, uint128(MAX_INT));
 
-        test721.mint(saleDetails.seller, saleDetails.tokenId);
+        test721.mint(saleDetails.maker, saleDetails.tokenId);
         test721.setTokenRoyalty(saleDetails.tokenId, abe, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
         _buyCosignedListingWithFeeOnTop(
-            saleDetails.buyer,
+            purchaser,
             uint128(0),
             fuzzedOrderInputs,
             saleDetails, 
