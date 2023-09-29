@@ -53,23 +53,39 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bool emptyCosignature;
     }
 
-    /**********************/
-    /*     Buy Listing    */
-    /**********************/
+    /************/
+    /*  Signed  */
+    /********** */
 
-    function _runBenchmarkBuyListingAllowAnyPaymentMethod(BenchmarkParams memory params) internal {
+    function _runBenchmark(
+        BenchmarkParams memory params, 
+        function(BenchmarkParams memory) funcBenchmark
+    ) internal {
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkAllowAnyPaymentMethod(
+        BenchmarkParams memory params, 
+        function(BenchmarkParams memory) funcBenchmark
+    ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(params);
+        funcBenchmark(params);
     }
 
-    function _runBenchmarkBuyListingCustomPaymentMethodWhitelist(BenchmarkParams memory params) internal {
+    function _runBenchmarkCustomPaymentMethodWhitelist(
+        BenchmarkParams memory params,
+        function(BenchmarkParams memory) funcBenchmark
+    ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
         _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListing(params);
+        funcBenchmark(params);
     }
 
-    function _runBenchmarkBuyListingCollectionLevelPricingConstraints(BenchmarkParams memory params) internal {
+    function _runBenchmarkCollectionLevelPricingConstraints(
+        BenchmarkParams memory params,
+        function(BenchmarkParams memory) funcBenchmark
+    ) internal {
         bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
@@ -80,10 +96,13 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
         _cPort.setCollectionPaymentSettings(data1);
         _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBuyListing(params);
+        funcBenchmark(params);
     }
 
-    function _runBenchmarkBuyListingTokenLevelPricingConstraints(BenchmarkParams memory params) internal {
+    function _runBenchmarkTokenLevelPricingConstraints(
+        BenchmarkParams memory params,
+        function(BenchmarkParams memory) funcBenchmark
+    ) internal {
         bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
         _cPort.setCollectionPaymentSettings(data);
 
@@ -103,8 +122,228 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
         
         _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBuyListing(params);
+        funcBenchmark(params);
     }
+
+    /************/
+    /* Cosigned */
+    /********** */
+
+    function _runBenchmarkCosigned(
+        CosignedBenchmarkParams memory params, 
+        function(CosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkCosignedAllowAnyPaymentMethod(
+        CosignedBenchmarkParams memory params, 
+        function(CosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkCosignedCustomPaymentMethodWhitelist(
+        CosignedBenchmarkParams memory params,
+        function(CosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkCosignedCollectionLevelPricingConstraints(
+        CosignedBenchmarkParams memory params,
+        function(CosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkCosignedTokenLevelPricingConstraints(
+        CosignedBenchmarkParams memory params,
+        function(CosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](params.numRuns);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
+
+        for (uint256 i = 1; i <= params.numRuns; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    /*****************/
+    /*  Bulk Signed  */
+    /*****************/
+
+    function _runBenchmarkBulk(
+        BulkBenchmarkParams memory params,
+        function(BulkBenchmarkParams memory) funcBenchmark
+    ) internal {
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkAllowAnyPaymentMethod(
+        BulkBenchmarkParams memory params,
+        function(BulkBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCustomPaymentMethodWhitelist(
+        BulkBenchmarkParams memory params,
+        function(BulkBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCollectionLevelPricingConstraints(
+        BulkBenchmarkParams memory params,
+        function(BulkBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkTokenLevelPricingConstraints(
+        BulkBenchmarkParams memory params,
+        function(BulkBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
+
+        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    /*****************/
+    /* Bulk Cosigned */
+    /*****************/
+
+    function _runBenchmarkBulkCosigned(
+        BulkCosignedBenchmarkParams memory params,
+        function(BulkCosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCosignedAllowAnyPaymentMethod(
+        BulkCosignedBenchmarkParams memory params,
+        function(BulkCosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCosignedCustomPaymentMethodWhitelist(
+        BulkCosignedBenchmarkParams memory params,
+        function(BulkCosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCosignedCollectionLevelPricingConstraints(
+        BulkCosignedBenchmarkParams memory params,
+        function(BulkCosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+            isSet: true,
+            isImmutable: true,
+            floorPrice: 1 ether,
+            ceilingPrice: 500 ether
+        }));
+
+        _cPort.setCollectionPaymentSettings(data1);
+        _cPort.setCollectionPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    function _runBenchmarkBulkCosignedTokenLevelPricingConstraints(
+        BulkCosignedBenchmarkParams memory params,
+        function(BulkCosignedBenchmarkParams memory) funcBenchmark
+    ) internal {
+        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
+        _cPort.setCollectionPaymentSettings(data);
+
+        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
+        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
+
+        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
+            tokenIds[i - 1] = i;
+            pricingBoundsArray[i - 1] = PricingBounds({
+                isSet: true,
+                isImmutable: true,
+                floorPrice: 1 ether,
+                ceilingPrice: 500 ether
+            });
+        }
+
+        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        
+        _cPort.setTokenPricingBounds(data2);
+        funcBenchmark(params);
+    }
+
+    /**********************/
+    /*     Buy Listing    */
+    /**********************/
 
     function _runBenchmarkBuyListing(BenchmarkParams memory params) internal {
 
@@ -179,55 +418,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*******************************/
     /*     Buy Cosigned Listing    */
     /*******************************/
-
-    function _runBenchmarkBuyListingCosignedAllowAnyPaymentMethod(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListingCosigned(params);
-    }
-
-    function _runBenchmarkBuyListingCosignedCustomPaymentMethodWhitelist(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBuyListingCosigned(params);
-    }
-
-    function _runBenchmarkBuyListingCosignedCollectionLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBuyListingCosigned(params);
-    }
-
-    function _runBenchmarkBuyListingCosignedTokenLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBuyListingCosigned(params);
-    }
 
     function _runBenchmarkBuyListingCosigned(CosignedBenchmarkParams memory params) internal {
 
@@ -322,72 +512,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Accept Item Offers */
     /**********************/
 
-    function _runBenchmarkAcceptItemOfferAllowAnyPaymentMethod(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOffer(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferCustomPaymentMethodWhitelist(BenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOffer(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferCollectionLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptItemOffer(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferTokenLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptItemOffer(params);
-    }
-
     function _runBenchmarkAcceptItemOffer(BenchmarkParams memory params) internal {
 
         uint256 paymentAmount = 100 ether;
@@ -459,72 +583,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*******************************/
     /* Accept Cosigned Item Offers */
     /*******************************/
-
-    function _runBenchmarkAcceptItemOfferCosignedAllowAnyPaymentMethod(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferCosignedCustomPaymentMethodWhitelist(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency, 
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptItemOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferCosignedCollectionLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptItemOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptItemOfferCosignedTokenLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptItemOfferCosigned(params);
-    }
 
     function _runBenchmarkAcceptItemOfferCosigned(CosignedBenchmarkParams memory params) internal {
 
@@ -615,72 +673,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Accept Collection Offers */
     /****************************/
 
-    function _runBenchmarkAcceptCollectionOfferAllowAnyPaymentMethod(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOffer(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCustomPaymentMethodWhitelist(BenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOffer(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCollectionLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptCollectionOffer(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferTokenLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptCollectionOffer(params);
-    }
-
     function _runBenchmarkAcceptCollectionOffer(BenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
 
@@ -751,72 +743,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*************************************/
     /* Accept Cosigned Collection Offers */
     /*************************************/
-
-    function _runBenchmarkAcceptCollectionOfferCosignedAllowAnyPaymentMethod(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency, 
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCosignedCustomPaymentMethodWhitelist(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency, 
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptCollectionOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCosignedCollectionLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptCollectionOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptCollectionOfferCosignedTokenLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptCollectionOfferCosigned(params);
-    }
 
     function _runBenchmarkAcceptCollectionOfferCosigned(CosignedBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
@@ -906,72 +832,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Accept Token Set Offers  */
     /****************************/
 
-    function _runBenchmarkAcceptTokenSetOfferAllowAnyPaymentMethod(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptTokenSetOffer(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferCustomPaymentMethodWhitelist(BenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency, 
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptTokenSetOffer(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferCollectionLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptTokenSetOffer(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferTokenLevelPricingConstraints(BenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptTokenSetOffer(params);
-    }
-
     function _runBenchmarkAcceptTokenSetOffer(BenchmarkParams memory params) internal {
         uint256[] memory tokenSetIds = new uint256[](params.numRuns);
         bytes32[] memory data = new bytes32[](params.numRuns);
@@ -1057,72 +917,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*************************************/
     /* Accept Cosigned Token Set Offers  */
     /*************************************/
-
-    function _runBenchmarkAcceptTokenSetOfferCosignedAllowAnyPaymentMethod(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptTokenSetOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferCosignedCustomPaymentMethodWhitelist(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkAcceptTokenSetOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferCosignedCollectionLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkAcceptTokenSetOfferCosigned(params);
-    }
-
-    function _runBenchmarkAcceptTokenSetOfferCosignedTokenLevelPricingConstraints(CosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](params.numRuns);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
-
-        for (uint256 i = 1; i <= params.numRuns; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkAcceptTokenSetOfferCosigned(params);
-    }
 
     function _runBenchmarkAcceptTokenSetOfferCosigned(CosignedBenchmarkParams memory params) internal {
         uint256[] memory tokenSetIds = new uint256[](params.numRuns);
@@ -1235,55 +1029,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Bulk Buy Listings  */
     /**********************/
 
-    function _runBenchmarkBulkBuyListingsAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkBuyListings(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkBuyListings(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkBuyListings(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkBuyListings(params);
-    }
-
     function _runBenchmarkBulkBuyListings(BulkBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
 
@@ -1366,55 +1111,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*******************************/
     /* Cosigned Bulk Buy Listings  */
     /*******************************/
-
-    function _runBenchmarkBulkBuyListingsCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkBuyListingsCosigned(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkBuyListingsCosigned(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkBuyListingsCosigned(params);
-    }
-
-    function _runBenchmarkBulkBuyListingsCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkBuyListingsCosigned(params);
-    }
 
     function _runBenchmarkBulkBuyListingsCosigned(BulkCosignedBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
@@ -1518,72 +1214,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Bulk Accept Item Offers */
     /***************************/
 
-    function _runBenchmarkBulkAcceptItemOffersAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptItemOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptItemOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptItemOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptItemOffers(params);
-    }
-
     function _runBenchmarkBulkAcceptItemOffers(BulkBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
 
@@ -1664,72 +1294,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /************************************/
     /* Bulk Accept Cosigned Item Offers */
     /************************************/
-
-    function _runBenchmarkBulkAcceptItemOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptItemOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptItemOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptItemOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptItemOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptItemOffersCosigned(params);
-    }
 
     function _runBenchmarkBulkAcceptItemOffersCosigned(BulkCosignedBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
@@ -1829,71 +1393,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Bulk Accept Collection Offers */
     /*********************************/
 
-    function _runBenchmarkBulkAcceptCollectionOffersAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptCollectionOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptCollectionOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptCollectionOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptCollectionOffers(params);
-    }
-
     function _runBenchmarkBulkAcceptCollectionOffers(BulkBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
 
@@ -1974,72 +1473,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /******************************************/
     /* Bulk Accept Cosigned Collection Offers */
     /******************************************/
-
-    function _runBenchmarkBulkAcceptCollectionOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptCollectionOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptCollectionOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptCollectionOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptCollectionOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptCollectionOffersCosigned(params);
-    }
 
     function _runBenchmarkBulkAcceptCollectionOffersCosigned(BulkCosignedBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
@@ -2139,72 +1572,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Bulk Accept Token Set Offers  */
     /*********************************/
 
-    function _runBenchmarkBulkAcceptTokenSetOffersAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptTokenSetOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptTokenSetOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptTokenSetOffers(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptTokenSetOffers(params);
-    }
-
     function _runBenchmarkBulkAcceptTokenSetOffers(BulkBenchmarkParams memory params) internal {
         uint256[] memory tokenSetIds = new uint256[](params.numRuns * params.batchSize);
         bytes32[] memory data = new bytes32[](params.numRuns * params.batchSize);
@@ -2298,72 +1665,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /******************************************/
     /* Bulk Accept Cosigned Token Set Offers  */
     /******************************************/
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-            address(_cPort),
-            address(test721), 
-            PaymentSettings.AllowAnyPaymentMethod, 
-            0, 
-            params.currency,
-            params.royaltyBountyRate, 
-            address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptTokenSetOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = 
-            _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
-                address(_cPort),
-                address(test721), 
-                PaymentSettings.CustomPaymentMethodWhitelist, 
-                customPaymentMethodWhitelistId, 
-                params.currency,
-                params.royaltyBountyRate, 
-                address(0));
-
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkBulkAcceptTokenSetOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkBulkAcceptTokenSetOffersCosigned(params);
-    }
-
-    function _runBenchmarkBulkAcceptTokenSetOffersCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkBulkAcceptTokenSetOffersCosigned(params);
-    }
 
     function _runBenchmarkBulkAcceptTokenSetOffersCosigned(BulkCosignedBenchmarkParams memory params) internal {
         uint256[] memory tokenSetIds = new uint256[](params.numRuns * params.batchSize);
@@ -2478,55 +1779,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /* Sweep Collection  */
     /*********************/
 
-    function _runBenchmarkSweepCollectionAllowAnyPaymentMethod(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkSweepCollection(params);
-    }
-
-    function _runBenchmarkSweepCollectionCustomPaymentMethodWhitelist(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkSweepCollection(params);
-    }
-
-    function _runBenchmarkSweepCollectionCollectionLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkSweepCollection(params);
-    }
-
-    function _runBenchmarkSweepCollectionTokenLevelPricingConstraints(BulkBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkSweepCollection(params);
-    }
-
     function _runBenchmarkSweepCollection(BulkBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
 
@@ -2617,55 +1869,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /***************************************/
     /* Cosigned Sweep Collection Listings  */
     /***************************************/
-
-    function _runBenchmarkSweepCollectionCosignedAllowAnyPaymentMethod(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkSweepCollectionCosigned(params);
-    }
-
-    function _runBenchmarkSweepCollectionCosignedCustomPaymentMethodWhitelist(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-        _runBenchmarkSweepCollectionCosigned(params);
-    }
-
-    function _runBenchmarkSweepCollectionCosignedCollectionLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
-            isSet: true,
-            isImmutable: true,
-            floorPrice: 1 ether,
-            ceilingPrice: 500 ether
-        }));
-
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
-        _runBenchmarkSweepCollectionCosigned(params);
-    }
-
-    function _runBenchmarkSweepCollectionCosignedTokenLevelPricingConstraints(BulkCosignedBenchmarkParams memory params) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, params.royaltyBountyRate, address(0));
-        _cPort.setCollectionPaymentSettings(data);
-
-        uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
-        PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
-
-        for (uint256 i = 1; i <= 2 * params.numRuns * params.batchSize; i++) {
-            tokenIds[i - 1] = i;
-            pricingBoundsArray[i - 1] = PricingBounds({
-                isSet: true,
-                isImmutable: true,
-                floorPrice: 1 ether,
-                ceilingPrice: 500 ether
-            });
-        }
-
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
-        
-        _cPort.setTokenPricingBounds(data2);
-        _runBenchmarkSweepCollectionCosigned(params);
-    }
 
     function _runBenchmarkSweepCollectionCosigned(BulkCosignedBenchmarkParams memory params) internal {
         uint256 paymentAmount = 100 ether;
