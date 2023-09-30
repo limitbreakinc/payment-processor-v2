@@ -827,9 +827,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /****************************/
 
     function _runBenchmarkAcceptTokenSetOffer(BenchmarkParams memory params) internal {
-        uint256[] memory tokenSetIds = new uint256[](params.numRuns);
-        bytes32[] memory data = new bytes32[](params.numRuns);
-        for (uint256 tokenId = 1; tokenId <= params.numRuns; tokenId++) {
+        uint256[] memory tokenSetIds = new uint256[](params.numRuns + 1);
+        bytes32[] memory data = new bytes32[](params.numRuns + 1);
+        for (uint256 tokenId = 1; tokenId <= params.numRuns + 1; tokenId++) {
             tokenSetIds[tokenId - 1] = tokenId;
             data[tokenId - 1] = keccak256(abi.encode(address(test721), tokenId));
         }
@@ -912,9 +912,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     /*************************************/
 
     function _runBenchmarkAcceptTokenSetOfferCosigned(CosignedBenchmarkParams memory params) internal {
-        uint256[] memory tokenSetIds = new uint256[](params.numRuns);
-        bytes32[] memory data = new bytes32[](params.numRuns);
-        for (uint256 tokenId = 1; tokenId <= params.numRuns; tokenId++) {
+        uint256[] memory tokenSetIds = new uint256[](params.numRuns + 1);
+        bytes32[] memory data = new bytes32[](params.numRuns + 1);
+        for (uint256 tokenId = 1; tokenId <= params.numRuns + 1; tokenId++) {
             tokenSetIds[tokenId - 1] = tokenId;
             data[tokenId - 1] = keccak256(abi.encode(address(test721), tokenId));
         }

@@ -80,7 +80,7 @@ contract cPortModuleTest is Test, cPortEvents {
     mapping (address => uint256) internal _nextAvailableTokenId;
     mapping (address => uint256) internal _nonces;
 
-    function setUp() public {
+    function setUp() public virtual {
         weth = new SeaportTestERC20();
         usdc = new SeaportTestERC20();
         usdt = new SeaportTestERC20();
