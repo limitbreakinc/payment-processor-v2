@@ -145,6 +145,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
         _cPort = 
             new cPort(
+                address(this),
                 address(modulePaymentSettings),
                 address(moduleOnChainCancellation),
                 address(moduleSingleTrades),

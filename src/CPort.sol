@@ -17,10 +17,11 @@ pragma solidity 0.8.19;
 
 import "./interfaces/CPortEvents.sol";
 import "./storage/CPortStorageAccess.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
-
-contract cPort is EIP712, cPortStorageAccess, cPortEvents {
+contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     address private immutable modulePaymentSettings;
     address private immutable moduleOnChainCancellation;
@@ -31,6 +32,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     address private immutable moduleSweepCollection;
 
     constructor(
+        address defaultContractOwner_,
         address modulePaymentSettings_,
         address moduleOnChainCancellation_,
         address moduleSingleTrades_,
@@ -46,6 +48,44 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
         moduleBulkTrades = moduleBulkTrades_;
         moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
         moduleSweepCollection = moduleSweepCollection_;
+
+        _transferOwnership(defaultContractOwner_);
+    }
+
+    /**************************************************************/
+    /*                  CONTRACT OWNER FUNCTIONS                  */
+    /**************************************************************/
+
+    /**
+     * @notice Allows cPort contract owner to pause trading on this contract.  This is only to be used
+     *         in case a future vulnerability emerges to allow a migration to an updated contract.
+     *
+     * @dev    Throws when caller is not the contract owner.
+     * @dev    Throws when contract is already paused.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The contract has been placed in the `paused` state.
+     * @dev    2. Trading is frozen.
+     */
+    function pause() external {
+        _checkOwner();
+        _pause();
+    }
+
+    /**
+     * @notice Allows cPort contract owner to resume trading on this contract.  This is only to be used
+     *         in case a pause was not necessary and trading can safely resume.
+     *
+     * @dev    Throws when caller is not the contract owner.
+     * @dev    Throws when contract is not currently paused.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The contract has been placed in the `unpaused` state.
+     * @dev    2. Trading is resumed.
+     */
+    function unpause() external {
+        _checkOwner();
+        _unpause();
     }
 
     /**************************************************************/
@@ -253,6 +293,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     /**************************************************************/
 
     function buyListing(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
             mstore(0x00, hex"be0af963")
@@ -268,6 +309,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function buyListingWithFeeOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
             mstore(0x00, hex"a59eda2d")
@@ -283,6 +325,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function buyListingCosigned(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"646f262d")
@@ -298,6 +341,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"be49815a")
@@ -313,6 +357,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function acceptOffer(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
             mstore(0x00, hex"208cad1a")
@@ -328,6 +373,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function acceptOfferWithFeeOnTop(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
             mstore(0x00, hex"a9427fc4")
@@ -343,6 +389,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function acceptOfferCosigned(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"c39be402")
@@ -358,6 +405,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"98031370")
@@ -373,6 +421,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkBuyListings(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
             mstore(0x00, hex"ec5b058f")
@@ -388,6 +437,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkBuyListingsWithFeesOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
             mstore(0x00, hex"fcf3e6f5")
@@ -403,6 +453,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkBuyListingsCosigned(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"a92b14f6")
@@ -418,6 +469,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkBuyListingsCosignedWithFeesOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"7ff7cc74")
@@ -433,6 +485,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkAcceptOffers(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
             mstore(0x00, hex"babbda57")
@@ -448,6 +501,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkAcceptOffersWithFeesOnTop(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
             mstore(0x00, hex"54eccc1d")
@@ -463,6 +517,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkAcceptOffersCosigned(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"159fc511")
@@ -478,6 +533,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function bulkAcceptOffersCosignedWithFeesOnTop(bytes calldata data) external {
+        _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"08143fce")
@@ -493,6 +549,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function sweepCollection(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
             mstore(0x00, hex"482a6c6f")
@@ -508,6 +565,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function sweepCollectionWithFeeOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
             mstore(0x00, hex"57f2b1ef")
@@ -523,6 +581,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function sweepCollectionCosigned(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
             mstore(0x00, hex"75192b1a")
@@ -538,6 +597,7 @@ contract cPort is EIP712, cPortStorageAccess, cPortEvents {
     }
 
     function sweepCollectionCosignedWithFeeOnTop(bytes calldata data) external payable {
+        _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
             mstore(0x00, hex"367cd190")
