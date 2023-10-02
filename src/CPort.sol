@@ -113,11 +113,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                 address(0));
     }
 
-    function paymentMethodWhitelistOwners(uint64 paymentMethodWhitelistId) external view returns (address) {
+    function collectionRoyaltyBackfillSettings(address tokenAddress) external view returns (uint16 royaltyBackfillNumerator, address royaltyBackfillReceiver) {
+        CollectionPaymentSettings memory collectionPaymentSettings = appStorage().collectionPaymentSettings[tokenAddress];
+        return (
+            collectionPaymentSettings.royaltyBackfillNumerator, 
+            collectionPaymentSettings.royaltyBackfillNumerator > 0 ?
+                appStorage().collectionRoyaltyBackfillReceivers[tokenAddress] : 
+                address(0));
+    }
+
+    function paymentMethodWhitelistOwners(uint32 paymentMethodWhitelistId) external view returns (address) {
         return appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId];
     }
 
-    function isPaymentMethodWhitelisted(uint64 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
+    function isPaymentMethodWhitelisted(uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
         return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId][paymentMethod];
     }
 
@@ -161,7 +170,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
 
-    function createPaymentMethodWhitelist(bytes calldata data) external returns (uint64 paymentMethodWhitelistId) {
+    function createPaymentMethodWhitelist(bytes calldata data) external returns (uint32 paymentMethodWhitelistId) {
         address module = modulePaymentSettings;
         assembly {
             mstore(0x00, hex"f83116c9")
@@ -183,7 +192,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function whitelistPaymentMethod(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"08008aed")
+            mstore(0x00, hex"bb39ce91")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -198,7 +207,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function unwhitelistPaymentMethod(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"8facf24a")
+            mstore(0x00, hex"e9d4c14e")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -213,7 +222,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function setCollectionPaymentSettings(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"bae81bc5")
+            mstore(0x00, hex"eeabfa03")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

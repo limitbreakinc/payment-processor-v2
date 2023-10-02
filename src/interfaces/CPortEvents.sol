@@ -79,8 +79,10 @@ interface cPortEvents {
     event UpdatedCollectionPaymentSettings(
         address indexed tokenAddress, 
         PaymentSettings paymentSettings, 
-        uint64 paymentMethodWhitelistId, 
+        uint32 paymentMethodWhitelistId, 
         address constrainedPricingPaymentMethod,
+        uint16 royaltyBackfillNumerator,
+        address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver);
 

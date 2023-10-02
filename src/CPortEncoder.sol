@@ -31,18 +31,18 @@ contract cPortEncoder {
                 whitelistName));
     }
 
-    function encodeWhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint64 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeWhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "whitelistPaymentMethod(uint64,address)",
+                "whitelistPaymentMethod(uint32,address)",
                 paymentMethodWhitelistId,
                 paymentMethod));
     }
 
-    function encodeUnwhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint64 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeUnwhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "unwhitelistPaymentMethod(uint64,address)",
+                "unwhitelistPaymentMethod(uint32,address)",
                 paymentMethodWhitelistId,
                 paymentMethod));
     }
@@ -51,18 +51,22 @@ contract cPortEncoder {
         address /*cPortAddress*/, 
         address tokenAddress, 
         PaymentSettings paymentSettings,
-        uint64 paymentMethodWhitelistId,
+        uint32 paymentMethodWhitelistId,
         address constrainedPricingPaymentMethod,
+        uint16 royaltyBackfillNumerator,
+        address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setCollectionPaymentSettings(address,uint8,uint64,address,uint16,address)",
+                "setCollectionPaymentSettings(address,uint8,uint32,address,uint16,address,uint16,address)",
                 tokenAddress,
                 paymentSettings,
                 paymentMethodWhitelistId,
                 constrainedPricingPaymentMethod,
+                royaltyBackfillNumerator,
+                royaltyBackfillReceiver,
                 royaltyBountyNumerator,
                 exclusiveBountyReceiver));
     }

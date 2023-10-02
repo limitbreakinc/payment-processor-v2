@@ -75,7 +75,7 @@ contract cPortModuleTest is Test, cPortEvents {
     cPortModule public moduleBulkTradesCosigned;
     cPortModule public moduleSweepCollection;
 
-    uint64 public customPaymentMethodWhitelistId;
+    uint32 public customPaymentMethodWhitelistId;
 
     mapping (address => uint256) internal _nextAvailableTokenId;
     mapping (address => uint256) internal _nonces;

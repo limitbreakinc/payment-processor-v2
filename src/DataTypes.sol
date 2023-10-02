@@ -14,8 +14,9 @@ enum PaymentSettings {
 
 struct CollectionPaymentSettings {
     PaymentSettings paymentSettings;
-    uint64 paymentMethodWhitelistId;
+    uint32 paymentMethodWhitelistId;
     address constrainedPricingPaymentMethod;
+    uint16 royaltyBackfillNumerator;
     uint16 royaltyBountyNumerator;
     bool isRoyaltyBountyExclusive;
 }
@@ -64,8 +65,10 @@ struct TokenSetProof {
     bytes32[] proof;
 }
 
-struct RoyaltyBounty {
-    uint16 numerator;
+struct RoyaltyBackfillAndBounty {
+    uint16 backfillNumerator;
+    address backfillReceiver;
+    uint16 bountyNumerator;
     address exclusiveMarketplace;
 }
 
@@ -152,13 +155,13 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
     function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
     function(Order memory) funcEmitOrderExecutionEvent;
     FeeOnTop feeOnTop;
-    RoyaltyBounty royaltyBounty;
+    RoyaltyBackfillAndBounty royaltyBackfillAndBounty;
     Order[] saleDetailsBatch;
 }
 
 struct cPortStorage {
     /// @dev Tracks the most recently created payment method whitelist id
-    uint64 lastPaymentMethodWhitelistId;
+    uint32 lastPaymentMethodWhitelistId;
 
     /**
      * @notice User-specific master nonce that allows buyers and sellers to efficiently cancel all listings or offers
@@ -190,8 +193,8 @@ struct cPortStorage {
     mapping(address => mapping(uint256 => uint256)) invalidatedSignatures;
     
     mapping (address => CollectionPaymentSettings) collectionPaymentSettings;
-    mapping (uint64 => address) paymentMethodWhitelistOwners;
-    mapping (uint64 => mapping (address => bool)) collectionPaymentMethodWhitelists;
+    mapping (uint32 => address) paymentMethodWhitelistOwners;
+    mapping (uint32 => mapping (address => bool)) collectionPaymentMethodWhitelists;
 
     /**
      * @dev Mapping of token contract addresses to the collection-level pricing boundaries (floor and ceiling price).
@@ -203,5 +206,6 @@ struct cPortStorage {
      */
     mapping (address => mapping (uint256 => PricingBounds)) tokenPricingBounds;
 
+    mapping (address => address) collectionRoyaltyBackfillReceivers;
     mapping (address => address) collectionExclusiveBountyReceivers;
 }
