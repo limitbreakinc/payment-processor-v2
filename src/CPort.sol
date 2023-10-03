@@ -298,7 +298,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     }
 
     /**************************************************************/
-    /*                     TRADING OPERATIONS                     */
+    /*                      TAKER OPERATIONS                      */
     /**************************************************************/
 
     function buyListing(bytes calldata data) external payable {

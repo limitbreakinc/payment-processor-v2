@@ -13,8 +13,8 @@ bytes32 constant COLLECTION_OFFER_APPROVAL_COSIGNED_HASH = 0xc857b19ea875a2c5903
 // keccack256("ItemOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
 bytes32 constant ITEM_OFFER_APPROVAL_HASH = 0xc2dd44d34b7ad5d89d9f35d12737a08a0dc081d9fb038ded79ce2c993a0aeb6a;
 
-// keccack256("ItemOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
-bytes32 constant ITEM_OFFER_APPROVAL_COSIGNED_HASH = 0x72ae30c8b79ae1d71b3a061c824509f8a0781ee7912ff836b83a8d63a500c606;
+// keccack256("ItemOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator)")
+bytes32 constant ITEM_OFFER_APPROVAL_COSIGNED_HASH = 0x46060c357b0a7420ed05c51eb5ad779d8cdffd26c0ff772c00c4c6aac7d59e23;
 
 //   keccack256("TokenSetOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce,bytes32 tokenSetMerkleRoot)")
 bytes32 constant TOKEN_SET_OFFER_APPROVAL_HASH = 0xe916117b418ddf851da6bab6ad14a810a8cf63fe4189de0ce9a38703119bf0f7;
@@ -25,8 +25,8 @@ bytes32 constant TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH = 0x4233e504226b05e23984
 // keccack256("SaleApproval(uint8 protocol,address seller,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
 bytes32 constant SALE_APPROVAL_HASH = 0x02fc3df1d45374616275873444056e58c225fdbdd564036912309f93e2491cc4;
 
-// keccack256("SaleApprovalCosigned(uint8 protocol,address cosigner,address seller,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
-bytes32 constant SALE_APPROVAL_COSIGNED_HASH = 0x02fc3df1d45374616275873444056e58c225fdbdd564036912309f93e2491cc4;
+// keccack256("SaleApprovalCosigned(uint8 protocol,address cosigner,address seller,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator)")
+bytes32 constant SALE_APPROVAL_COSIGNED_HASH = 0x08b356dc681531d988a5790f847e169f00bb27ce6f2d38beff8c2f976e79256a;
 
 ////
 
