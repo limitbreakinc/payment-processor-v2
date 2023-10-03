@@ -1410,13 +1410,18 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     signature.v,
                     signature.r,
                     signature.s,
-                    cosignature.expiration
+                    cosignature.expiration,
+                    cosignature.taker
                 )
             )), 
             cosignature.v, 
             cosignature.r, 
             cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
+        }
+
+        if (msg.sender != cosignature.taker) {
+            revert cPort__UnauthorizedTaker();
         }
     }
 

@@ -49,6 +49,7 @@ struct Order {
 
 struct Cosignature {
     address signer;
+    address taker;
     uint256 expiration;
     uint8 v;
     bytes32 r;

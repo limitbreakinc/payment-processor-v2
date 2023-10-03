@@ -236,12 +236,12 @@ TokenSetOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,addr
 All cosigned listings and offers require a secondary signature to be provided at fill-time/execution time.  The same cosignature format applies to all cosigned maker signatures, and takes a cosigner expiration and the maker's signature v, r, s components as typed data inputs.  Note: for security purposes, co-signatures must always be signed by EOA co-signers.  Furthermore, cosignature expiration times should be relatively short.  A cosignature expiration time between 5 and 10 minutes is suggested.  If the expiration time is too short, transactions may fail because the expiration time elapses before a transaction has been confirmed.  However, if the expiration time is too long a leak of the co-signature could be executed well into the future. 
 
 ```js
-Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration)
+Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)
 ```
 
 ## Order Data Structures
 
-The following subsections detail the data structures needed for execution of various types of orders.  Note that maker signature formats vary by order-type.  Signature formats will be described in a different section.
+The following subsections detail the data structures needed for the creation of and filling of orders in Payment Processor.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
 
 ### Generic Structure of Orders (Fill-Time)
 

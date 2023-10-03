@@ -337,7 +337,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"646f262d")
+            mstore(0x00, hex"ddb75e64")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -353,7 +353,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"be49815a")
+            mstore(0x00, hex"4f2c9506")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -401,7 +401,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"c39be402")
+            mstore(0x00, hex"ef050907")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -417,7 +417,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"98031370")
+            mstore(0x00, hex"84bbfbff")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -465,7 +465,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"a92b14f6")
+            mstore(0x00, hex"196281be")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -481,7 +481,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"7ff7cc74")
+            mstore(0x00, hex"fa2d3368")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -529,7 +529,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"159fc511")
+            mstore(0x00, hex"7359eaed")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -545,7 +545,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"08143fce")
+            mstore(0x00, hex"53b8ecae")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -593,7 +593,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"75192b1a")
+            mstore(0x00, hex"5feac546")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -609,7 +609,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"367cd190")
+            mstore(0x00, hex"4be8154e")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

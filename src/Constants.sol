@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-// keccack256("Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration)")
-bytes32 constant COSIGNATURE_HASH = 0x662261b4f3254656c820278e9872260e36d1894a0440ea05f4ef6290d0832e6e;
+// keccack256("Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)")
+bytes32 constant COSIGNATURE_HASH = 0x347b7818601b168f6faadc037723496e9130b057c1ffef2ec4128311e19142f2;
 
 // keccack256("CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
 bytes32 constant COLLECTION_OFFER_APPROVAL_HASH = 0x75ff8430945f3f8849b57c272a74be75c248cf28efca1e170f6f94accc06472c;
