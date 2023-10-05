@@ -1,7 +1,10 @@
-# Payment Processor V2 Exchange Integration Guide
+# Creator Port Exchange Integration Guide
 
 ## Glossary
 
+- **Creator Port**: An NFT exchange protocol built by creators, for creators.  Built for trading of ERC721-C and ERC1155-C tokens, but backwards compatible to support trading of any ERC721 or ERC1155 token as well. Analagous to Blur Marketplace and Seaport exchange protocols, but built entirely around honoring fully on-chain programmable royalties. Also known as `cPort`.
+- **cPort**: Shorthand for `Creator Port`.
+- **cPort Encoder**: A helper contract deployed alongside cPort that integrated marketplaces use to format cPort function calldata.
 - **Maker(s)**: Create buying or selling orders that are not carried out immediately.  For example, "sell NFT `A` at a price of $100" or "buy NFT `B` for $100".  This creates liquidity, meaning that it is easier for others to instantly buy or sell NFTs when the conditions are met.  When Bob lists an NFT he owns for sale, Bob is considered maker of the order.  Similarly, when Bob offers to buy an NFT, Bob is considered the maker of the order.
 - **Taker(s)**: The entities that buy or sell instantly are called takers. In other words, the takers fill the orders created by the makers.  When Alice executes and order to buy Bob's listing, Alice is considered the taker of the order.  Similarly, when Alice accepts an offer from Bob to buy an NFT she owns, Alice is considered the taker of the order.
 - **Listing**: An order to sell an NFT once filled by a taker.  Listings are gaslessly signed off-chain by the owner of the NFT.
@@ -10,31 +13,33 @@
 - **Token Set Offer**: An order to buy a single NFT from a subset of token ids in the same collection once filled by a taker.  Token set offers apply to a subset of token ids for a specific collection.  Offers are gaslessly signed off-chain by one or more parties interested in purchasing an NFT.
 - **Standard Order**: Any listing or offer that may be filled directly by a taker.  Standard orders, when cancelled, must be cancelled on-chain by the order maker at their own gas expense.  Standard orders are not susceptible to censorship.
 - **Cosigned Order**: Any listing or offer that must be cosigned by another party in order to be filled by a taker.  Cosigned orders, when cancelled, can be gaslessly cancelled off-chain.  Order-book providers that support cosigned orders must properly secure and automate the co-signing process.  The order-book provider must guarantee that no cosignature can be generated for a previously cancelled order.  Similarly, the order-book provider must guarantee availability of cosignatures to takers such that orders can always be filled uninterrupted. The use of cosigned orders are at the order maker's discretion.  Pros include cheaper, faster cancellation/replacement of orders without incurring transaction gas costs.  Cons include censorship/denial of service risks.
+- **Beneficiary**: The address of the account that receives the NFT/item when an order is filled.  The buyer and beneficiary can be, but don't have to be the same account.
+- **Fee On Top**: A `fee on top` is typically reserved for a marketplace or specialized wallet that finds orders filled by the taker.  This taker marketplace fee is an optional fee paid by the taker in excess of the items' prices in one or more orders.
 
 ## Taker Operations / Functions
 
 | Function                                                     | Parameter Encoding Function                         | Valid Maker Order Signature Input Type(s)                                                                                                                    |
 |--------------------------------------------------------------|-----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [buyListing](#buy-listing)                                   | encodeBuyListingCalldata                            | [SaleApproval](#sale-approval)                                                                                                                               |
-| [buyListingWithFeeOnTop](#buy-listing)                       | encodeBuyListingWithFeeOnTopCalldata                | [SaleApproval](#sale-approval)                                                                                                                               | 
-| [buyListingCosigned](#buy-listing)                           | encodeBuyListingCosignedCalldata                    | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
-| [buyListingCosignedWithFeeOnTop](#buy-listing)               | encodeBuyListingCosignedWithFeeOnTopCalldata        | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
-| [acceptOffer](#accept-offer)                                 | encodeAcceptOfferCalldata                           | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
-| [acceptOfferWithFeeOnTop](#accept-offer)                     | encodeAcceptOfferWithFeeOnTopCalldata               | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
-| [acceptOfferCosigned](#accept-offer)                         | encodeAcceptOfferCosignedCalldata                   | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
-| [acceptOfferCosignedWithFeeOnTop](#accept-offer)             | encodeAcceptOfferCosignedWithFeeOnTopCalldata       | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
-| [bulkBuyListings](#bulk-buy-listings)                        | encodeBulkBuyListingsCalldata                       | [SaleApproval](#sale-approval)                                                                                                                               |
-| [bulkBuyListingsWithFeesOnTop](#bulk-buy-listings)           | encodeBulkBuyListingsWithFeesOnTopCalldata          | [SaleApproval](#sale-approval)                                                                                                                               | 
-| [bulkBuyListingsCosigned](#bulk-buy-listings)                | encodeBulkBuyListingsCosignedCalldata               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
-| [bulkBuyListingsCosignedWithFeesOnTop](#bulk-buy-listings)   | encodeBulkBuyListingsCosignedWithFeesOnTopCalldata  | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                                                                      |
-| [bulkAcceptOffers](#bulk-accept-offers)                      | encodeBulkAcceptOffersCalldata                      | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
-| [bulkAcceptOffersWithFeesOnTop](#bulk-accept-offers)         | encodeBulkAcceptOffersWithFeesOnTopCalldata         | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
-| [bulkAcceptOffersCosigned](#bulk-accept-offers)              | encodeBulkAcceptOffersCosignedCalldata              | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
-| [bulkAcceptOffersCosignedWithFeesOnTop](#bulk-accept-offers) | encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
-| [sweepCollection](#sweep-collection)                         | encodeSweepCollectionCalldata                       | [SaleApproval](#sale-approval)                                                                                                                               |
-| [sweepCollectionWithFeeOnTop](#sweep-collection)             | encodeSweepCollectionWithFeeOnTopCalldata           | [SaleApproval](#sale-approval)                                                                                                                               | 
-| [sweepCollectionCosigned](#sweep-collection)                 | encodeSweepCollectionCosignedCalldata               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
-| [sweepCollectionCosignedWithFeeOnTop](#sweep-collection)     | encodeSweepCollectionCosignedWithFeeOnTopCalldata   | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [buyListing](#buy-listing)                                   | [encodeBuyListingCalldata](#encodebuylistingcalldata)                            | [SaleApproval](#sale-approval)                                                                                                                               |
+| [buyListingWithFeeOnTop](#buy-listing)                       | [encodeBuyListingWithFeeOnTopCalldata](#encodebuylistingwithfeeontopcalldata)                | [SaleApproval](#sale-approval)                                                                                                                               | 
+| [buyListingCosigned](#buy-listing)                           | [encodeBuyListingCosignedCalldata](#encodebuylistingcosignedcalldata)                    | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [buyListingCosignedWithFeeOnTop](#buy-listing)               | [encodeBuyListingCosignedWithFeeOnTopCalldata](#encodebuylistingcosignedwithfeeontopcalldata)        | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [acceptOffer](#accept-offer)                                 | [encodeAcceptOfferCalldata](#encodeacceptoffercalldata)                           | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
+| [acceptOfferWithFeeOnTop](#accept-offer)                     | [encodeAcceptOfferWithFeeOnTopCalldata](#encodeacceptofferwithfeeontopcalldata)               | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
+| [acceptOfferCosigned](#accept-offer)                         | [encodeAcceptOfferCosignedCalldata](#encodeacceptoffercosignedcalldata)                   | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [acceptOfferCosignedWithFeeOnTop](#accept-offer)             | [encodeAcceptOfferCosignedWithFeeOnTopCalldata](#encodeacceptoffercosignedwithfeeontopcalldata)       | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [bulkBuyListings](#bulk-buy-listings)                        | [encodeBulkBuyListingsCalldata](#encodebulkbuylistingscalldata)                       | [SaleApproval](#sale-approval)                                                                                                                               |
+| [bulkBuyListingsWithFeesOnTop](#bulk-buy-listings)           | [encodeBulkBuyListingsWithFeesOnTopCalldata](#encodebulkbuylistingswithfeesontopcalldata)          | [SaleApproval](#sale-approval)                                                                                                                               | 
+| [bulkBuyListingsCosigned](#bulk-buy-listings)                | [encodeBulkBuyListingsCosignedCalldata](#encodebulkbuylistingscosignedcalldata)               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [bulkBuyListingsCosignedWithFeesOnTop](#bulk-buy-listings)   | [encodeBulkBuyListingsCosignedWithFeesOnTopCalldata](#encodebulkbuylistingscosignedwithfeesontopcalldata)  | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                                                                      |
+| [bulkAcceptOffers](#bulk-accept-offers)                      | [encodeBulkAcceptOffersCalldata](#encodebulkacceptofferscalldata)                      | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
+| [bulkAcceptOffersWithFeesOnTop](#bulk-accept-offers)         | [encodeBulkAcceptOffersWithFeesOnTopCalldata](#encodebulkacceptofferswithfeesontopcalldata)         | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
+| [bulkAcceptOffersCosigned](#bulk-accept-offers)              | [encodeBulkAcceptOffersCosignedCalldata](#encodebulkacceptofferscosignedcalldata)              | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [bulkAcceptOffersCosignedWithFeesOnTop](#bulk-accept-offers) | [encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata](#encodebulkacceptofferscosignedwithfeesontopcalldata) | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [sweepCollection](#sweep-collection)                         | [encodeSweepCollectionCalldata](#encodesweepcollectioncalldata)                       | [SaleApproval](#sale-approval)                                                                                                                               |
+| [sweepCollectionWithFeeOnTop](#sweep-collection)             | [encodeSweepCollectionWithFeeOnTopCalldata](#encodesweepcollectionwithfeeontopcalldata)           | [SaleApproval](#sale-approval)                                                                                                                               | 
+| [sweepCollectionCosigned](#sweep-collection)                 | [encodeSweepCollectionCosignedCalldata](#encodesweepcollectioncosignedcalldata)               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [sweepCollectionCosignedWithFeeOnTop](#sweep-collection)     | [encodeSweepCollectionCosignedWithFeeOnTopCalldata](#encodesweepcollectioncosignedwithfeeontopcalldata)   | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
 
 ### Buy Listing
 
@@ -52,7 +57,7 @@ Exchanges should call `buyListing` when a taker wants to purchase a single listi
 
 ### Accept Offer
 
-Exchanges should call `acceptOffer` when a taker wants to sell a single item that matches an offer made by a prospective buyer.  The kinds of offers are currently supported by Payment Processor:
+Exchanges should call `acceptOffer` when a taker wants to sell a single item that matches an offer made by a prospective buyer.  The kinds of offers are currently supported by cPort:
 
 1. Item Offer - An offer made on a specific collection where only one specific token id can be used to fill the order.
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
@@ -91,7 +96,7 @@ Exchanges should call `bulkBuyListings` when a taker wants to purchase more than
 
 ### Bulk Accept Offers
 
-Exchanges should call `bulkAcceptOffers` when a taker wants to accept/fill more than one offer at once.  This allows a taker to sell multiple items they own across one or more collections in a single transaction.  The kinds of offers are currently supported by Payment Processor:
+Exchanges should call `bulkAcceptOffers` when a taker wants to accept/fill more than one offer at once.  This allows a taker to sell multiple items they own across one or more collections in a single transaction.  The kinds of offers are currently supported by cPort:
 
 1. Item Offer - An offer made on a specific collection where only one specific token id can be used to fill the order.
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
@@ -121,20 +126,20 @@ Exchanges should call `sweepCollection` (a more gas efficient form of `bulkBuyLi
 For a sweep to be filled, all items in the sweep order must share the following commonalities:
 
 1. All sell orders fillable in the sweep must be from the same collection.
-2. All sell orders fillable in the sweep must be made on the same primary maker marketplace.
 3. All sell orders fillable in the sweep must use the same method of payment.
-4. All sell orders fillable in the sweep must specify the same marketplace fee numerator.
 5. All sell orders fillable in the sweep must specify the same beneficiary of the NFT.
 
 When filling sweep orders, the following fields can be different for each filled item:
 
 1. Maker
-2. Token Id
-3. Amount
-4. Item Price
-5. Nonce (for standard orders)
-6. Expiration
-7. Max Royalty Fee Numerator
+2. Marketplace
+3. Token Id
+4. Amount
+5. Item Price
+6. Nonce (for standard orders)
+7. Expiration
+8. Marketplace Fee Numerator
+9. Max Royalty Fee Numerator
 
 There are four variations of `sweepCollection`.
 
@@ -155,17 +160,379 @@ There are four variations of `sweepCollection`.
 
 *Note: The taker/buyer (`msg.sender`) pays for the items and any fee on top when applicable.  Because the `sweepCollection` function is payable, both native or ERC-20 payment methods are accepted.*
 
+*Note: For the most gas-efficient collection sweeps, marketplaces should make a best effort to group orders in the array by marketplace address, seller, and royalty recipient.*
+
+## Encoding Function Call Parameters
+
+In order to not overflow smart contract bytecode size limits, cPort is split into smaller library modules.  When making calls to cPort, these calls are forwarded to the corresponding module and implementation function using `DELEGATECALL`.  For gas efficiency purposes, the function calldata must be passed in as a raw calldata byte array.  cPort is deployed with a helper contract called the cPortEncoder.  It accepts the expected function implementation parameters and encodes them as a single calldata byte array that should be passed into cPort when making calls to fill orders.  The subsections below detail each cPortEncoder function.
+
+### encodeBuyListingCalldata
+
+Used to encode calldata for cPort `buyListing` function.
+
+```solidity
+function encodeBuyListingCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature) external view returns (bytes memory);
+```
+
+### encodeBuyListingWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `buyListingWithFeeOnTop` function.
+
+```solidity
+function encodeBuyListingWithFeeOnTopCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
+### encodeBuyListingCosignedCalldata
+
+Used to encode calldata for cPort `buyListingCosigned` function.
+
+```solidity
+function encodeBuyListingCosignedCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature) external view returns (bytes memory);
+```
+
+### encodeBuyListingCosignedWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `buyListingCosignedWithFeeOnTop` function.
+
+```solidity
+function encodeBuyListingCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
+### encodeAcceptOfferCalldata
+
+Used to encode calldata for cPort `acceptOffer` function.
+
+```solidity
+function encodeAcceptOfferCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof) external view returns (bytes memory);
+```
+
+*Note: When filling an item offer, `isCollectionLevelOffer` MUST be set to `false`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+### encodeAcceptOfferWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `acceptOfferWithFeeOnTop` function.
+
+```solidity
+function encodeAcceptOfferWithFeeOnTopCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
+*Note: When filling an item offer, `isCollectionLevelOffer` MUST be set to `false`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+### encodeAcceptOfferCosignedCalldata
+
+Used to encode calldata for cPort `acceptOfferCosigned` function.
+
+```solidity
+function encodeAcceptOfferCosignedCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature) external view returns (bytes memory);
+```
+
+*Note: When filling an item offer, `isCollectionLevelOffer` MUST be set to `false`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+### encodeAcceptOfferCosignedWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `acceptOfferCosignedWithFeeOnTop` function.
+
+```solidity
+function encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
+*Note: When filling an item offer, `isCollectionLevelOffer` MUST be set to `false`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+### encodeBulkBuyListingsCalldata
+
+Used to encode calldata for cPort `bulkBuyListings` function.
+
+```solidity
+function encodeBulkBuyListingsCalldata(
+        address cPortAddress, 
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray` and `signatures` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`.*
+
+### encodeBulkBuyListingsWithFeesOnTopCalldata
+
+Used to encode calldata for cPort `bulkBuyListingsWithFeesOnTop` function.
+
+```solidity
+function encodeBulkBuyListingsWithFeesOnTopCalldata(
+        address cPortAddress, 
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures,
+        FeeOnTop[] calldata feesOnTop) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, and `feesOnTop` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]` and `feesOnTop[index]`.*
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeBulkBuyListingsCosignedCalldata
+
+Used to encode calldata for cPort `bulkBuyListingsCosigned` function.
+
+```solidity
+function encodeBulkBuyListingsCosignedCalldata(
+        address cPortAddress, 
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures,
+        Cosignature[] calldata cosignatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, and `cosignatures` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]` and `cosignatures[index]`.*
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+### encodeBulkBuyListingsCosignedWithFeesOnTopCalldata
+
+Used to encode calldata for cPort `bulkBuyListingsCosignedWithFeesOnTop` function.
+
+```solidity
+function encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
+        address cPortAddress, 
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures,
+        Cosignature[] calldata cosignatures,
+        FeeOnTop[] calldata feesOnTop) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `cosignatures`, and `feesOnTop` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `cosignatures[index]`, and `feesOnTop[index]`.*
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeBulkAcceptOffersCalldata
+
+Used to encode calldata for cPort `bulkAcceptOffers` function.
+
+```solidity
+function encodeBulkAcceptOffersCalldata(
+        address cPortAddress, 
+        bool[] calldata isCollectionLevelOfferArray,
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures,
+        TokenSetProof[] calldata tokenSetProofsArray) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `tokenSetProofsArray`, and `isCollectionLevelOfferArray` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `tokenSetProofsArray[index]`, and `isCollectionLevelOfferArray[index]`.*
+
+*Note: When filling an item offer, `isCollectionLevelOfferArray[index]` MUST be set to `false`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+### encodeBulkAcceptOffersWithFeesOnTopCalldata
+
+Used to encode calldata for cPort `bulkAcceptOffersWithFeesOnTop` function.
+
+```solidity
+function encodeBulkAcceptOffersWithFeesOnTopCalldata(
+        address cPortAddress, 
+        bool[] calldata isCollectionLevelOfferArray,
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures,
+        TokenSetProof[] calldata tokenSetProofsArray,
+        FeeOnTop[] calldata feesOnTopArray) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `tokenSetProofsArray`, `isCollectionLevelOfferArray`, and `feesOnTopArray` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `tokenSetProofsArray[index]`, `isCollectionLevelOfferArray[index]`, and `feesOnTopArray[index]`.*
+
+*Note: When filling an item offer, `isCollectionLevelOfferArray[index]` MUST be set to `false`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeBulkAcceptOffersCosignedCalldata
+
+Used to encode calldata for cPort `bulkAcceptOffersCosigned` function.
+
+```solidity
+function encodeBulkAcceptOffersCosignedCalldata(
+        address cPortAddress, 
+        bool[] calldata isCollectionLevelOfferArray,
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata signatures,
+        TokenSetProof[] calldata tokenSetProofsArray,
+        Cosignature[] calldata cosignaturesArray) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `tokenSetProofsArray`, `isCollectionLevelOfferArray`, and `cosignatures` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `tokenSetProofsArray[index]`, `isCollectionLevelOfferArray[index]`, and `cosignatures[index]`.*
+
+*Note: When filling an item offer, `isCollectionLevelOfferArray[index]` MUST be set to `false`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+### encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata
+
+Used to encode calldata for cPort `bulkAcceptOffersCosignedWithFeesOnTop` function.
+
+```solidity
+function encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+        address cPortAddress, 
+        bool[] memory isCollectionLevelOfferArray,
+        Order[] memory saleDetailsArray,
+        SignatureECDSA[] memory signatures,
+        TokenSetProof[] memory tokenSetProofsArray,
+        Cosignature[] memory cosignaturesArray,
+        FeeOnTop[] memory feesOnTopArray) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `tokenSetProofsArray`, `isCollectionLevelOfferArray`, `cosignatures`, and `feesOnTopArray` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `tokenSetProofsArray[index]`, `isCollectionLevelOfferArray[index]`, `cosignatures[index]`, and `feesOnTopArray[index]`.*
+
+*Note: When filling an item offer, `isCollectionLevelOfferArray[index]` MUST be set to `false`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeSweepCollectionCalldata
+
+Used to encode calldata for cPort `sweepCollection` function.
+
+```solidity
+function encodeSweepCollectionCalldata(
+        address cPortAddress, 
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `items` and `signatures` MUST match and MUST be non-zero. `items[index]` MUST correspond to `signatures[index]`.*
+
+### encodeSweepCollectionWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `sweepCollectionWithFeeOnTop` function.
+
+```solidity
+function encodeSweepCollectionWithFeeOnTopCalldata(
+        address cPortAddress, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `items` and `signatures` MUST match and MUST be non-zero. `items[index]` MUST correspond to `signatures[index]`.*
+
+*Note: A single fee on top may be applied to the entire sweep order.*
+
+### encodeSweepCollectionCosignedCalldata
+
+Used to encode calldata for cPort `sweepCollectionCosigned` function.
+
+```solidity
+function encodeSweepCollectionCosignedCalldata(
+        address cPortAddress, 
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signatures,
+        Cosignature[] calldata cosignatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `items`, `signatures`, and `cosignatures` MUST match and MUST be non-zero. `items[index]` MUST correspond to `signatures[index]` and `cosignatures[index]`.*
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+### encodeSweepCollectionCosignedWithFeeOnTopCalldata
+
+Used to encode calldata for cPort `sweepCollectionCosignedWithFeeOnTop` function.
+
+```solidity
+function encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+        address cPortAddress, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signatures,
+        Cosignature[] calldata cosignatures) external view returns (bytes memory);
+```
+
+*Note: The length of the `items`, `signatures`, and `cosignatures` MUST match and MUST be non-zero. `items[index]` MUST correspond to `signatures[index]` and `cosignatures[index]`.*
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+*Note: A single fee on top may be applied to the entire sweep order.*
+
 ## Maker Signature Formats
 
-Makers sign orders in a human readable EIP-712 typed data format.  Exchanges that integrate Payment Processor are responsible for correctly prompting makers to sign the appropriate messages at order creation time.  The typed data formats of each order vary depending on the order type.  The following subsections details the various typed data formats compatible with Payment Processor.
+Makers sign orders in a human readable EIP-712 typed data format.  Exchanges that integrate cPort are responsible for correctly prompting makers to sign the appropriate messages at order creation time.  The typed data formats of each order vary depending on the order type.  The following subsections details the various typed data formats compatible with cPort.
 
-All Payment Processor V2 typed data signatures share the same EIP-712 domain:
+All cPort typed data signatures share the same EIP-712 domain:
 
 ```js
 EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)
 ```
 
-***Note: One of the fields that must always be signed and acknowledged by the order maker is the maximum royalty fee that will be deducted from the proceeds. Upon each signature request, this max royalty fee amount should be queried from the NFT contract using the EIP-2981 `royaltyInfo` function. In case a collection does not implement `royaltyInfo`, the query logic should fallback to check the Payment Processor contract to determine if a royalty backfill has been supplied by the collection creator/owner using the `collectionRoyaltyBackfillSettings` function. If the on-chain royalty increases after the listing has been signed, sales will not execute. However, if the on-chain royalty is reduced, the reduced royalty fee is paid during the sale.***
+***Note: One of the fields that must always be signed and acknowledged by the order maker is the maximum royalty fee that will be deducted from the proceeds. Upon each signature request, this max royalty fee amount should be queried from the NFT contract using the EIP-2981 `royaltyInfo` function. In case a collection does not implement `royaltyInfo`, the query logic should fallback to check the cPort contract to determine if a royalty backfill has been supplied by the collection creator/owner using the `collectionRoyaltyBackfillSettings` function. If the on-chain royalty increases after the listing has been signed, sales will not execute. However, if the on-chain royalty is reduced, the reduced royalty fee is paid during the sale.***
 
 ### Sale Approval
 
@@ -241,7 +608,7 @@ Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)
 
 ## Data Structures
 
-The following subsections detail the data structures needed for the creation of and filling of orders in Payment Processor.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
+The following subsections detail the data structures needed for the creation of and filling of orders in cPort.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
 
 ### SignatureECDSA
 
@@ -251,9 +618,9 @@ The following subsections detail the data structures needed for the creation of 
 
 - V: The `v` component of an ECDSA signature.
 - R: The `r` component of an ECDSA signature.
-- S: The `s` component of an ECDSA siganture.
+- S: The `s` component of an ECDSA signature.
 
-*[Note: For a detailed explanation of ECDSA Sigantures read this article](https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7).*
+*[Note: For a detailed explanation of ECDSA signatures read this article](https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7).*
 
 ### Cosignature
 
@@ -272,7 +639,7 @@ The following subsections detail the data structures needed for the creation of 
 
 ### FeeOnTop
 
-A `fee on top` is typically reserved for a marketplace or specialized wallet that found the order filled by the taker.  This taker marketplace fee is an optional fee paid by the taker in excess of the items' prices in on or more orders.  When the maker and taker marketplace is the same, it is strongly encouraged not to apply this fee, as the fee can already be assessed in the maker fee.  Note that the `fee on top` is paid in the same currency as the order's payment method.
+A `fee on top` is typically reserved for a marketplace or specialized wallet that found the order filled by the taker.  This taker marketplace fee is an optional fee paid by the taker in excess of the items' prices in one or more orders.  When the maker and taker marketplace is the same, it is strongly encouraged not to apply this fee, as the fee can already be assessed in the maker fee.  Note that the `fee on top` is paid in the same currency as the order's payment method.
 
 | Recipient | Amount  |
 |-----------|---------|
@@ -298,7 +665,7 @@ leafHash = keccak256(abi.encode(collectionAddress, tokenId));
 
 ### Order
 
-This data format is used to fill all single and bulk orders that are not sweep orders.
+This data structure is used to fill all single and bulk orders that are not sweep orders.
 
 | Protocol | Maker   | Beneficiary | Marketplace | Payment Method | Token Address | Token Id | Amount  | Item Price | Nonce   | Expiration | Marketplace Fee Numerator | Max Royalty Fee Numerator |
 |----------|---------|-------------|-------------|----------------|---------------|----------|---------|------------|---------|------------|---------------------------|---------------------------|
@@ -315,17 +682,36 @@ This data format is used to fill all single and bulk orders that are not sweep o
 - Item Price: The price of the token(s) in the order.
 - Nonce: An id unique to the order that helps prevent replay attacks.  Nonce applies only to standard signed orders, and may not be re-used.  For co-signed order, nonce should be set to `0`. Note: It is easier to generate a random nonce than attempt to keep track of nonces that have been used.  However, be aware that a gas optimization is in place such that filled or cancelled nonces are tracked in a bitmap. 0-255, 256-511, 512-767, etc all fall within the same slot, so if possible it is ideal to track used nonces through fill events and attempt to use sequential nonces starting at zero.  Because each maker address has its own set of nonces generated for gasless listings, it is possible that marketplaces will have no knowledge of nonces used in outstanding order signatures.  Ideally, a shared service could be created and utilized by all marketplaces that issues nonces for orders.
 - Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
-- Marketplace Fee Numerator: Marketplace fee percentage in bips.  Denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
-- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled in Payment Processor by calling the `collectionRoyaltyBackfillSettings` function on Payment Processor.  If no on-chain royalties are present, this may be set to `0`.
+- Marketplace Fee Numerator: Marketplace fee percentage in bips. Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
+- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled  by calling the `collectionRoyaltyBackfillSettings` function on cPort.  If no on-chain royalties are present, this may be set to `0`.
 
 ### Sweep Order
 
-| Protocol | Beneficiary | Marketplace | Payment Method | Token Address | Marketplace Fee Numerator |
-|----------|-------------|-------------|----------------|---------------|---------------------------|
-| uint8    | address     | address     | address        | address       | uint256                   |
+This data structure is used to fill sweep orders, and represents the shared values that apply to all order in the sweep.
+
+| Protocol | Token Address | Payment Method | Beneficiary |
+|----------| --------------|----------------|-------------|
+| uint8    | address       | address        | address     |
+
+- Protocol: `0` for ERC721 or `1` for ERC1155 collections.
+- Token Address: The address of the collection.
+- Payment Method: The address of the ERC-20 coin used to fill the trade, or `address(0)` for the native currency of the chain the trade executed on.  For example, `address(0)` denotes ETH on ETH Mainnet, and Matic on Polygon Mainnet.
+- Beneficiary: The address of the account that receives the item when the order is filled.
 
 ### Sweep Item
 
-| Maker   | Token Id | Amount  | Item Price | Nonce   | Expiration | Max Royalty Fee Numerator |
-|---------|----------|---------|------------|---------|------------|---------------------------|
-| address | uint256  | uint256 | uint256    | uint256 | uint256    | uint256                   |
+This data structure is used to fill sweep orders, and represents the values that apply to individual orders in the sweep.
+
+| Maker   | Marketplace | Token Id | Amount     | Item Price | Nonce   | Expiration | Marketplace Fee Numerator | Max Royalty Fee Numerator |
+|---------|-------------|----------|------------|------------|---------|------------|---------------------------|---------------------------|
+| address | address     | uint256  | uint256    | uint256    | uint256 | uint256    | uint256                   | uint256                   |
+
+- Maker: The address of the account the created the order.  May be an EOA or Smart Contract account. When the order was a listing, the maker is the seller of the item.  When the order was an offer, the maker is the buyer of the item.
+- Marketplace: The address to which the primary (maker) marketplace fee should be paid, or `address(0)` if the maker marketplace charges no platform fees.  Note that for collections that offer non-exclusive royalty bounties, the maker marketplace also receives a royalty bounty paid out of creator royalties.  For collections that offer exclusive royalty bounties, the maker marketplace receives a royalty bounty only if it matches the exclusive royalty bounty recipient designated by the collection creator.
+- Token Id: The id of the token (if collection is ERC721), or the token type id of the token (if collection is ERC1155).
+- Amount: The number of tokens. MUST be `1` if collection is ERC721, and MUST be greater than or equal to `1` if collection is ERC1155.
+- Item Price: The price of the token(s) in the order.
+- Nonce: An id unique to the order that helps prevent replay attacks.  Nonce applies only to standard signed orders, and may not be re-used.  For co-signed order, nonce should be set to `0`. Note: It is easier to generate a random nonce than attempt to keep track of nonces that have been used.  However, be aware that a gas optimization is in place such that filled or cancelled nonces are tracked in a bitmap. 0-255, 256-511, 512-767, etc all fall within the same slot, so if possible it is ideal to track used nonces through fill events and attempt to use sequential nonces starting at zero.  Because each maker address has its own set of nonces generated for gasless listings, it is possible that marketplaces will have no knowledge of nonces used in outstanding order signatures.  Ideally, a shared service could be created and utilized by all marketplaces that issues nonces for orders.
+- Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
+- Marketplace Fee Numerator: Marketplace fee percentage in bips. Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
+- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled by calling the `collectionRoyaltyBackfillSettings` function on cPort.  If no on-chain royalties are present, this may be set to `0`.
