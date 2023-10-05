@@ -522,6 +522,14 @@ function encodeSweepCollectionCosignedWithFeeOnTopCalldata(
 
 *Note: A single fee on top may be applied to the entire sweep order.*
 
+### encodeRevokeSingleNonceCalldata
+
+Used to encode calldata for cPort `revokeSingleNonce` function (on-chain order cancellation).
+
+```solidity
+function encodeRevokeSingleNonceCalldata(address cPortAddress, uint256 nonce) external view returns (bytes memory);
+```
+
 ## Maker Signature Formats
 
 Makers sign orders in a human readable EIP-712 typed data format.  Exchanges that integrate cPort are responsible for correctly prompting makers to sign the appropriate messages at order creation time.  The typed data formats of each order vary depending on the order type.  The following subsections details the various typed data formats compatible with cPort.
