@@ -75,20 +75,20 @@ struct RoyaltyBackfillAndBounty {
 
 struct SweepOrder {
     TokenProtocols protocol;
-    address beneficiary;
-    address marketplace;
-    address paymentMethod;
     address tokenAddress;
-    uint256 marketplaceFeeNumerator;
+    address paymentMethod;
+    address beneficiary;
 }
 
 struct SweepItem {
     address maker;
+    address marketplace;
     uint256 tokenId;
     uint256 amount;
     uint256 itemPrice;
     uint256 nonce;
     uint256 expiration;
+    uint256 marketplaceFeeNumerator;
     uint256 maxRoyaltyFeeNumerator;
 }
 

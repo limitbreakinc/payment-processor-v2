@@ -1781,11 +1781,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             SweepOrder memory sweepOrder = SweepOrder({
                 protocol: TokenProtocols.ERC721,
-                beneficiary: params.beneficiary,
-                marketplace: cal,
-                paymentMethod: params.currency,
                 tokenAddress: address(test721),
-                marketplaceFeeNumerator: params.marketplaceFeeRate
+                paymentMethod: params.currency,
+                beneficiary: params.beneficiary
             });
 
             for (uint256 batchIndex = 0; batchIndex < params.batchSize; batchIndex++) {
@@ -1872,10 +1870,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             SweepOrder memory sweepOrder = SweepOrder({
                 protocol: TokenProtocols.ERC721,
                 beneficiary: params.beneficiary,
-                marketplace: cal,
                 paymentMethod: params.currency,
-                tokenAddress: address(test721),
-                marketplaceFeeNumerator: params.marketplaceFeeRate
+                tokenAddress: address(test721)
             });
 
             for (uint256 batchIndex = 0; batchIndex < params.batchSize; batchIndex++) {

@@ -797,11 +797,13 @@ contract cPortModuleTest is Test, cPortEvents {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }
@@ -833,11 +835,13 @@ contract cPortModuleTest is Test, cPortEvents {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }
@@ -867,11 +871,13 @@ contract cPortModuleTest is Test, cPortEvents {
             (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], caller);
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }
@@ -903,11 +909,13 @@ contract cPortModuleTest is Test, cPortEvents {
 
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }
@@ -941,11 +949,13 @@ contract cPortModuleTest is Test, cPortEvents {
             (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], caller);
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }
@@ -982,11 +992,13 @@ contract cPortModuleTest is Test, cPortEvents {
 
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
+                marketplace: saleDetailsArray[i].marketplace,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
                 nonce: saleDetailsArray[i].nonce,
                 expiration: saleDetailsArray[i].expiration,
+                marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
         }

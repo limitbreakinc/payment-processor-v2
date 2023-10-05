@@ -580,7 +580,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     protocol: sweepOrder.protocol,
                     maker: items[i].maker,
                     beneficiary: sweepOrder.beneficiary,
-                    marketplace: sweepOrder.marketplace,
+                    marketplace: items[i].marketplace,
                     paymentMethod: sweepOrder.paymentMethod,
                     tokenAddress: sweepOrder.tokenAddress,
                     tokenId: items[i].tokenId,
@@ -588,7 +588,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     itemPrice: items[i].itemPrice,
                     nonce: items[i].nonce,
                     expiration: items[i].expiration,
-                    marketplaceFeeNumerator: sweepOrder.marketplaceFeeNumerator,
+                    marketplaceFeeNumerator: items[i].marketplaceFeeNumerator,
                     maxRoyaltyFeeNumerator: items[i].maxRoyaltyFeeNumerator
                 });
 
