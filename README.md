@@ -239,12 +239,93 @@ All cosigned listings and offers require a secondary signature to be provided at
 Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)
 ```
 
-## Order Data Structures
+## Data Structures
 
 The following subsections detail the data structures needed for the creation of and filling of orders in Payment Processor.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
 
-### Generic Structure of Orders (Fill-Time)
+### SignatureECDSA
+
+| V     | R       | S       |
+|-------|---------|---------|
+| uint8 | bytes32 | bytes32 |
+
+- V: The `v` component of an ECDSA signature.
+- R: The `r` component of an ECDSA signature.
+- S: The `s` component of an ECDSA siganture.
+
+*[Note: For a detailed explanation of ECDSA Sigantures read this article](https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7).*
+
+### Cosignature
+
+| Signer  | Taker   | Expiration | V     | R       | S       |
+|---------|---------|------------|-------|---------|---------|
+| address | address | uint256    | uint8 | bytes32 | bytes32 |
+
+- Signer: The co-signer designated and acknowledged in the order maker's signature approving the order.  MUST be an EOA, or `address(0)` when the co-signature is empty.  It is expected that marketplaces implementing co-signing MUST expose an API enabling the taker to retrieve a co-signature approving the fill of co-signed orders.
+- Taker: The address of the account filling the co-signed order.  May be an EOA or Smart Contract account, or `address(0)` when the co-signature is empty.  A marketplace's co-signing API service MUST acknowledge the taker address in the co-signature.
+- Expiration: The unix timestamp (in seconds) when the co-signature expires, or `0` when the co-signature is empty.  A marketplace's co-signing API should use the current unix timestamp and add a validity time that is acknowledged in the co-signature.  If the validity time is too short, there might not be sufficient time for the fill transaction to be confirmed on-chain, possibly resulting in failed fill transactions.  However, the validity time should also not be too long, as a taker could sit on a fill transaction for quite a while.  It is left up to the marketplace to determine an appropriate validity time.
+- V: The `v` component of the co-signer's signature.  
+- R: The `r` component of the co-signer's signature.
+- S: The `s` component of the co-sigaer's signature.
+
+*Note: The co-signature is generated when the co-signer creates an ECDSA signature of the [Cosignature](#cosignature-format) typed data message.*
+
+### FeeOnTop
+
+A `fee on top` is typically reserved for a marketplace or specialized wallet that found the order filled by the taker.  This taker marketplace fee is an optional fee paid by the taker in excess of the items' prices in on or more orders.  When the maker and taker marketplace is the same, it is strongly encouraged not to apply this fee, as the fee can already be assessed in the maker fee.  Note that the `fee on top` is paid in the same currency as the order's payment method.
+
+| Recipient | Amount  |
+|-----------|---------|
+| address   | uint256 |
+
+- Recipient: The address to which the fee is paid, or `address(0)` when the fee is empty.
+- Amount: The absolute amount of the fee, in wei, or `0` when the fee is empty. Note that the fee amount is not permitted to exceed the item sale price of any given order.
+
+### TokenSetProof
+
+Token set proofs are required to fill token set offers on a collection.  A token set offer is a merkle tree where the leaf data is the keccak256 hash of the collection address and token id.
+
+```
+leafHash = keccak256(abi.encode(collectionAddress, tokenId));
+```
+
+| Root Hash | Proof     |
+|-----------|-----------|
+| bytes32   | bytes32[] |
+
+- Root Hash: The root hash of the merkle tree containing 2 or more collection/token id leaf nodes, or `bytes32(0)` when the order being filled is not a token set offer.
+- Proof: The merkle proof for the specific collection/token id leaf node being filled, , or `bytes32[](0)` when the order being filled is not a token set offer.
+
+### Order
+
+This data format is used to fill all single and bulk orders that are not sweep orders.
 
 | Protocol | Maker   | Beneficiary | Marketplace | Payment Method | Token Address | Token Id | Amount  | Item Price | Nonce   | Expiration | Marketplace Fee Numerator | Max Royalty Fee Numerator |
 |----------|---------|-------------|-------------|----------------|---------------|----------|---------|------------|---------|------------|---------------------------|---------------------------|
 |uint8     | address | address     | address     | address        | address       | uint256  | uint256 | uint256    | uint256 | uint256    | uint256                   | uint256                   |
+
+- Protocol: `0` for ERC721 or `1` for ERC1155 collections.
+- Maker: The address of the account the created the order.  May be an EOA or Smart Contract account. When the order was a listing, the maker is the seller of the item.  When the order was an offer, the maker is the buyer of the item.
+- Beneficiary: The address of the account that receives the item when the order is filled.  When the order was a listing, the taker (`msg.sender`) can either buy with themselves as the beneficiary, or another account.  When the order was an offer, the maker would be the buyer, and the beneficiary address can either be the maker's account or another account. For example, the buyer could be a user's hot wallet, and the beneficiary could be the user's cold storage wallet.
+- Marketplace: The address to which the primary (maker) marketplace fee should be paid, or `address(0)` if the maker marketplace charges no platform fees.  Note that for collections that offer non-exclusive royalty bounties, the maker marketplace also receives a royalty bounty paid out of creator royalties.  For collections that offer exclusive royalty bounties, the maker marketplace receives a royalty bounty only if it matches the exclusive royalty bounty recipient designated by the collection creator.
+- Payment Method: The address of the ERC-20 coin used to fill the trade, or `address(0)` for the native currency of the chain the trade executed on.  For example, `address(0)` denotes ETH on ETH Mainnet, and Matic on Polygon Mainnet.
+- Token Address: The address of the collection.
+- Token Id: The id of the token (if collection is ERC721), or the token type id of the token (if collection is ERC1155).
+- Amount: The number of tokens. MUST be `1` if collection is ERC721, and MUST be greater than or equal to `1` if collection is ERC1155.
+- Item Price: The price of the token(s) in the order.
+- Nonce: An id unique to the order that helps prevent replay attacks.  Nonce applies only to standard signed orders, and may not be re-used.  For co-signed order, nonce should be set to `0`. Note: It is easier to generate a random nonce than attempt to keep track of nonces that have been used.  However, be aware that a gas optimization is in place such that filled or cancelled nonces are tracked in a bitmap. 0-255, 256-511, 512-767, etc all fall within the same slot, so if possible it is ideal to track used nonces through fill events and attempt to use sequential nonces starting at zero.  Because each maker address has its own set of nonces generated for gasless listings, it is possible that marketplaces will have no knowledge of nonces used in outstanding order signatures.  Ideally, a shared service could be created and utilized by all marketplaces that issues nonces for orders.
+- Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
+- Marketplace Fee Numerator: Marketplace fee percentage in bips.  Denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
+- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled in Payment Processor by calling the `collectionRoyaltyBackfillSettings` function on Payment Processor.  If no on-chain royalties are present, this may be set to `0`.
+
+### Sweep Order
+
+| Protocol | Beneficiary | Marketplace | Payment Method | Token Address | Marketplace Fee Numerator |
+|----------|-------------|-------------|----------------|---------------|---------------------------|
+| uint8    | address     | address     | address        | address       | uint256                   |
+
+### Sweep Item
+
+| Maker   | Token Id | Amount  | Item Price | Nonce   | Expiration | Max Royalty Fee Numerator |
+|---------|----------|---------|------------|---------|------------|---------------------------|
+| address | uint256  | uint256 | uint256    | uint256 | uint256    | uint256                   |
