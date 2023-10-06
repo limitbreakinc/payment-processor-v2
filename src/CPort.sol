@@ -21,14 +21,111 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
+
+/**
+ * @title  cPort
+ * @author Limit Break, Inc.
+ * @notice Short for Creator Port, cPort is the world's first creator-centric ERC721-C compatible marketplace protocol.
+ *         Built by creators, for creators.
+ * @notice Use ERC721-C to whitelist this contract or other marketplace contracts that process royalties entirely 
+ *         on-chain manner to make them 100% enforceable and fully programmable! 
+ *
+ * @notice <h4>Features</h4>
+ *
+ * @notice <ul>
+ *            <li>Payment Standards</li>
+ *            <ul>
+ *             <li>Native Currency (ETH or Equivalent)</li>
+ *             <li>ERC-20</li>
+ *            </ul>
+ *            <li>Tradeable Item Support</li>
+ *            <ul>
+ *             <li>ERC721 (Non-Fungible Tokens)</li>
+ *             <ul>
+ *               <li>ERC721-C</li>
+ *               <li>ERC721 + EIP-2981</li>
+ *               <li>ERC721</li>
+ *             </ul>
+ *             <li>ERC1155 (Fungible Tokens)</li>
+ *             <ul>
+ *               <li>ERC1155-C</li>
+ *               <li>ERC1155 + EIP-2981</li>
+ *               <li>ERC1155</li>
+ *             </ul>
+ *            </ul>
+ *           <li>Enforceable/Programmable Fees</li>
+ *           <ul>
+ *             <li>On-Chain Royalties</li>
+ *             <ul>
+ *               <li>EIP-2981</li>
+ *               <li>Missing Royalty Backfill Per Collection</li>
+ *             </ul>
+ *             <li>Marketplace Fees</li>
+ *             <ul>
+ *               <li>Maker Fee</li>
+ *               <li>Taker Fee (Fee On Top)</li>
+ *               <li>Optional Creator Royalty Bounty for Maker MP</li>
+ *             </ul>
+ *           </ul>
+ *           <li>Creator-Defined Payment Settings for Collections</li>
+ *           <ul>
+ *             <li>Default Payment Method Whitelist</li>
+ *             <li>Allow Any Payment Method</li>
+ *             <li>Custom Payment Method Whitelist</li>
+ *             <li>Pricing Constraints (Min/Max Pricing)</li>
+ *           </ul>
+ *           <li>Order Cancellation</li>
+ *           <ul>
+ *             <li>On-Chain</li>
+ *             <li>Gasless Cancellation Oracles (Co-Signing)</li>
+ *           </ul>
+ *           <li>A Multitude of Supported Trade Types</li>
+ *           <ul>
+ *             <li>Buy Listing</li>
+ *             <li>Bulk Buy Listings</li>
+ *             <li>Sweep Collection</li>
+ *             <li>Accept Offer</li>
+ *             <li>Bulk Accept Offers</li>
+ *             <li>Offer Types</li>
+ *             <ul>
+ *               <li>Item</li>
+ *               <li>Collection</li>
+ *               <li>Token Set</li>
+ *             </ul>
+ *           </ul>
+ *         </ul>
+ *
+ * @notice <h4>Security Considerations for Users</h4>
+ *
+ * @notice Virtually all on-chain marketplace contracts have the potential to be front-run.
+ *         When purchasing high-value items, whether individually or in a batch/bundle it is highly
+ *         recommended to execute transactions using Flashbots RPC Relay/private mempool to avoid
+ *         sniper bots.  Partial fills are available for bulk and sweep trades when the method of payment is an 
+ *         ERC-20 token, but not for purchases using native currency.  It is preferable to use wrapped ETH 
+ *         (or equivalent) when buying multiple tokens and it is highly advisable to use a private mempool
+ *         like Flashbots whenever possible.
+ */
 contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
+    /// @dev The Payment Settings module implements of all payment configuration-related functionality.
     address private immutable modulePaymentSettings;
+
+    /// @dev The On-Chain Cancellation module implements of all on-chain cancellation-related functionality.
     address private immutable moduleOnChainCancellation;
+
+    /// @dev The Single Trades module implements all single trade-related functionality.
     address private immutable moduleSingleTrades;
+
+    /// @dev The Single Trades Cosigned module implements all single trade-related functionality requiring a co-signer.
     address private immutable moduleSingleTradesCosigned;
+
+    /// @dev The Bulk Trades module implements all bulk trade-related functionality.
     address private immutable moduleBulkTrades;
+
+    /// @dev The Bulk Trades Cosigned module implements all bulk trade-related functionality requiring a co-signer.
     address private immutable moduleBulkTradesCosigned;
+
+    /// @dev The Sweep Collection module implements all sweep collection-related functionality.
     address private immutable moduleSweepCollection;
 
     constructor(
@@ -92,20 +189,57 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /*                    READ ONLY ACCESSORS                     */
     /**************************************************************/
 
+    /**
+     * @notice Returns the EIP-712 domain separator for this contract.
+     */
     function getDomainSeparator() public view returns (bytes32) {
         return _domainSeparatorV4();
     }
 
+    /**
+     * @notice Returns the user-specific master nonce that allows order makers to efficiently cancel all listings or offers
+     *         they made previously. The master nonce for a user only changes when they explicitly request to revoke all
+     *         existing listings and offers.
+     *
+     * @dev    When prompting makers to sign a listing or offer, marketplaces must query the current master nonce of
+     *         the user and include it in the listing/offer signature data.
+     */
     function masterNonces(address account) public view returns (uint256) {
         return appStorage().masterNonces[account];
     }
 
+    /**
+     * @notice Returns the payment settings for a given collection.
+     *
+     * @notice paymentSettings: The payment setting type for a given collection 
+     *         (DefaultPaymentMethodWhitelist|AllowAnyPaymentMethod|CustomPaymentMethodWhitelist|PricingConstraints)
+     * @notice paymentMethodWhitelistId: The payment method whitelist id for a given collection.  
+     *         Applicable only when paymentSettings is CustomPaymentMethodWhitelist
+     * @notice constrainedPricingPaymentMethod: The payment method that min/max priced collections are priced in.
+     *         Applicable only when paymentSettings is PricingConstraints.
+     * @notice royaltyBackfillNumerator: The royalty backfill percentage for a given collection.  Used only as a
+     *         fallback when a collection does not implement EIP-2981.
+     * @notice royaltyBountyNumerator: The royalty bounty percentage for a given collection.  When set, this percentage
+     *         is applied to the creator's royalty amount and paid to the maker marketplace as a bounty.
+     * @notice isRoyaltyBountyExclusive: When true, only the designated marketplace is eligible for royalty bounty.
+     */
     function collectionPaymentSettings(address tokenAddress) external view returns (CollectionPaymentSettings memory) {
         return appStorage().collectionPaymentSettings[tokenAddress];
     }
 
-    function collectionBountySettings(address tokenAddress) external view returns (uint16 royaltyBountyNumerator, address exclusiveBountyReceiver) {
-        CollectionPaymentSettings memory collectionPaymentSettings = appStorage().collectionPaymentSettings[tokenAddress];
+    /**
+     * @notice Returns the optional creator-defined royalty bounty settings for a given collection.
+     * 
+     * @return royaltyBountyNumerator  The royalty bounty percentage for a given collection.  When set, this percentage
+     *        is applied to the creator's royalty amount and paid to the maker marketplace as a bounty.
+     * @return exclusiveBountyReceiver When non-zero, only the designated marketplace is eligible for royalty bounty.
+     */
+    function collectionBountySettings(
+        address tokenAddress
+    ) external view returns (uint16 royaltyBountyNumerator, address exclusiveBountyReceiver) {
+        CollectionPaymentSettings memory collectionPaymentSettings = 
+            appStorage().collectionPaymentSettings[tokenAddress];
+
         return (
             collectionPaymentSettings.royaltyBountyNumerator, 
             collectionPaymentSettings.isRoyaltyBountyExclusive ? 
@@ -113,8 +247,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                 address(0));
     }
 
-    function collectionRoyaltyBackfillSettings(address tokenAddress) external view returns (uint16 royaltyBackfillNumerator, address royaltyBackfillReceiver) {
-        CollectionPaymentSettings memory collectionPaymentSettings = appStorage().collectionPaymentSettings[tokenAddress];
+    /**
+     * @notice Returns the optional creator-defined royalty backfill settings for a given collection.
+     *         This is useful for legacy collection lacking EIP-2981 support, as the collection owner can instruct
+     *         cPort to backfill missing on-chain royalties.
+     * 
+     * @return royaltyBackfillNumerator  The creator royalty percentage for a given collection.  
+     *         When set, this percentage is applied to the item sale price and paid to the creator if the attempt
+     *         to query EIP-2981 royalties fails.
+     * @return royaltyBackfillReceiver When non-zero, this is the destination address for backfilled creator royalties.
+     */
+    function collectionRoyaltyBackfillSettings(
+        address tokenAddress
+    ) external view returns (uint16 royaltyBackfillNumerator, address royaltyBackfillReceiver) {
+        CollectionPaymentSettings memory collectionPaymentSettings = 
+            appStorage().collectionPaymentSettings[tokenAddress];
+
         return (
             collectionPaymentSettings.royaltyBackfillNumerator, 
             collectionPaymentSettings.royaltyBackfillNumerator > 0 ?
