@@ -563,7 +563,7 @@ SaleApprovalCosigned(uint8 protocol,address cosigner,address seller,address mark
 When making an offer on a specific NFT, with no co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-ItemOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)
+ItemOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)
 ```
 
 ### Item Offer Approval (Cosigned)
@@ -571,7 +571,7 @@ ItemOfferApproval(uint8 protocol,address buyer,address beneficiary,address marke
 When making an offer on a specific NFT, with a co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-ItemOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator)
+ItemOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator)
 ```
 
 ### Collection Offer Approval
@@ -579,7 +579,7 @@ ItemOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address 
 When making an offer on any NFT in a specific collection, with no co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)
+CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)
 ```
 
 ### Collection Offer Approval (Cosigned)
@@ -587,7 +587,7 @@ CollectionOfferApproval(uint8 protocol,address buyer,address beneficiary,address
 When making an offer on any NFT in a specific collection, with a co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-CollectionOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator)
+CollectionOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator)
 ```
 
 ### Token Set Offer Approval
@@ -595,7 +595,7 @@ CollectionOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,ad
 When making an offer on a subset of NFTs in a specific collection, with no co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-TokenSetOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce,bytes32 tokenSetMerkleRoot)
+TokenSetOfferApproval(uint8 protocol,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce,bytes32 tokenSetMerkleRoot)
 ```
 
 ### Token Set Offer Approval (Cosigned)
@@ -603,7 +603,7 @@ TokenSetOfferApproval(uint8 protocol,address buyer,address beneficiary,address m
 When making an offer on a subset of NFTs in a specific collection, with a co-signature required, the buyer/maker must be prompted to sign an EIP-712 sale approval in the following format.
 
 ```js
-TokenSetOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,bytes32 tokenSetMerkleRoot)
+TokenSetOfferApprovalCosigned(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,bytes32 tokenSetMerkleRoot)
 ```
 
 ### Cosignature Format
@@ -723,3 +723,132 @@ This data structure is used to fill sweep orders, and represents the values that
 - Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
 - Marketplace Fee Numerator: Marketplace fee percentage in bips. Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
 - Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled by calling the `collectionRoyaltyBackfillSettings` function on cPort.  If no on-chain royalties are present, this may be set to `0`.
+
+## Recommended Marketplace Workflows
+
+This section details the suggested workflows for implementing user facing trading features compatible with cPort.
+
+### Making Orders
+
+#### Making a Listing
+
+1. Maker browses their items and selects an item to list for sale.
+2. Maker inputs: Listing Currency/Payment Method, Price, Validity Time.
+3. Maker prompted to acknowledge/accept maker marketplace fee percentage and on-chain royalty fee (display sale price, fees, and net seller proceeds)
+4. Maker prompted to decide on standard order (on-chain cancellations) or co-signed order (gasless cancellation). For standard orders, a nonce is generated.  For co-signed orders, nonce not required.
+5. Signature Prompt for either [SaleApproval](#sale-approval) or [SaleApprovalCosigned](#sale-approval-cosigned)
+6. Order and signature added to order book.
+
+#### Making An Item Offer
+
+1. Maker browses a collection and selects a single item to make an offer on.
+2. Maker inputs: Offer Currency/Payment Method, Price, Validity Time, Beneficiary.
+3. Maker prompted to acknowledge/accept maker marketplace fee percentage (display sale price, fees, and net seller proceeds)
+4. Maker prompted to decide on standard order (on-chain cancellations) or co-signed order (gasless cancellation). For standard orders, a nonce is generated.  For co-signed orders, nonce not required.
+5. Signature Prompt for either [ItemOfferApproval](#item-offer-approval) or [ItemOfferApprovalCosigned](#item-offer-approval-cosigned)
+6. Order and signature added to order book.
+
+#### Making A Collection Offer
+
+1. Maker browses a collection and chooses to make a collection offer for any item in the collection.
+2. Maker inputs: Offer Currency/Payment Method, Price, Validity Time, Beneficiary.
+3. Maker prompted to acknowledge/accept maker marketplace fee percentage (display sale price, fees, and net seller proceeds).
+4. Maker prompted to decide on standard order (on-chain cancellations) or co-signed order (gasless cancellation). For standard orders, a nonce is generated.  For co-signed orders, nonce not required.
+5. Signature Prompt for either [CollectionOfferApproval](#collection-offer-approval) or [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned)
+6. Order and signature added to order book.
+
+#### Making A Token Set Collection Offer
+
+This can take a few forms depending on how the marketplace chooses to implement this.  This can take the form of offers on traits, offers on tokens that have not been stolen, etc.
+
+1. Maker browses a collection and chooses some criteria for token ids to make an offer on.  The marketplace generates a merkle tree of tokens based on the criteria.
+2. Maker inputs: Offer Currency/Payment Method, Price, Validity Time, Beneficiary.
+3. Maker prompted to acknowledge/accept maker marketplace fee percentage (display sale price, fees, and net seller proceeds).
+4. Maker prompted to acknowledge the set of tokens/merkle root.
+5. Maker prompted to decide on standard order (on-chain cancellations) or co-signed order (gasless cancellation). For standard orders, a nonce is generated.  For co-signed orders, nonce not required.
+6. Signature Prompt for either [TokenSetOfferApproval](#token-set-offer-approval) or [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned)
+7. Order and signature added to order book.
+
+### Cancelling Orders
+
+#### Cancelling A Single Listing
+
+1. Display maker's listings.
+2. Maker selects a listing to cancel.
+3. If standard order, maker confirms `revokeSingleNonce` transaction.  If co-signed order flag order as cancelled in DB and do not allow co-signing service to co-sign the order if requested.  Order should be hidden from future listing queries.
+
+#### Cancelling A Single Offer
+
+1. Display maker's offers.
+2. Maker selects an offer to cancel.
+3. If standard order, maker confirms `revokeSingleNonce` transaction.  If co-signed order flag order as cancelled in DB and do not allow co-signing service to co-sign the order if requested.  Order should be hidden from future offer queries.
+
+#### Cancelling All Outstanding Standard Orders
+
+1. If the maker chooses to cancel ALL outstanding standard listings and offers they have made, the maker simply needs to confirm a `revokeMasterNonce` transaction.  This should cancel/invalidate all prior orders that were not co-signed orders.
+
+#### Cancelling All Outstanding Co-Signed Orders
+
+1. The marketplace should flag all outstandingn orders for the user as cancelled in the DB.  The co-signing service should not return co-signatures for any of the cancelled orders, and the orders should be hidden from all future queries.
+
+### Filling Orders
+
+#### Filling A Single Listing (Buy Now)
+
+1. Taker browses listings and chooses a listed item.
+2. Taker selects "Buy Now".
+3. Taker selects beneficiary (whether self or other account).
+4. Taker prompted to review the details, including review and acknowledgement of fee on top when applicable.
+5. If listing order was co-signed, client requests a co-signature for the listing.
+6. The most applicable `buyListing` function should be called.  
+7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
+8. Wallet pops up a transaction confirmation of the applicable `buyListing` call.
+9. Taker confirms or rejects the transaction through their wallet interface.
+
+#### Filling A Batch Of Listings (Shopping Cart)
+
+1. Taker browses listings and chooses several listed items (they may be from one or more collections).
+2. Taker selects "Add To Shopping Cart" for each item.
+3. Taker reviews cart and "Checks Out".
+4. Taker selects beneficiary (whether self or other account).
+5. Taker prompted to review the details, including review and acknowledgement of all fees on top when applicable.
+6. For any co-signed listing orders, client requests co-signatures.
+7. The most applicable `bulkBuyListings` function should be called.  
+8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
+9. Wallet pops up a transaction confirmation of the applicable `bulkBuyListings` call.
+10. Taker confirms or rejects the transaction through their wallet interface.
+
+#### Filling A Collection Sweep
+
+1. Taker chooses "Sweep Collection" for the desired collection.
+2. Taker specifies desired quantity and maximum price per item.
+3. Taker selects beneficiary (whether self or other account).
+4. Taker prompted to review the details, including review and acknowledgement of the fee on top when applicable.
+5. For any co-signed listing orders, client requests co-signatures.
+6. The most applicable `sweepCollection` function should be called.
+7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the sweep.
+8. Wallet pops up a transaction confirmation of the applicable `sweepCollection` call.
+9. Taker confirms or rejects the transaction through their wallet interface.
+
+#### Filling A Single Offer (Accept Offer)
+
+1. Taker browser offers where the offer criteria matches items they own and chooses one.
+2. Taker selects "Accept Offer".
+3. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fee, maker marketplace fee, and fee on top when applicable.
+4. If the offer order was co-signed, client requests a co-signature for the offer.
+5. The most applicable `acceptOffer` function should be called.
+6. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
+7. Wallet pops up a transaction confirmation of the applicable `acceptOffer` call.
+8. Taker confirms or rejects the transaction through their wallet interface.
+
+#### Filling A Batch Of Offers (Offer Cart)
+
+1. Taker browser offers where the offer criteria matches items they own and chooses several.
+2. Taker selects "Add To Offer Cart" for each item.
+3. Taker reviews cart and "Checks Out".
+4. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fees for each item, the maker marketplace fees for each item, and the fees on top when applicable.
+5. For any co-signed offer orders, client requests co-signatures.
+7. The most applicable `bulkAcceptOffers` function should be called.  
+8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
+9. Wallet pops up a transaction confirmation of the applicable `bulkAcceptOffers` call.
+10. Taker confirms or rejects the transaction through their wallet interface.
