@@ -1387,7 +1387,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             if (maker.code.length > 0) {
                 _verifyEIP1271Signature(maker, digest, signature);
             } else {
-                revert cPort__UnauthorizeSale();
+                revert cPort__UnauthorizeOrder();
             }
         }
     }
@@ -1444,12 +1444,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 s
     ) private pure returns (address signer) {
         if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            revert cPort__UnauthorizeSale();
+            revert cPort__UnauthorizeOrder();
         }
 
         signer = ecrecover(digest, v, r, s);
         if (signer == address(0)) {
-            revert cPort__UnauthorizeSale();
+            revert cPort__UnauthorizeOrder();
         }
     }
 
