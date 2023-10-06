@@ -34,23 +34,27 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     uint256 private immutable pushPaymentGasLimit;
-    address private immutable weth;
-    address private immutable usdc;
-    address private immutable usdt;
-    address private immutable dai;
+    address private immutable defaultPaymentMethod1;
+    address private immutable defaultPaymentMethod2;
+    address private immutable defaultPaymentMethod3;
+    address private immutable defaultPaymentMethod4;
+    address private immutable defaultPaymentMethod5;
+    address private immutable defaultPaymentMethod6;
+    address private immutable defaultPaymentMethod7;
+    address private immutable defaultPaymentMethod8;
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
-        address weth_,
-        address usdc_,
-        address usdt_,
-        address dai_) {
-        pushPaymentGasLimit = defaultPushPaymentGasLimit_;
-        
-        weth = weth_;
-        usdc = usdc_;
-        usdt = usdt_;
-        dai = dai_;
+        DefaultPaymentMethods memory defaultPaymentMethods) {
+        pushPaymentGasLimit = defaultPushPaymentGasLimit_;        
+        defaultPaymentMethod1 = defaultPaymentMethods.defaultPaymentMethod1;
+        defaultPaymentMethod2 = defaultPaymentMethods.defaultPaymentMethod2;
+        defaultPaymentMethod3 = defaultPaymentMethods.defaultPaymentMethod3;
+        defaultPaymentMethod4 = defaultPaymentMethods.defaultPaymentMethod4;
+        defaultPaymentMethod5 = defaultPaymentMethods.defaultPaymentMethod5;
+        defaultPaymentMethod6 = defaultPaymentMethods.defaultPaymentMethod6;
+        defaultPaymentMethod7 = defaultPaymentMethods.defaultPaymentMethod7;
+        defaultPaymentMethod8 = defaultPaymentMethods.defaultPaymentMethod8;
     }
 
     /*************************************************************************/
@@ -60,13 +64,21 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function isDefaultPaymentMethod(address paymentMethod) public view returns (bool) {
         if (paymentMethod == address(0)) {
             return true;
-        } else if (paymentMethod == weth) {
+        } else if (paymentMethod == defaultPaymentMethod1) {
             return true;
-        } else if (paymentMethod == usdc) {
+        } else if (paymentMethod == defaultPaymentMethod2) {
             return true;
-        } else if (paymentMethod == usdt) {
+        } else if (paymentMethod == defaultPaymentMethod3) {
             return true;
-        } else if (paymentMethod == dai) {
+        } else if (paymentMethod == defaultPaymentMethod4) {
+            return true;
+        } else if (paymentMethod == defaultPaymentMethod5) {
+            return true;
+        } else if (paymentMethod == defaultPaymentMethod6) {
+            return true;
+        } else if (paymentMethod == defaultPaymentMethod7) {
+            return true;
+        } else if (paymentMethod == defaultPaymentMethod8) {
             return true;
         } else {
             return false;
@@ -74,12 +86,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function getDefaultPaymentMethods() external view returns (address[] memory) {
-        address[] memory defaultPaymentMethods = new address[](5);
+        address[] memory defaultPaymentMethods = new address[](9);
         defaultPaymentMethods[0] = address(0);
-        defaultPaymentMethods[1] = weth;
-        defaultPaymentMethods[2] = usdc;
-        defaultPaymentMethods[3] = usdt;
-        defaultPaymentMethods[4] = dai;
+        defaultPaymentMethods[1] = defaultPaymentMethod1;
+        defaultPaymentMethods[2] = defaultPaymentMethod2;
+        defaultPaymentMethods[3] = defaultPaymentMethod3;
+        defaultPaymentMethods[4] = defaultPaymentMethod4;
+        defaultPaymentMethods[5] = defaultPaymentMethod5;
+        defaultPaymentMethods[6] = defaultPaymentMethod6;
+        defaultPaymentMethods[7] = defaultPaymentMethod7;
+        defaultPaymentMethods[8] = defaultPaymentMethod8;
         return defaultPaymentMethods;
     }
 

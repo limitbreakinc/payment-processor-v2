@@ -21,11 +21,8 @@ contract ModuleSingleTrades is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
-        address weth_,
-        address usdc_,
-        address usdt_,
-        address dai_) 
-    cPortModule(defaultPushPaymentGasLimit_, weth_, usdc_, usdt_, dai_) {}
+        DefaultPaymentMethods memory defaultPaymentMethods) 
+    cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
 
     function buyListing(
         bytes32 domainSeparator, 

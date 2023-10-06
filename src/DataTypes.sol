@@ -12,6 +12,17 @@ enum PaymentSettings {
     PricingConstraints
 }
 
+struct DefaultPaymentMethods {
+    address defaultPaymentMethod1;
+    address defaultPaymentMethod2;
+    address defaultPaymentMethod3;
+    address defaultPaymentMethod4;
+    address defaultPaymentMethod5;
+    address defaultPaymentMethod6;
+    address defaultPaymentMethod7;
+    address defaultPaymentMethod8;
+}
+
 struct CollectionPaymentSettings {
     PaymentSettings paymentSettings;
     uint32 paymentMethodWhitelistId;

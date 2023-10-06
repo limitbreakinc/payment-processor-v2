@@ -94,54 +94,44 @@ contract cPortModuleTest is Test, cPortEvents {
 
         _cPortEncoder = new cPortEncoder();
 
+        DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
+            defaultPaymentMethod1: address(weth),
+            defaultPaymentMethod2: address(usdc),
+            defaultPaymentMethod3: address(usdt),
+            defaultPaymentMethod4: address(dai),
+            defaultPaymentMethod5: address(0),
+            defaultPaymentMethod6: address(0),
+            defaultPaymentMethod7: address(0),
+            defaultPaymentMethod8: address(0)
+        });
+
         modulePaymentSettings = new ModulePaymentSettings(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleSingleTrades = new ModuleSingleTrades(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleSingleTradesCosigned = new ModuleSingleTradesCosigned(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleBulkTrades = new ModuleBulkTrades(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleBulkTradesCosigned = new ModuleBulkTradesCosigned(
             2300, 
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         moduleSweepCollection = new ModuleSweepCollection(
             2300,
-            address(weth), 
-            address(usdc), 
-            address(usdt), 
-            address(dai));
+            defaultPaymentMethods);
 
         _cPort = 
             new cPort(
