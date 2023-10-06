@@ -333,8 +333,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
-                            saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator
+                            saleDetails.marketplaceFeeNumerator
                         )
                     )
                 )
@@ -368,8 +367,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
-                            saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator
+                            saleDetails.marketplaceFeeNumerator
                         )
                     )
                 )
@@ -404,7 +402,6 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator,
                             tokenSetProof.rootHash
                         )
                     )
@@ -440,7 +437,6 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.maker)
                         )
@@ -474,7 +470,6 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.maker)
                         )
@@ -508,7 +503,6 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator,
                             saleDetails.nonce,
                             _cPort.masterNonces(saleDetails.maker),
                             tokenSetProof.rootHash
@@ -523,44 +517,7 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
-    /*
-    function _getSignedBundledListing(
-        uint256 sellerKey_, 
-        AccumulatorHashes memory accumulatorHashes,
-        BundledOrderExtended memory bundleDetails) internal view returns (SignatureECDSA memory) {
-        bytes32 listingDigest = 
-            ECDSA.toTypedDataHash(
-                _cPort.getDomainSeparator(), 
-                keccak256(
-                    bytes.concat(
-                        abi.encode(
-                            BUNDLED_SALE_APPROVAL_HASH,
-                            uint8(bundleDetails.bundleBase.protocol),
-                            bundleDetails.seller,
-                            bundleDetails.bundleBase.marketplace,
-                            bundleDetails.bundleBase.paymentMethod,
-                            bundleDetails.bundleBase.tokenAddress
-                        ),
-                        abi.encode(
-                            bundleDetails.expiration,
-                            bundleDetails.nonce,
-                            bundleDetails.bundleBase.marketplaceFeeNumerator,
-                            _cPort.masterNonces(bundleDetails.seller),
-                            accumulatorHashes.tokenIdsKeccakHash,
-                            accumulatorHashes.amountsKeccakHash,
-                            accumulatorHashes.maxRoyaltyFeeNumeratorsKeccakHash,
-                            accumulatorHashes.itemPricesKeccakHash
-                        )
-                    )
-                )
-            );
 
-        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(sellerKey_, listingDigest);
-        SignatureECDSA memory signedListing = SignatureECDSA({v: listingV, r: listingR, s: listingS});
-
-        return signedListing;
-    }
-    */
 
     function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);

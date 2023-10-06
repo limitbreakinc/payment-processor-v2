@@ -1122,7 +1122,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.itemPrice,
                         saleDetails.expiration,
                         saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
                             saleDetails.maker,
@@ -1162,8 +1161,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.amount,
                         saleDetails.itemPrice,
                         saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator
+                        saleDetails.marketplaceFeeNumerator
                     )
                 )
             )
@@ -1194,7 +1192,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.itemPrice,
                         saleDetails.expiration,
                         saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
                             saleDetails.maker,
@@ -1233,8 +1230,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.amount,
                         saleDetails.itemPrice,
                         saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator
+                        saleDetails.marketplaceFeeNumerator
                     )
                 )
             )
@@ -1266,7 +1262,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.itemPrice,
                         saleDetails.expiration,
                         saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator,
                         saleDetails.nonce,
                         _checkAndInvalidateNonce(
                             saleDetails.maker,
@@ -1308,7 +1303,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.itemPrice,
                         saleDetails.expiration,
                         saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator,
                         tokenSetProof.rootHash
                     )
                 )
