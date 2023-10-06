@@ -800,7 +800,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 3. Taker selects beneficiary (whether self or other account).
 4. Taker prompted to review the details, including review and acknowledgement of fee on top when applicable.
 5. If listing order was co-signed, client requests a co-signature for the listing.
-6. The most applicable `buyListing` function should be called.  
+6. The most applicable `buyListing` function should be called.  [Applicability Details](#buy-listing)
 7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
 8. Wallet pops up a transaction confirmation of the applicable `buyListing` call.
 9. Taker confirms or rejects the transaction through their wallet interface.
@@ -813,7 +813,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 4. Taker selects beneficiary (whether self or other account).
 5. Taker prompted to review the details, including review and acknowledgement of all fees on top when applicable.
 6. For any co-signed listing orders, client requests co-signatures.
-7. The most applicable `bulkBuyListings` function should be called.  
+7. The most applicable `bulkBuyListings` function should be called.  [Applicability Details](#bulk-buy-listings)
 8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
 9. Wallet pops up a transaction confirmation of the applicable `bulkBuyListings` call.
 10. Taker confirms or rejects the transaction through their wallet interface.
@@ -825,7 +825,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 3. Taker selects beneficiary (whether self or other account).
 4. Taker prompted to review the details, including review and acknowledgement of the fee on top when applicable.
 5. For any co-signed listing orders, client requests co-signatures.
-6. The most applicable `sweepCollection` function should be called.
+6. The most applicable `sweepCollection` function should be called. [Applicability Details](#sweep-collection)
 7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the sweep.
 8. Wallet pops up a transaction confirmation of the applicable `sweepCollection` call.
 9. Taker confirms or rejects the transaction through their wallet interface.
@@ -836,7 +836,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 2. Taker selects "Accept Offer".
 3. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fee, maker marketplace fee, and fee on top when applicable.
 4. If the offer order was co-signed, client requests a co-signature for the offer.
-5. The most applicable `acceptOffer` function should be called.
+5. The most applicable `acceptOffer` function should be called. [Applicability Details](#accept-offer)
 6. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
 7. Wallet pops up a transaction confirmation of the applicable `acceptOffer` call.
 8. Taker confirms or rejects the transaction through their wallet interface.
@@ -848,7 +848,9 @@ This can take a few forms depending on how the marketplace chooses to implement 
 3. Taker reviews cart and "Checks Out".
 4. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fees for each item, the maker marketplace fees for each item, and the fees on top when applicable.
 5. For any co-signed offer orders, client requests co-signatures.
-7. The most applicable `bulkAcceptOffers` function should be called.  
+7. The most applicable `bulkAcceptOffers` function should be called.  [Applicability Details](#bulk-accept-offers)
 8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
 9. Wallet pops up a transaction confirmation of the applicable `bulkAcceptOffers` call.
 10. Taker confirms or rejects the transaction through their wallet interface.
+
+***Note: There are other steps marketplaces may need to implement to prompt users in the workflow.  For instance: approving cPort to transfer NFTs and ERC-20 payments, prompting to wrap native currency or swap currencies when needed, or prompting buyers to perform a one-time signature to prove they are EOAs [for select ERC721-C security levels only].***
