@@ -78,7 +78,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setCollectionPricingBounds(address,(bool,bool,uint120,uint120))",
+                "setCollectionPricingBounds(address,(bool,uint120,uint120))",
                 tokenAddress,
                 pricingBounds));
     }
@@ -91,7 +91,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setTokenPricingBounds(address,uint256[],(bool,bool,uint120,uint120)[])",
+                "setTokenPricingBounds(address,uint256[],(bool,uint120,uint120)[])",
                 tokenAddress,
                 tokenIds,
                 pricingBounds));
