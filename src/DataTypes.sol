@@ -107,7 +107,6 @@ struct SweepItem {
  * @dev This struct is used to define pricing constraints for a collection or individual token.
  *
  * @dev **isSet**: When true, this indicates that pricing constraints are set for the collection or token.
- * @dev **isImmutable**: When true, this indicates that pricing constraints are immutable and cannot be changed.
  * @dev **floorPrice**: The minimum price for a token or collection.  This is only enforced when 
  * @dev `enforcePricingConstraints` is `true`.
  * @dev **ceilingPrice**: The maximum price for a token or collection.  This is only enforced when
@@ -115,7 +114,6 @@ struct SweepItem {
  */
 struct PricingBounds {
     bool isSet;
-    bool isImmutable;
     uint120 floorPrice;
     uint120 ceilingPrice;
 }

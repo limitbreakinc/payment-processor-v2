@@ -89,7 +89,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, 0, address(0), params.royaltyBountyRate, address(0));
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
-            isImmutable: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
@@ -113,7 +112,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             tokenIds[i - 1] = i;
             pricingBoundsArray[i - 1] = PricingBounds({
                 isSet: true,
-                isImmutable: true,
                 floorPrice: 1 ether,
                 ceilingPrice: 500 ether
             });
@@ -161,7 +159,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, 0, address(0), params.royaltyBountyRate, address(0));
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
-            isImmutable: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
@@ -185,7 +182,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             tokenIds[i - 1] = i;
             pricingBoundsArray[i - 1] = PricingBounds({
                 isSet: true,
-                isImmutable: true,
                 floorPrice: 1 ether,
                 ceilingPrice: 500 ether
             });
@@ -233,7 +229,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, 0, address(0), params.royaltyBountyRate, address(0));
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
-            isImmutable: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
@@ -257,7 +252,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             tokenIds[i - 1] = i;
             pricingBoundsArray[i - 1] = PricingBounds({
                 isSet: true,
-                isImmutable: true,
                 floorPrice: 1 ether,
                 ceilingPrice: 500 ether
             });
@@ -305,7 +299,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, 0, address(0), params.royaltyBountyRate, address(0));
         bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
             isSet: true,
-            isImmutable: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
@@ -329,7 +322,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             tokenIds[i - 1] = i;
             pricingBoundsArray[i - 1] = PricingBounds({
                 isSet: true,
-                isImmutable: true,
                 floorPrice: 1 ether,
                 ceilingPrice: 500 ether
             });
