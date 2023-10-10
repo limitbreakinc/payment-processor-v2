@@ -18,7 +18,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
@@ -58,7 +58,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
@@ -98,7 +98,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
@@ -138,7 +138,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
@@ -191,7 +191,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,
@@ -248,7 +248,7 @@ contract ModuleAcceptOfferTest is cPortModuleTest {
         address seller = vm.addr(fuzzedOrderInputs.sellerKey);
 
         Order memory saleDetails = Order({
-            protocol: TokenProtocols.ERC721,
+            protocol: OrderProtocols.ERC721_FILL_OR_KILL,
             maker: vm.addr(fuzzedOrderInputs.buyerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: cal,

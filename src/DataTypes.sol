@@ -3,7 +3,11 @@ pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-enum TokenProtocols { ERC721, ERC1155 }
+enum OrderProtocols { 
+    ERC721_FILL_OR_KILL, 
+    ERC1155_FILL_OR_KILL,
+    ERC1155_FILL_PARTIAL
+}
 
 enum PaymentSettings { 
     DefaultPaymentMethodWhitelist,
@@ -43,7 +47,7 @@ struct SignatureECDSA {
 }
 
 struct Order {
-    TokenProtocols protocol;
+    OrderProtocols protocol;
     address maker;
     address beneficiary;
     address marketplace;
@@ -77,6 +81,22 @@ struct TokenSetProof {
     bytes32[] proof;
 }
 
+struct FillAmounts {
+    uint248 requested;
+    uint248 minimum;
+}
+
+enum PartiallyFillableOrderState { 
+    Open, 
+    Filled, 
+    Cancelled
+}
+
+struct PartiallyFillableOrderStatus {
+    PartiallyFillableOrderState state;
+    uint248 remainingFillableQuantity;
+}
+
 struct RoyaltyBackfillAndBounty {
     uint16 backfillNumerator;
     address backfillReceiver;
@@ -85,7 +105,7 @@ struct RoyaltyBackfillAndBounty {
 }
 
 struct SweepOrder {
-    TokenProtocols protocol;
+    OrderProtocols protocol;
     address tokenAddress;
     address paymentMethod;
     address beneficiary;
@@ -161,13 +181,20 @@ struct PayoutsAccumulator {
  */
 struct SweepCollectionComputeAndDistributeProceedsParams {
     IERC20 paymentCoin;
-    function(address,address,IERC20,uint256,uint256) funcPayout;
-    function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
-    function(Order memory) funcEmitOrderExecutionEvent;
+    FulfillOrderFunctionPointers fnPointers;
     FeeOnTop feeOnTop;
     RoyaltyBackfillAndBounty royaltyBackfillAndBounty;
     Order[] saleDetailsBatch;
 }
+
+/** 
+ * @dev Internal contract use only - this is not a public-facing struct
+ */
+ struct FulfillOrderFunctionPointers {
+    function(address,address,IERC20,uint256,uint256) funcPayout;
+    function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
+    function(Order memory) funcEmitOrderExecutionEvent;
+ }
 
 struct cPortStorage {
     /// @dev Tracks the most recently created payment method whitelist id
@@ -218,4 +245,6 @@ struct cPortStorage {
 
     mapping (address => address) collectionRoyaltyBackfillReceivers;
     mapping (address => address) collectionExclusiveBountyReceivers;
+
+    mapping (address => mapping(bytes32 => PartiallyFillableOrderStatus)) partiallyFillableOrderStatuses;
 }

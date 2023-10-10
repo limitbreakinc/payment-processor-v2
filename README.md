@@ -24,18 +24,22 @@
 | [buyListingWithFeeOnTop](#buy-listing)                       | [encodeBuyListingWithFeeOnTopCalldata](#encodebuylistingwithfeeontopcalldata)                | [SaleApproval](#sale-approval)                                                                                                                               | 
 | [buyListingCosigned](#buy-listing)                           | [encodeBuyListingCosignedCalldata](#encodebuylistingcosignedcalldata)                    | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
 | [buyListingCosignedWithFeeOnTop](#buy-listing)               | [encodeBuyListingCosignedWithFeeOnTopCalldata](#encodebuylistingcosignedwithfeeontopcalldata)        | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
+| [buyListingPartialFill](#buy-listing)               | [encodeBuyListingPartialFillCalldata](#encodebuylistingpartialfillcalldata)        | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
 | [acceptOffer](#accept-offer)                                 | [encodeAcceptOfferCalldata](#encodeacceptoffercalldata)                           | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
 | [acceptOfferWithFeeOnTop](#accept-offer)                     | [encodeAcceptOfferWithFeeOnTopCalldata](#encodeacceptofferwithfeeontopcalldata)               | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
 | [acceptOfferCosigned](#accept-offer)                         | [encodeAcceptOfferCosignedCalldata](#encodeacceptoffercosignedcalldata)                   | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
 | [acceptOfferCosignedWithFeeOnTop](#accept-offer)             | [encodeAcceptOfferCosignedWithFeeOnTopCalldata](#encodeacceptoffercosignedwithfeeontopcalldata)       | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [acceptOfferPartialFill](#accept-offer)             | [encodeAcceptOfferPartialFillCalldata](#encodeacceptofferpartialfillcalldata)       | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
 | [bulkBuyListings](#bulk-buy-listings)                        | [encodeBulkBuyListingsCalldata](#encodebulkbuylistingscalldata)                       | [SaleApproval](#sale-approval)                                                                                                                               |
 | [bulkBuyListingsWithFeesOnTop](#bulk-buy-listings)           | [encodeBulkBuyListingsWithFeesOnTopCalldata](#encodebulkbuylistingswithfeesontopcalldata)          | [SaleApproval](#sale-approval)                                                                                                                               | 
 | [bulkBuyListingsCosigned](#bulk-buy-listings)                | [encodeBulkBuyListingsCosignedCalldata](#encodebulkbuylistingscosignedcalldata)               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
 | [bulkBuyListingsCosignedWithFeesOnTop](#bulk-buy-listings)   | [encodeBulkBuyListingsCosignedWithFeesOnTopCalldata](#encodebulkbuylistingscosignedwithfeesontopcalldata)  | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                                                                      |
+| [bulkBuyListingsPartialFill](#bulk-buy-listings)   | [encodeBulkBuyListingsPartialFillCalldata](#encodebulkbuylistingspartialfillcalldata)  | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                                                                      |
 | [bulkAcceptOffers](#bulk-accept-offers)                      | [encodeBulkAcceptOffersCalldata](#encodebulkacceptofferscalldata)                      | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         |
 | [bulkAcceptOffersWithFeesOnTop](#bulk-accept-offers)         | [encodeBulkAcceptOffersWithFeesOnTopCalldata](#encodebulkacceptofferswithfeesontopcalldata)         | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval)         | 
 | [bulkAcceptOffersCosigned](#bulk-accept-offers)              | [encodeBulkAcceptOffersCosignedCalldata](#encodebulkacceptofferscosignedcalldata)              | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
 | [bulkAcceptOffersCosignedWithFeesOnTop](#bulk-accept-offers) | [encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata](#encodebulkacceptofferscosignedwithfeesontopcalldata) | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
+| [bulkAcceptOffersPartialFill](#bulk-accept-offers) | [encodeBulkAcceptOffersPartialFillCalldata](#encodebulkacceptofferspartialfillcalldata) | [ItemOfferApproval](#item-offer-approval), [CollectionOfferApproval](#collection-offer-approval), [TokenSetOfferApproval](#token-set-offer-approval), [ItemOfferApprovalCosigned](#item-offer-approval-cosigned), [CollectionOfferApprovalCosigned](#collection-offer-approval-cosigned), [TokenSetOfferApprovalCosigned](#token-set-offer-approval-cosigned) |
 | [sweepCollection](#sweep-collection)                         | [encodeSweepCollectionCalldata](#encodesweepcollectioncalldata)                       | [SaleApproval](#sale-approval)                                                                                                                               |
 | [sweepCollectionWithFeeOnTop](#sweep-collection)             | [encodeSweepCollectionWithFeeOnTopCalldata](#encodesweepcollectionwithfeeontopcalldata)           | [SaleApproval](#sale-approval)                                                                                                                               | 
 | [sweepCollectionCosigned](#sweep-collection)                 | [encodeSweepCollectionCosignedCalldata](#encodesweepcollectioncosignedcalldata)               | [SaleApproval](#sale-approval), [SaleApprovalCosigned](#sale-approval-cosigned)                                                                              |
@@ -43,7 +47,7 @@
 
 ### Buy Listing
 
-Exchanges should call `buyListing` when a taker wants to purchase a single listing using a UX analogous to "Buy Now".  There are four variations of `buyListing`.
+Exchanges should call `buyListing` when a taker wants to purchase a single listing using a UX analogous to "Buy Now".  There are five variations of `buyListing`.
 
 `buyListing` - To be used when the taker fills a standard sell order and the maker and taker marketplace is the same, or when the taker marketplace does not include a fee on top.
 
@@ -52,6 +56,8 @@ Exchanges should call `buyListing` when a taker wants to purchase a single listi
 `buyListingCosigned` - To be used when the taker fills a co-signed sell order and the maker and taker marketplace is the same, or when the taker marketplace does not include a fee on top. 
 
 `buyListingCosignedWithFeeOnTop` - To be used when the taker fills a co-signed sell order via a secondary marketplace.  While the maker marketplace can assess a primary fee that is deducted from the seller's proceeds, the taker marketplace may assess an extra `fee on top` paid by the taker in excess of the item purchase price.
+
+`buyListingPartialFill` - To be used when the taker fills any kind of sell order where OrderProtocol is `ERC1155_FILL_PARTIAL` with or without a fee on top.
 
 *Note: The taker/buyer (`msg.sender`) pays for the item and any fee on top when applicable.  Because the `buyListing` function is payable, both native or ERC-20 payment methods are accepted.*
 
@@ -63,7 +69,7 @@ Exchanges should call `acceptOffer` when a taker wants to sell a single item tha
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
 3. Token Set Offer - An offer made on a specific collection where any token id contained in a specified subset of token ids can be used to fill the order.
 
-There are four variations of `acceptOffer`.
+There are five variations of `acceptOffer`.
 
 `acceptOffer` - To be used when the taker fills a standard buy order (offer) and the maker and taker marketplace is the same, or when the taker marketplace does not include a fee on top.
 
@@ -73,11 +79,13 @@ There are four variations of `acceptOffer`.
 
 `acceptOfferCosignedWithFeeOnTop` - To be used when the taker fills a co-signed buy order (offer) via a secondary marketplace.  While the maker marketplace can assess a primary fee that is deducted from the seller's proceeds, the taker marketplace may assess an extra `fee on top` paid by the taker in excess of the item purchase price.
 
+`acceptOfferPartialFill` - To be used when the taker fills any kind of buy order (offer) where OrderProtocol is `ERC1155_FILL_PARTIAL` with or without a fee on top.
+
 *Note: The taker/seller (`msg.sender`) pays for the fee on top when applicable.  The maker/buyer pays the cost of the filled item.  Because the `acceptOffer` function is not payable, only ERC-20 payment methods are accepted.*
 
 ### Bulk Buy Listings
 
-Exchanges should call `bulkBuyListings` when a taker wants to purchase more than one listing using a UX analagous to a "Shopping Cart".  This allows a taker to select many NFTs across different collections or with varying payment methods and fill all of the listings at once.  There are four variations of `bulkBuyListings`.
+Exchanges should call `bulkBuyListings` when a taker wants to purchase more than one listing using a UX analagous to a "Shopping Cart".  This allows a taker to select many NFTs across different collections or with varying payment methods and fill all of the listings at once.  There are five variations of `bulkBuyListings`.
 
 `bulkBuyListings` - To be used when the taker fills a set of orders that includes only standard sell orders, none of which includes fees on top.
 
@@ -91,6 +99,8 @@ Exchanges should call `bulkBuyListings` when a taker wants to purchase more than
 
 `bulkBuyListingsCosignedWithFeesOnTop` - To be used when the taker fills a set of orders that includes at least one co-signed sell order, and at least one order includes a fee on top.
 
+`bulkBuyListingsPartialFill` - To be used when the taker fills a set of orders that includes at least one sell order where OrderProtocol is `ERC1155_FILL_PARTIAL`.
+
 - *Note that when executing an array of orders, an array of fees on top must be provided of equal length such that saleDetailsArray[index] corresponds with feesOnTop[index].  When saleDetailsArray[index] has no fee on top, feesOnTop[index] must be an empty (zero) fee on top.*
 - *Note that when executing an array of orders, an array of cosignatures must be provided of equal length such that saleDetailsArray[index] corresponds with cosignatures[index].  When saleDetailsArray[index] was signed as a standard order, cosignatures[index] must be an empty (zero) cosignature.*
 
@@ -102,7 +112,7 @@ Exchanges should call `bulkAcceptOffers` when a taker wants to accept/fill more 
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
 3. Token Set Offer - An offer made on a specific collection where any token id contained in a specified subset of token ids can be used to fill the order.
 
-There are four variations of `bulkAcceptOffers`. 
+There are five variations of `bulkAcceptOffers`. 
 
 `bulkAcceptOffers` - To be used when the taker fills a set of orders that includes only standard buy orders (offers), none of which includes fees on top.
 
@@ -115,6 +125,8 @@ There are four variations of `bulkAcceptOffers`.
 - *Note that when executing an array of orders, an array of cosignatures must be provided of equal length such that saleDetailsArray[index] corresponds with cosignatures[index].  When saleDetailsArray[index] was signed as a standard order, cosignatures[index] must be an empty (zero) cosignature.*
 
 `bulkAcceptOffersCosignedWithFeesOnTop` - To be used when the taker fills a set of orders that includes at least one co-signed buy order (offer), and at least one order includes a fee on top.
+
+`bulkAcceptOffersPartialFill` - To be used when the taker fills a set of orders that includes at least one buy order (offer) where OrderProtocol is `ERC1155_FILL_PARTIAL`.
 
 - *Note that when executing an array of orders, an array of fees on top must be provided of equal length such that saleDetailsArray[index] corresponds with feesOnTop[index].  When saleDetailsArray[index] has no fee on top, feesOnTop[index] must be an empty (zero) fee on top.*
 - *Note that when executing an array of orders, an array of cosignatures must be provided of equal length such that saleDetailsArray[index] corresponds with cosignatures[index].  When saleDetailsArray[index] was signed as a standard order, cosignatures[index] must be an empty (zero) cosignature.*
@@ -214,6 +226,20 @@ function encodeBuyListingCosignedWithFeeOnTopCalldata(
         FeeOnTop memory feeOnTop) external view returns (bytes memory);
 ```
 
+### encodeBuyListingPartialFillCalldata
+
+Used to encode calldata for cPort `buyListingPartialFill` function.
+
+```solidity
+function encodeBuyListingPartialFillCalldata(
+        address cPortAddress, 
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
 ### encodeAcceptOfferCalldata
 
 Used to encode calldata for cPort `acceptOffer` function.
@@ -294,6 +320,28 @@ function encodeAcceptOfferCosignedWithFeeOnTopCalldata(
 
 *Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
 
+### encodeAcceptOfferPartialFillCalldata
+
+Used to encode calldata for cPort `acceptOfferPartialFill` function.
+
+```solidity
+function encodeAcceptOfferPartialFillCalldata(
+        address cPortAddress, 
+        bool isCollectionLevelOffer,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails, 
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop) external view returns (bytes memory);
+```
+
+*Note: When filling an item offer, `isCollectionLevelOffer` MUST be set to `false`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOffer` MUST be set to `true`, and `tokenSetProof` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
 ### encodeBulkBuyListingsCalldata
 
 Used to encode calldata for cPort `bulkBuyListings` function.
@@ -346,6 +394,26 @@ Used to encode calldata for cPort `bulkBuyListingsCosignedWithFeesOnTop` functio
 ```solidity
 function encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
         address cPortAddress, 
+        Order[] calldata saleDetailsArray, 
+        SignatureECDSA[] calldata signatures,
+        Cosignature[] calldata cosignatures,
+        FeeOnTop[] calldata feesOnTop) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `cosignatures`, and `feesOnTop` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `cosignatures[index]`, and `feesOnTop[index]`.*
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeBulkBuyListingsPartialFillCalldata
+
+Used to encode calldata for cPort `bulkBuyListingsPartialFill` function.
+
+```solidity
+function encodeBulkBuyListingsPartialFillCalldata(
+        address cPortAddress, 
+        FillAmounts[] calldata fillAmountsArray,
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures,
         Cosignature[] calldata cosignatures,
@@ -435,6 +503,34 @@ Used to encode calldata for cPort `bulkAcceptOffersCosignedWithFeesOnTop` functi
 function encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
         address cPortAddress, 
         bool[] memory isCollectionLevelOfferArray,
+        Order[] memory saleDetailsArray,
+        SignatureECDSA[] memory signatures,
+        TokenSetProof[] memory tokenSetProofsArray,
+        Cosignature[] memory cosignaturesArray,
+        FeeOnTop[] memory feesOnTopArray) external view returns (bytes memory);
+```
+
+*Note: The length of the `saleDetailsArray`, `signatures`, `tokenSetProofsArray`, `isCollectionLevelOfferArray`, `cosignatures`, and `feesOnTopArray` MUST match and MUST be non-zero. `saleDetailsArray[index]` MUST correspond to `signatures[index]`, `tokenSetProofsArray[index]`, `isCollectionLevelOfferArray[index]`, `cosignatures[index]`, and `feesOnTopArray[index]`.*
+
+*Note: When filling an item offer, `isCollectionLevelOfferArray[index]` MUST be set to `false`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a collection offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST be set to the empty `TokenSetProof({rootHash: bytes32(0), proof: bytes32[](0)})`.
+
+*Note: When filling a token set offer, `isCollectionLevelOfferArray[index]` MUST be set to `true`, and `tokenSetProofsArray[index]` MUST contain the root hash of the merkle tree signed by the offer maker, and the proof must be the valid merkle proof for the collection and token id being filled.
+
+*Note: As co-signatures may not apply to all orders being filled, `cosignatures[index]` MUST be set to the empty `Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)})` for any order that is not co-signed.*
+
+*Note: As fees on top may not apply to all orders being filled, `feesOnTop[index]` MUST be set to the empty `FeeOnTop({recipient: address(0), amount: 0})` for any order that is not subject to a fee on top.*
+
+### encodeBulkAcceptOffersPartialFillCalldata
+
+Used to encode calldata for cPort `bulkAcceptOffersPartialFill` function.
+
+```solidity
+function encodeBulkAcceptOffersPartialFillCalldata(
+        address cPortAddress, 
+        bool[] memory isCollectionLevelOfferArray,
+        FillAmounts[] memory fillAmountsArray,
         Order[] memory saleDetailsArray,
         SignatureECDSA[] memory signatures,
         TokenSetProof[] memory tokenSetProofsArray,
