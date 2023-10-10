@@ -128,6 +128,9 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The Sweep Collection module implements all sweep collection-related functionality.
     address private immutable moduleSweepCollection;
 
+    /// @dev The Partially Fillable Trades module implements all partially fillable trade-related functionality.
+    address private immutable modulePartiallyFillableTrades;
+
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
@@ -136,7 +139,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleSingleTradesCosigned_,
         address moduleBulkTrades_,
         address moduleBulkTradesCosigned_,
-        address moduleSweepCollection_) 
+        address moduleSweepCollection_,
+        address modulePartiallyFillableTrades_) 
         EIP712("cPort", "1") {
         modulePaymentSettings = modulePaymentSettings_;
         moduleOnChainCancellation = moduleOnChainCancellation_;
@@ -145,6 +149,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         moduleBulkTrades = moduleBulkTrades_;
         moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
         moduleSweepCollection = moduleSweepCollection_;
+        modulePartiallyFillableTrades = modulePartiallyFillableTrades_;
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -206,6 +211,16 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      */
     function masterNonces(address account) public view returns (uint256) {
         return appStorage().masterNonces[account];
+    }
+
+    /**
+     * @notice Returns the state and remaining fillable quantity of an order digest given the maker address.
+     */
+    function remainingFillableQuantity(
+        address account, 
+        bytes32 orderDigest
+    ) external view returns (PartiallyFillableOrderStatus memory) {
+        return appStorage().partiallyFillableOrderStatuses[account][orderDigest];
     }
 
     /**
@@ -644,6 +659,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function buyListingPartialFill(bytes calldata data) external payable {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"ddc1bc09")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function acceptOffer(bytes calldata data) external {
         _requireNotPaused();
         address module = moduleSingleTrades;
@@ -697,6 +728,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"84bbfbff")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function acceptOfferPartialFill(bytes calldata data) external {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"1d715fba")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -772,6 +819,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function bulkBuyListingsPartialFill(bytes calldata data) external payable {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"87dc7fd1")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function bulkAcceptOffers(bytes calldata data) external {
         _requireNotPaused();
         address module = moduleBulkTrades;
@@ -825,6 +888,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"53b8ecae")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function bulkAcceptOffersPartialFill(bytes calldata data) external {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"ed10c494")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

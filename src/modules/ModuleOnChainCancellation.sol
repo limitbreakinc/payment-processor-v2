@@ -57,4 +57,21 @@ contract ModuleOnChainCancellation is cPortModule {
     function revokeSingleNonce(uint256 nonce) external {
         _checkAndInvalidateNonce(msg.sender, nonce, true);
     }
+
+    /**
+     * @notice Allows a maker to revoke/cancel a partially fillable order by specifying the order digest hash.
+     *
+     * @dev    Throws when the maker has already revoked the order digest.
+     * @dev    Throws when the order digest was already used by the maker and has been fully filled.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The specified `orderDigest` for the `msg.sender` has been revoked and can
+     *            no longer be used to execute a sale or purchase.
+     * @dev    2. An `OrderDigestInvalidated` event has been emitted.
+     *
+     * @param  orderDigest The order digest that was signed in the revoked listing or offer.
+     */
+    function revokeOrderDigest(bytes32 orderDigest) external {
+        _revokeOrderDigest(msg.sender, orderDigest);
+    }
 }

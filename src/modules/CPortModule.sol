@@ -117,9 +117,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             msg.sender,
             saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitBuyListingERC1155Event : _emitBuyListingERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValue, saleDetails));
     }
@@ -153,9 +151,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             msg.sender,
             saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitBuyListingERC1155Event : _emitBuyListingERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
             feeOnTop);
@@ -195,12 +191,79 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             msg.sender,
             saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitBuyListingERC1155Event : _emitBuyListingERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
             feeOnTop);
+    }
+
+    function _executeOrderBuySidePartialFill(
+        bytes32 domainSeparator,
+        bool disablePartialFill,
+        uint256 msgValue,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signedSellOrder,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) internal {
+        uint256 msgValueItemPrice = 0;
+
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            if (saleDetails.paymentMethod == address(0)) {
+                revert cPort__BadPaymentMethod();
+            }
+
+            uint248 quantityToFill;
+
+            if (cosignature.signer != address(0)) {
+                quantityToFill = 
+                    _verifyCosignedSaleApprovalPartialFill(
+                        domainSeparator, 
+                        fillAmounts,
+                        saleDetails, 
+                        signedSellOrder, 
+                        cosignature);
+            } else {
+                quantityToFill = 
+                    _verifySignedSaleApprovalPartialFill(
+                        domainSeparator, 
+                        fillAmounts,
+                        saleDetails, 
+                        signedSellOrder);
+            }
+
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        } else {   
+            if (saleDetails.paymentMethod == address(0)) {
+                if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
+                    revert cPort__IncorrectFundsToCoverFeeOnTop();
+                }
+                
+                msgValueItemPrice = saleDetails.itemPrice;
+            }
+
+            if (cosignature.signer != address(0)) {
+                _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
+            } else {
+                _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+            }
+        }
+
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        _fulfillSingleOrderWithFeeOnTop(
+                disablePartialFill,
+                msg.sender,
+                saleDetails.maker,
+                IERC20(saleDetails.paymentMethod),
+                _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
+                saleDetails,
+                _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
+                feeOnTop);
     }
 
     function _executeOrderSellSide(
@@ -235,9 +298,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.maker,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitAcceptOfferERC1155Event : _emitAcceptOfferERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValue, saleDetails));
     }
@@ -279,9 +340,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.maker,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitAcceptOfferERC1155Event : _emitAcceptOfferERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValue, saleDetails),
             feeOnTop);
@@ -332,9 +391,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.maker,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitAcceptOfferERC1155Event : _emitAcceptOfferERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValue, saleDetails));
     }
@@ -391,9 +448,134 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.maker,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
-            saleDetails.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-            saleDetails.protocol == TokenProtocols.ERC1155 ? _emitAcceptOfferERC1155Event : _emitAcceptOfferERC721Event,
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
+            saleDetails,
+            royaltyBackfillAndBounty,
+            feeOnTop);
+    }
+
+    function _executeOrderSellSidePartialFill(
+        bytes32 domainSeparator,
+        bool disablePartialFill,
+        uint256 msgValue,
+        bool isCollectionLevelOrder, 
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory buyerSignature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
+        FeeOnTop memory feeOnTop
+    ) internal {
+        if (saleDetails.paymentMethod == address(0)) {
+            revert cPort__BadPaymentMethod();
+        }
+
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            uint248 quantityToFill;
+
+            if (isCollectionLevelOrder) {
+                if (tokenSetProof.rootHash == bytes32(0)) {
+                    if (cosignature.signer == address(0)) {
+                        quantityToFill = 
+                            _verifySignedCollectionOfferPartialFill(
+                                domainSeparator, 
+                                fillAmounts, 
+                                saleDetails, 
+                                buyerSignature);
+                    } else {
+                        quantityToFill = 
+                            _verifyCosignedCollectionOfferPartialFill(
+                                domainSeparator, 
+                                fillAmounts, 
+                                saleDetails, 
+                                buyerSignature, 
+                                cosignature);
+                    }
+                } else {
+                    if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                        revert cPort__IncorrectTokenSetMerkleProof();
+                    }
+    
+                    if (cosignature.signer == address(0)) {
+                        quantityToFill = 
+                            _verifySignedTokenSetOfferPartialFill(
+                                domainSeparator, 
+                                fillAmounts, 
+                                saleDetails, 
+                                buyerSignature, 
+                                tokenSetProof);
+                    } else {
+                        quantityToFill = 
+                            _verifyCosignedTokenSetOfferPartialFill(
+                                domainSeparator, 
+                                fillAmounts, 
+                                saleDetails, 
+                                buyerSignature, 
+                                tokenSetProof, 
+                                cosignature);
+                    }
+                }
+            } else {
+                if (cosignature.signer == address(0)) {
+                    quantityToFill = 
+                        _verifySignedItemOfferPartialFill(
+                            domainSeparator, 
+                            fillAmounts, 
+                            saleDetails, 
+                            buyerSignature);
+                } else {
+                    quantityToFill = 
+                        _verifyCosignedItemOfferPartialFill(
+                            domainSeparator, 
+                            fillAmounts, 
+                            saleDetails, 
+                            buyerSignature, 
+                            cosignature);
+                }
+            }
+
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        } else {
+            if (isCollectionLevelOrder) {
+                if (tokenSetProof.rootHash == bytes32(0)) {
+                    if (cosignature.signer == address(0)) {
+                        _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                    } else {
+                        _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                    }
+                } else {
+                    if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                        revert cPort__IncorrectTokenSetMerkleProof();
+                    }
+    
+                    if (cosignature.signer == address(0)) {
+                        _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                    } else {
+                        _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
+                    }
+                }
+            } else {
+                if (cosignature.signer == address(0)) {
+                    _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+                } else {
+                    _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                }
+            }
+        }
+
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(msgValue, saleDetails);
+
+        _fulfillSingleOrderWithFeeOnTop(
+            disablePartialFill,
+            saleDetails.maker,
+            msg.sender,
+            IERC20(saleDetails.paymentMethod),
+            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             royaltyBackfillAndBounty,
             feeOnTop);
@@ -406,6 +588,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
         SignatureECDSA[] calldata signedSellOrders) internal {
+
+        if (sweepOrder.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            revert cPort__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
+        }
 
         if (items.length != signedSellOrders.length) {
             revert cPort__InputArrayLengthMismatch();
@@ -428,9 +614,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSweepOrderWithFeeOnTop(
             SweepCollectionComputeAndDistributeProceedsParams(
                 IERC20(sweepOrder.paymentMethod),
-                sweepOrder.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-                sweepOrder.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-                sweepOrder.protocol == TokenProtocols.ERC1155 ? _emitBuyListingERC1155Event : _emitBuyListingERC721Event,
+                _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
                 feeOnTop,
                 royaltyBackfillAndBounty,
                 saleDetailsBatch
@@ -445,6 +629,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SweepItem[] calldata items,
         SignatureECDSA[] calldata signedSellOrders,
         Cosignature[] memory cosignatures) internal {
+
+        if (sweepOrder.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            revert cPort__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
+        }
 
         if (items.length != signedSellOrders.length) {
             revert cPort__InputArrayLengthMismatch();
@@ -472,9 +660,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSweepOrderWithFeeOnTop(
             SweepCollectionComputeAndDistributeProceedsParams(
                 IERC20(sweepOrder.paymentMethod),
-                sweepOrder.paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
-                sweepOrder.protocol == TokenProtocols.ERC1155 ? _dispenseERC1155Token : _dispenseERC721Token,
-                sweepOrder.protocol == TokenProtocols.ERC1155 ? _emitBuyListingERC1155Event : _emitBuyListingERC721Event,
+                _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
                 feeOnTop,
                 royaltyBackfillAndBounty,
                 saleDetailsBatch
@@ -499,13 +685,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        if (saleDetails.protocol == TokenProtocols.ERC1155) {
-            if (saleDetails.amount == 0) {
-                revert cPort__AmountForERC1155SalesGreaterThanZero();
-            }
-        } else {
+        if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
             if (saleDetails.amount != ONE) {
                 revert cPort__AmountForERC721SalesMustEqualOne();
+            }
+        } else {
+            if (saleDetails.amount == 0) {
+                revert cPort__AmountForERC1155SalesGreaterThanZero();
             }
         }
 
@@ -611,13 +797,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetailsBatch[i] = saleDetails;
             sumListingPrices += saleDetails.itemPrice;
 
-            if (saleDetails.protocol == TokenProtocols.ERC1155) {
-                if (saleDetails.amount == 0) {
-                    revert cPort__AmountForERC1155SalesGreaterThanZero();
-                }
-            } else {
+            if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
                 if (saleDetails.amount != ONE) {
                     revert cPort__AmountForERC721SalesMustEqualOne();
+                }
+            } else {
+                if (saleDetails.amount == 0) {
+                    revert cPort__AmountForERC1155SalesGreaterThanZero();
                 }
             }
 
@@ -711,13 +897,11 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         address purchaser,
         address seller,
         IERC20 paymentCoin,
-        function(address,address,IERC20,uint256,uint256) funcPayout,
-        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
-        function(Order memory) funcEmitOrderExecutionEvent,
+        FulfillOrderFunctionPointers memory fnPointers,
         Order memory saleDetails,
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty
     ) private {
-        if (!funcDispenseToken(
+        if (!fnPointers.funcDispenseToken(
                 seller, 
                 saleDetails.beneficiary, 
                 saleDetails.tokenAddress, 
@@ -743,18 +927,18 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 );
 
             if (proceeds.royaltyProceeds > 0) {
-                funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.marketplaceProceeds > 0) {
-                funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.sellerProceeds > 0) {
-                funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
 
-            funcEmitOrderExecutionEvent(saleDetails);
+            fnPointers.funcEmitOrderExecutionEvent(saleDetails);
         }
     }
 
@@ -763,14 +947,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         address purchaser,
         address seller,
         IERC20 paymentCoin,
-        function(address,address,IERC20,uint256,uint256) funcPayout,
-        function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken,
-        function(Order memory) funcEmitOrderExecutionEvent,
+        FulfillOrderFunctionPointers memory fnPointers,
         Order memory saleDetails,
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty,
         FeeOnTop memory feeOnTop
     ) private {
-        if (!funcDispenseToken(
+        if (!fnPointers.funcDispenseToken(
                 seller, 
                 saleDetails.beneficiary, 
                 saleDetails.tokenAddress, 
@@ -796,24 +978,24 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 );
 
             if (proceeds.royaltyProceeds > 0) {
-                funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.marketplaceProceeds > 0) {
-                funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.sellerProceeds > 0) {
-                funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
 
             if (feeOnTop.recipient != address(0)) {
                 if (feeOnTop.amount > 0) {
-                    funcPayout(feeOnTop.recipient, msg.sender, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
+                    fnPointers.funcPayout(feeOnTop.recipient, msg.sender, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
                 }
             }
 
-            funcEmitOrderExecutionEvent(saleDetails);
+            fnPointers.funcEmitOrderExecutionEvent(saleDetails);
         }
     }
 
@@ -830,7 +1012,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         for (uint256 i = 0; i < params.saleDetailsBatch.length;) {
             Order memory saleDetails = params.saleDetailsBatch[i];
 
-            if (!params.funcDispenseToken(
+            if (!params.fnPointers.funcDispenseToken(
                     saleDetails.maker, 
                     saleDetails.beneficiary, 
                     saleDetails.tokenAddress, 
@@ -853,7 +1035,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
                     if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        params.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
@@ -862,7 +1044,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (saleDetails.marketplace != accumulator.lastMarketplace) {
                     if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        params.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastMarketplace = saleDetails.marketplace;
@@ -871,7 +1053,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (saleDetails.maker != accumulator.lastSeller) {
                     if(accumulator.accumulatedSellerProceeds > 0) {
-                        params.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastSeller = saleDetails.maker;
@@ -884,7 +1066,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
                 }
 
-                params.funcEmitOrderExecutionEvent(saleDetails);
+                params.fnPointers.funcEmitOrderExecutionEvent(saleDetails);
             }
 
             unchecked {
@@ -893,20 +1075,20 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            params.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            params.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedSellerProceeds > 0) {
-            params.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
         }
 
         if (params.feeOnTop.recipient != address(0)) {
             if (params.feeOnTop.amount > 0) {
-                params.funcPayout(params.feeOnTop.recipient, msg.sender, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
+                params.fnPointers.funcPayout(params.feeOnTop.recipient, msg.sender, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
             }
         }
     }
@@ -1084,9 +1266,56 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.itemPrice);
     }
 
+    function _getOrderFulfillmentFunctionPointers(
+        address paymentMethod,
+        OrderProtocols orderProtocol
+    ) private view returns (FulfillOrderFunctionPointers memory orderFulfillmentFunctionPointers) {
+        orderFulfillmentFunctionPointers = FulfillOrderFunctionPointers({
+            funcPayout: paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
+            funcDispenseToken: orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? _dispenseERC721Token : _dispenseERC1155Token,
+            funcEmitOrderExecutionEvent: orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? _emitBuyListingERC721Event : _emitBuyListingERC1155Event
+        });
+    }
+
     /*************************************************************************/
     /*                        Signature Verification                         */
     /*************************************************************************/
+
+    function _checkAndUpdateRemainingFillableItems(
+        address account,
+        bytes32 orderDigest, 
+        uint256 orderStartAmount,
+        FillAmounts memory fillAmounts
+    ) private returns (uint248 quantityToFill) {
+        quantityToFill = fillAmounts.requested;
+        PartiallyFillableOrderStatus storage partialFillStatus = 
+            appStorage().partiallyFillableOrderStatuses[account][orderDigest];
+    
+        if (partialFillStatus.state == PartiallyFillableOrderState.Open) {
+            if (partialFillStatus.remainingFillableQuantity == 0) {
+                partialFillStatus.remainingFillableQuantity = uint248(orderStartAmount);
+            }
+
+            if (quantityToFill > partialFillStatus.remainingFillableQuantity) {
+                quantityToFill = partialFillStatus.remainingFillableQuantity;
+            }
+
+            if (quantityToFill < fillAmounts.minimum) {
+                revert cPort__UnableToFillMinimumRequestedQuantity();
+            }
+
+            unchecked {
+                partialFillStatus.remainingFillableQuantity -= quantityToFill;
+            }
+
+            if (partialFillStatus.remainingFillableQuantity == 0) {
+                partialFillStatus.state = PartiallyFillableOrderState.Filled;
+                emit OrderDigestInvalidated(orderDigest, account, false);
+            }
+        } else {
+            revert cPort__OrderIsEitherCancelledOrFilled();
+        }
+    }
 
     function _checkAndInvalidateNonce(
         address account, 
@@ -1111,6 +1340,19 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         emit NonceInvalidated(nonce, account, wasCancellation);
 
         return appStorage().masterNonces[account];
+    }
+
+    function _revokeOrderDigest(address account, bytes32 orderDigest) internal {
+        PartiallyFillableOrderStatus storage partialFillStatus = 
+            appStorage().partiallyFillableOrderStatuses[account][orderDigest];
+    
+        if (partialFillStatus.state == PartiallyFillableOrderState.Open) {
+            partialFillStatus.state = PartiallyFillableOrderState.Cancelled;
+            partialFillStatus.remainingFillableQuantity = 0;
+            emit OrderDigestInvalidated(orderDigest, account, true);
+        } else {
+            revert cPort__OrderIsEitherCancelledOrFilled();
+        }
     }
 
     function _verifySignedItemOffer(
@@ -1346,7 +1588,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.tokenId
                     ),
                    abi.encode(
-                       
                        saleDetails.amount,
                        saleDetails.itemPrice,
                        saleDetails.expiration,
@@ -1396,6 +1637,312 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 )
             )
         ));
+    }
+
+    // TODO
+
+    function _verifySignedItemOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature
+    ) private returns (uint248 quantityToFill) {
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    ITEM_OFFER_APPROVAL_HASH,
+                    uint8(saleDetails.protocol),
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress,
+                    saleDetails.tokenId
+                ),
+                abi.encode(
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator,
+                    saleDetails.nonce,
+                    appStorage().masterNonces[saleDetails.maker]
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifyCosignedItemOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature
+    ) private returns (uint248 quantityToFill) {
+        _verifyCosignature(domainSeparator, signature, cosignature);
+
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    ITEM_OFFER_APPROVAL_COSIGNED_HASH,
+                    uint8(saleDetails.protocol),
+                    cosignature.signer,
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress
+                ),
+                abi.encode(
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifySignedCollectionOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature
+    ) private returns (uint248 quantityToFill) {
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    COLLECTION_OFFER_APPROVAL_HASH,
+                    uint8(saleDetails.protocol),
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress
+                ),
+                abi.encode(
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator,
+                    saleDetails.nonce,
+                    appStorage().masterNonces[saleDetails.maker]
+                )
+            )
+        ));
+        
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifyCosignedCollectionOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature
+    ) private returns (uint248 quantityToFill) {
+        _verifyCosignature(domainSeparator, signature, cosignature);
+
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
+                    uint8(saleDetails.protocol),
+                    cosignature.signer,
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress
+                ),
+                abi.encode(
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifySignedTokenSetOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof
+    ) private returns (uint248 quantityToFill) {
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    TOKEN_SET_OFFER_APPROVAL_HASH,
+                    uint8(saleDetails.protocol),
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress,
+                    saleDetails.amount
+                ),
+                abi.encode(
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator,
+                    saleDetails.nonce,
+                    appStorage().masterNonces[saleDetails.maker],
+                    tokenSetProof.rootHash
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifyCosignedTokenSetOfferPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature,
+        TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature
+    ) private returns (uint248 quantityToFill) {
+        _verifyCosignature(domainSeparator, signature, cosignature);
+
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
+                    uint8(saleDetails.protocol),
+                    cosignature.signer,
+                    saleDetails.maker,
+                    saleDetails.beneficiary,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress
+                ),
+                abi.encode(
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator,
+                    tokenSetProof.rootHash
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifySignedSaleApprovalPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature
+    ) private returns (uint248 quantityToFill) {
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    SALE_APPROVAL_HASH,
+                    uint8(saleDetails.protocol),
+                    saleDetails.maker,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress,
+                    saleDetails.tokenId
+                ),
+               abi.encode(
+                   saleDetails.amount,
+                   saleDetails.itemPrice,
+                   saleDetails.expiration,
+                   saleDetails.marketplaceFeeNumerator,
+                   saleDetails.maxRoyaltyFeeNumerator,
+                   saleDetails.nonce,
+                   appStorage().masterNonces[saleDetails.maker]
+               )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+    }
+
+    function _verifyCosignedSaleApprovalPartialFill(
+        bytes32 domainSeparator,
+        FillAmounts memory fillAmounts,
+        Order memory saleDetails,
+        SignatureECDSA memory signature,
+        Cosignature memory cosignature
+    ) private returns (uint248 quantityToFill) {
+        _verifyCosignature(domainSeparator, signature, cosignature);
+
+        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+            bytes.concat(
+                abi.encode(
+                    SALE_APPROVAL_COSIGNED_HASH,
+                    uint8(saleDetails.protocol),
+                    cosignature.signer,
+                    saleDetails.maker,
+                    saleDetails.marketplace,
+                    saleDetails.paymentMethod,
+                    saleDetails.tokenAddress
+                ),
+                abi.encode(
+                    saleDetails.tokenId,
+                    saleDetails.amount,
+                    saleDetails.itemPrice,
+                    saleDetails.expiration,
+                    saleDetails.marketplaceFeeNumerator,
+                    saleDetails.maxRoyaltyFeeNumerator
+                )
+            )
+        ));
+
+        _verifyMakerSignature(
+            saleDetails.maker,
+            signature,
+            orderDigest);
+
+        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
     }
 
     function _verifyMakerSignature(address maker, SignatureECDSA memory signature, bytes32 digest ) private view {

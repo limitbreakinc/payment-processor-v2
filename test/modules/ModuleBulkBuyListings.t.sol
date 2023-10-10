@@ -36,7 +36,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -92,7 +92,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -161,7 +161,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -217,7 +217,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -286,7 +286,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -342,7 +342,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -411,7 +411,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -467,7 +467,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -536,7 +536,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -590,7 +590,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -658,7 +658,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,
@@ -712,7 +712,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             FuzzedOrder721 memory fuzzedOrderInputs = fuzzedOrderInputsArray[i];
 
             Order memory saleDetails = Order({
-                protocol: TokenProtocols.ERC721,
+                protocol: OrderProtocols.ERC721_FILL_OR_KILL,
                 maker: vm.addr(fuzzedOrderInputs.sellerKey),
                 beneficiary: fuzzedOrderInputs.beneficiary,
                 marketplace: cal,

@@ -59,6 +59,12 @@ interface cPortEvents {
         address indexed account, 
         bool wasCancellation);
 
+    /// @notice Emitted when a user revokes a single listing or offer nonce for a specific marketplace.
+    event OrderDigestInvalidated(
+        bytes32 indexed orderDigest, 
+        address indexed account, 
+        bool wasCancellation);
+
     /// @notice Emitted when a coin is added to the approved coins mapping for a security policy
     event PaymentMethodAddedToWhitelist(
         uint88 indexed paymentMethodWhitelistId, 
