@@ -110,7 +110,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder
     ) internal {
-        _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+        uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+
+        if (quantityToFill != saleDetails.amount) {
+            if (saleDetails.paymentMethod == address(0)) {
+                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
+            }
+
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        }
 
         _fulfillSingleOrder(
             disablePartialFill,
@@ -130,6 +139,17 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SignatureECDSA memory signedSellOrder,
         FeeOnTop memory feeOnTop
     ) internal {
+        uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
+
+        if (quantityToFill != saleDetails.amount) {
+            if (saleDetails.paymentMethod == address(0)) {
+                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
+            }
+
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        }
+
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -143,8 +163,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             
             msgValueItemPrice = saleDetails.itemPrice;
         }
-
-        _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
@@ -166,6 +184,32 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) internal {
+        uint248 quantityToFill;
+
+        if (cosignature.signer != address(0)) {
+            quantityToFill = 
+                _verifyCosignedSaleApproval(
+                    domainSeparator, 
+                    saleDetails, 
+                    signedSellOrder, 
+                    cosignature);
+        } else {
+            quantityToFill = 
+                _verifySignedSaleApproval(
+                    domainSeparator, 
+                    saleDetails, 
+                    signedSellOrder);
+        }
+
+        if (quantityToFill != saleDetails.amount) {
+            if (saleDetails.paymentMethod == address(0)) {
+                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
+            }
+
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        }
+
         if (feeOnTop.amount > saleDetails.itemPrice) {
             revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
@@ -180,12 +224,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             msgValueItemPrice = saleDetails.itemPrice;
         }
 
-        if (cosignature.signer != address(0)) {
-            _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
-        } else {
-            _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
-        }
-
         _fulfillSingleOrderWithFeeOnTop(
             disablePartialFill,
             msg.sender,
@@ -195,75 +233,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails,
             _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
             feeOnTop);
-    }
-
-    function _executeOrderBuySidePartialFill(
-        bytes32 domainSeparator,
-        bool disablePartialFill,
-        uint256 msgValue,
-        FillAmounts memory fillAmounts,
-        Order memory saleDetails,
-        SignatureECDSA memory signedSellOrder,
-        Cosignature memory cosignature,
-        FeeOnTop memory feeOnTop
-    ) internal {
-        uint256 msgValueItemPrice = 0;
-
-        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            if (saleDetails.paymentMethod == address(0)) {
-                revert cPort__BadPaymentMethod();
-            }
-
-            uint248 quantityToFill;
-
-            if (cosignature.signer != address(0)) {
-                quantityToFill = 
-                    _verifyCosignedSaleApprovalPartialFill(
-                        domainSeparator, 
-                        fillAmounts,
-                        saleDetails, 
-                        signedSellOrder, 
-                        cosignature);
-            } else {
-                quantityToFill = 
-                    _verifySignedSaleApprovalPartialFill(
-                        domainSeparator, 
-                        fillAmounts,
-                        saleDetails, 
-                        signedSellOrder);
-            }
-
-            saleDetails.amount = quantityToFill;
-            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
-        } else {   
-            if (saleDetails.paymentMethod == address(0)) {
-                if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
-                    revert cPort__IncorrectFundsToCoverFeeOnTop();
-                }
-                
-                msgValueItemPrice = saleDetails.itemPrice;
-            }
-
-            if (cosignature.signer != address(0)) {
-                _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
-            } else {
-                _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
-            }
-        }
-
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
-        }
-
-        _fulfillSingleOrderWithFeeOnTop(
-                disablePartialFill,
-                msg.sender,
-                saleDetails.maker,
-                IERC20(saleDetails.paymentMethod),
-                _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
-                saleDetails,
-                _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
-                feeOnTop);
     }
 
     function _executeOrderSellSide(
@@ -279,18 +248,32 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__BadPaymentMethod();
         }
 
+        uint248 quantityToFill;
+
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
-                _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                quantityToFill = _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
             } else {
-                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                if(!MerkleProof.verify(
+                    tokenSetProof.proof, 
+                    tokenSetProof.rootHash, 
+                    keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
-                _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                quantityToFill = _verifySignedTokenSetOffer(
+                    domainSeparator, 
+                    saleDetails, 
+                    buyerSignature, 
+                    tokenSetProof);
             }
         } else {
-            _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+            quantityToFill = _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+        }
+
+        if (quantityToFill != saleDetails.amount) {
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
 
         _fulfillSingleOrder(
@@ -317,22 +300,33 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__BadPaymentMethod();
         }
 
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
-        }
+        uint248 quantityToFill;
 
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
-                _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                quantityToFill = _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
             } else {
-                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                if(!MerkleProof.verify(
+                    tokenSetProof.proof, 
+                    tokenSetProof.rootHash, 
+                    keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
-                _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                quantityToFill = 
+                    _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
             }
         } else {
-            _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+            quantityToFill = _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+        }
+
+        if (quantityToFill != saleDetails.amount) {
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+        }
+
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         _fulfillSingleOrderWithFeeOnTop(
@@ -360,30 +354,49 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__BadPaymentMethod();
         }
 
+        uint248 quantityToFill;
+
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
                 if (cosignature.signer == address(0)) {
-                    _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                    quantityToFill = _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
                 } else {
-                    _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                    quantityToFill = 
+                        _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
                 }
             } else {
-                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                if(!MerkleProof.verify(
+                    tokenSetProof.proof, 
+                    tokenSetProof.rootHash, 
+                    keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
                 if (cosignature.signer == address(0)) {
-                    _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                    quantityToFill = 
+                        _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
                 } else {
-                    _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
+                    quantityToFill = 
+                        _verifyCosignedTokenSetOffer(
+                            domainSeparator, 
+                            saleDetails, 
+                            buyerSignature, 
+                            tokenSetProof, 
+                            cosignature);
                 }
             }
         } else {
             if (cosignature.signer == address(0)) {
-                _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+                quantityToFill = _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
             } else {
-                _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                quantityToFill = 
+                    _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
             }
+        }
+
+        if (quantityToFill != saleDetails.amount) {
+            saleDetails.amount = quantityToFill;
+            saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
 
         _fulfillSingleOrder(
@@ -411,157 +424,49 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__BadPaymentMethod();
         }
 
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
-        }
+        uint248 quantityToFill;
 
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
                 if (cosignature.signer == address(0)) {
-                    _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
+                    quantityToFill = _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
                 } else {
-                    _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                    quantityToFill = 
+                        _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
                 }
             } else {
-                if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
+                if(!MerkleProof.verify(
+                    tokenSetProof.proof, 
+                    tokenSetProof.rootHash, 
+                    keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
                 if (cosignature.signer == address(0)) {
-                    _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
+                    quantityToFill = 
+                        _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
                 } else {
-                    _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
+                    quantityToFill = 
+                        _verifyCosignedTokenSetOffer(
+                            domainSeparator, 
+                            saleDetails, 
+                            buyerSignature, 
+                            tokenSetProof, 
+                            cosignature);
                 }
             }
         } else {
             if (cosignature.signer == address(0)) {
-                _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
+                quantityToFill = _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
             } else {
-                _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
+                quantityToFill = 
+                    _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
             }
         }
 
-        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(msgValue, saleDetails);
-
-        _fulfillSingleOrderWithFeeOnTop(
-            disablePartialFill,
-            saleDetails.maker,
-            msg.sender,
-            IERC20(saleDetails.paymentMethod),
-            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
-            saleDetails,
-            royaltyBackfillAndBounty,
-            feeOnTop);
-    }
-
-    function _executeOrderSellSidePartialFill(
-        bytes32 domainSeparator,
-        bool disablePartialFill,
-        uint256 msgValue,
-        bool isCollectionLevelOrder, 
-        FillAmounts memory fillAmounts,
-        Order memory saleDetails,
-        SignatureECDSA memory buyerSignature,
-        TokenSetProof memory tokenSetProof,
-        Cosignature memory cosignature,
-        FeeOnTop memory feeOnTop
-    ) internal {
-        if (saleDetails.paymentMethod == address(0)) {
-            revert cPort__BadPaymentMethod();
-        }
-
-        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            uint248 quantityToFill;
-
-            if (isCollectionLevelOrder) {
-                if (tokenSetProof.rootHash == bytes32(0)) {
-                    if (cosignature.signer == address(0)) {
-                        quantityToFill = 
-                            _verifySignedCollectionOfferPartialFill(
-                                domainSeparator, 
-                                fillAmounts, 
-                                saleDetails, 
-                                buyerSignature);
-                    } else {
-                        quantityToFill = 
-                            _verifyCosignedCollectionOfferPartialFill(
-                                domainSeparator, 
-                                fillAmounts, 
-                                saleDetails, 
-                                buyerSignature, 
-                                cosignature);
-                    }
-                } else {
-                    if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
-                        revert cPort__IncorrectTokenSetMerkleProof();
-                    }
-    
-                    if (cosignature.signer == address(0)) {
-                        quantityToFill = 
-                            _verifySignedTokenSetOfferPartialFill(
-                                domainSeparator, 
-                                fillAmounts, 
-                                saleDetails, 
-                                buyerSignature, 
-                                tokenSetProof);
-                    } else {
-                        quantityToFill = 
-                            _verifyCosignedTokenSetOfferPartialFill(
-                                domainSeparator, 
-                                fillAmounts, 
-                                saleDetails, 
-                                buyerSignature, 
-                                tokenSetProof, 
-                                cosignature);
-                    }
-                }
-            } else {
-                if (cosignature.signer == address(0)) {
-                    quantityToFill = 
-                        _verifySignedItemOfferPartialFill(
-                            domainSeparator, 
-                            fillAmounts, 
-                            saleDetails, 
-                            buyerSignature);
-                } else {
-                    quantityToFill = 
-                        _verifyCosignedItemOfferPartialFill(
-                            domainSeparator, 
-                            fillAmounts, 
-                            saleDetails, 
-                            buyerSignature, 
-                            cosignature);
-                }
-            }
-
+        if (quantityToFill != saleDetails.amount) {
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
-        } else {
-            if (isCollectionLevelOrder) {
-                if (tokenSetProof.rootHash == bytes32(0)) {
-                    if (cosignature.signer == address(0)) {
-                        _verifySignedCollectionOffer(domainSeparator, saleDetails, buyerSignature);
-                    } else {
-                        _verifyCosignedCollectionOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
-                    }
-                } else {
-                    if(!MerkleProof.verify(tokenSetProof.proof, tokenSetProof.rootHash, keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
-                        revert cPort__IncorrectTokenSetMerkleProof();
-                    }
-    
-                    if (cosignature.signer == address(0)) {
-                        _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
-                    } else {
-                        _verifyCosignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof, cosignature);
-                    }
-                }
-            } else {
-                if (cosignature.signer == address(0)) {
-                    _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
-                } else {
-                    _verifyCosignedItemOffer(domainSeparator, saleDetails, buyerSignature, cosignature);
-                }
-            }
         }
 
         if (feeOnTop.amount > saleDetails.itemPrice) {
@@ -580,6 +485,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             royaltyBackfillAndBounty,
             feeOnTop);
     }
+
+    
 
     function _executeSweepOrder(
         bytes32 domainSeparator,
@@ -791,7 +698,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     nonce: items[i].nonce,
                     expiration: items[i].expiration,
                     marketplaceFeeNumerator: items[i].marketplaceFeeNumerator,
-                    maxRoyaltyFeeNumerator: items[i].maxRoyaltyFeeNumerator
+                    maxRoyaltyFeeNumerator: items[i].maxRoyaltyFeeNumerator,
+                    requestedFillAmount: items[i].amount,
+                    minimumFillAmount: items[i].amount
                 });
 
             saleDetailsBatch[i] = saleDetails;
@@ -1284,10 +1193,11 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _checkAndUpdateRemainingFillableItems(
         address account,
         bytes32 orderDigest, 
-        uint256 orderStartAmount,
-        FillAmounts memory fillAmounts
+        uint248 orderStartAmount,
+        uint248 requestedFillAmount,
+        uint248 minimumFillAmount
     ) private returns (uint248 quantityToFill) {
-        quantityToFill = fillAmounts.requested;
+        quantityToFill = requestedFillAmount;
         PartiallyFillableOrderStatus storage partialFillStatus = 
             appStorage().partiallyFillableOrderStatuses[account][orderDigest];
     
@@ -1300,7 +1210,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 quantityToFill = partialFillStatus.remainingFillableQuantity;
             }
 
-            if (quantityToFill < fillAmounts.minimum) {
+            if (quantityToFill < minimumFillAmount) {
                 revert cPort__UnableToFillMinimumRequestedQuantity();
             }
 
@@ -1359,293 +1269,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         bytes32 domainSeparator,
         Order memory saleDetails,
         SignatureECDSA memory signature
-    ) private {
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        ITEM_OFFER_APPROVAL_HASH,
-                        uint8(saleDetails.protocol),
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress,
-                        saleDetails.tokenId
-                    ),
-                    abi.encode(
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.nonce,
-                        _checkAndInvalidateNonce(
-                            saleDetails.maker,
-                            saleDetails.nonce,
-                            false
-                        )
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifyCosignedItemOffer(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature,
-        Cosignature memory cosignature
-    ) private view {
-        _verifyCosignature(domainSeparator, signature, cosignature);
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        ITEM_OFFER_APPROVAL_COSIGNED_HASH,
-                        uint8(saleDetails.protocol),
-                        cosignature.signer,
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.tokenId,
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifySignedCollectionOffer(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature
-    ) private {
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        COLLECTION_OFFER_APPROVAL_HASH,
-                        uint8(saleDetails.protocol),
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.nonce,
-                        _checkAndInvalidateNonce(
-                            saleDetails.maker,
-                            saleDetails.nonce,
-                            false
-                        )
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifyCosignedCollectionOffer(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature,
-        Cosignature memory cosignature
-    ) private view {
-        _verifyCosignature(domainSeparator, signature, cosignature);
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
-                        uint8(saleDetails.protocol),
-                        cosignature.signer,
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifySignedTokenSetOffer(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature,
-        TokenSetProof memory tokenSetProof
-    ) private {
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        TOKEN_SET_OFFER_APPROVAL_HASH,
-                        uint8(saleDetails.protocol),
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress,
-                        saleDetails.amount
-                    ),
-                    abi.encode(
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.nonce,
-                        _checkAndInvalidateNonce(
-                            saleDetails.maker,
-                            saleDetails.nonce,
-                            false
-                        ),
-                        tokenSetProof.rootHash
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifyCosignedTokenSetOffer(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature,
-        TokenSetProof memory tokenSetProof,
-        Cosignature memory cosignature
-    ) private view {
-        _verifyCosignature(domainSeparator, signature, cosignature);
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
-                        uint8(saleDetails.protocol),
-                        cosignature.signer,
-                        saleDetails.maker,
-                        saleDetails.beneficiary,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        tokenSetProof.rootHash
-                    )
-                )
-            )
-        ));
-    }
-
-    function _verifySignedSaleApproval(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature
-    ) private {
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        SALE_APPROVAL_HASH,
-                        uint8(saleDetails.protocol),
-                        saleDetails.maker,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress,
-                        saleDetails.tokenId
-                    ),
-                   abi.encode(
-                       saleDetails.amount,
-                       saleDetails.itemPrice,
-                       saleDetails.expiration,
-                       saleDetails.marketplaceFeeNumerator,
-                       saleDetails.maxRoyaltyFeeNumerator,
-                       saleDetails.nonce,
-                       _checkAndInvalidateNonce(
-                           saleDetails.maker,
-                           saleDetails.nonce,
-                           false
-                       )
-                   )
-                )
-            )
-        ));
-    }
-
-    function _verifyCosignedSaleApproval(
-        bytes32 domainSeparator,
-        Order memory saleDetails,
-        SignatureECDSA memory signature,
-        Cosignature memory cosignature
-    ) private view {
-        _verifyCosignature(domainSeparator, signature, cosignature);
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            _hashTypedDataV4(domainSeparator, keccak256(
-                bytes.concat(
-                    abi.encode(
-                        SALE_APPROVAL_COSIGNED_HASH,
-                        uint8(saleDetails.protocol),
-                        cosignature.signer,
-                        saleDetails.maker,
-                        saleDetails.marketplace,
-                        saleDetails.paymentMethod,
-                        saleDetails.tokenAddress
-                    ),
-                    abi.encode(
-                        saleDetails.tokenId,
-                        saleDetails.amount,
-                        saleDetails.itemPrice,
-                        saleDetails.expiration,
-                        saleDetails.marketplaceFeeNumerator,
-                        saleDetails.maxRoyaltyFeeNumerator
-                    )
-                )
-            )
-        ));
-    }
-
-    // TODO
-
-    function _verifySignedItemOfferPartialFill(
-        bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
-        Order memory saleDetails,
-        SignatureECDSA memory signature
     ) private returns (uint248 quantityToFill) {
         bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
             bytes.concat(
@@ -1665,22 +1288,27 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.expiration,
                     saleDetails.marketplaceFeeNumerator,
                     saleDetails.nonce,
-                    appStorage().masterNonces[saleDetails.maker]
+                    saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+                       appStorage().masterNonces[saleDetails.maker] :
+                       _checkAndInvalidateNonce(saleDetails.maker, saleDetails.nonce, false)
                 )
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifyCosignedItemOfferPartialFill(
+    function _verifyCosignedItemOffer(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
@@ -1709,17 +1337,20 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifySignedCollectionOfferPartialFill(
+    function _verifySignedCollectionOffer(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature
     ) private returns (uint248 quantityToFill) {
@@ -1740,22 +1371,27 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.expiration,
                     saleDetails.marketplaceFeeNumerator,
                     saleDetails.nonce,
-                    appStorage().masterNonces[saleDetails.maker]
+                    saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+                       appStorage().masterNonces[saleDetails.maker] :
+                       _checkAndInvalidateNonce(saleDetails.maker, saleDetails.nonce, false)
                 )
             )
         ));
         
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifyCosignedCollectionOfferPartialFill(
+    function _verifyCosignedCollectionOffer(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
@@ -1783,17 +1419,20 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifySignedTokenSetOfferPartialFill(
+    function _verifySignedTokenSetOffer(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature,
         TokenSetProof memory tokenSetProof
@@ -1815,23 +1454,28 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.expiration,
                     saleDetails.marketplaceFeeNumerator,
                     saleDetails.nonce,
-                    appStorage().masterNonces[saleDetails.maker],
+                    saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+                       appStorage().masterNonces[saleDetails.maker] :
+                       _checkAndInvalidateNonce(saleDetails.maker, saleDetails.nonce, false),
                     tokenSetProof.rootHash
                 )
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifyCosignedTokenSetOfferPartialFill(
+    function _verifyCosignedTokenSetOffer(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature,
         TokenSetProof memory tokenSetProof,
@@ -1861,17 +1505,20 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifySignedSaleApprovalPartialFill(
+    function _verifySignedSaleApproval(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature
     ) private returns (uint248 quantityToFill) {
@@ -1893,22 +1540,27 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                    saleDetails.marketplaceFeeNumerator,
                    saleDetails.maxRoyaltyFeeNumerator,
                    saleDetails.nonce,
-                   appStorage().masterNonces[saleDetails.maker]
+                   saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+                       appStorage().masterNonces[saleDetails.maker] :
+                       _checkAndInvalidateNonce(saleDetails.maker, saleDetails.nonce, false)
                )
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
-    function _verifyCosignedSaleApprovalPartialFill(
+    function _verifyCosignedSaleApproval(
         bytes32 domainSeparator,
-        FillAmounts memory fillAmounts,
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
@@ -1937,12 +1589,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             )
         ));
 
-        _verifyMakerSignature(
-            saleDetails.maker,
-            signature,
-            orderDigest);
+        _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = _checkAndUpdateRemainingFillableItems(saleDetails.maker, orderDigest, saleDetails.amount, fillAmounts);
+        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
+            _checkAndUpdateRemainingFillableItems(
+                saleDetails.maker, 
+                orderDigest, 
+                saleDetails.amount, 
+                saleDetails.requestedFillAmount,
+                saleDetails.minimumFillAmount) :
+            saleDetails.amount;
     }
 
     function _verifyMakerSignature(address maker, SignatureECDSA memory signature, bytes32 digest ) private view {

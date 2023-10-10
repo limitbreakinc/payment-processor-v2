@@ -119,7 +119,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "buyListing(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32))",
+                "buyListing(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetails,
                 signature));
@@ -133,7 +133,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "buyListingWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,uint256))",
+                "buyListingWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetails,
                 signature,
@@ -148,7 +148,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "buyListingCosigned(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32))",
+                "buyListingCosigned(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetails,
                 signature,
@@ -164,27 +164,8 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "buyListingCosignedWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                "buyListingCosignedWithFeeOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
-                saleDetails,
-                signature,
-                cosignature,
-                feeOnTop));
-    }
-
-    function encodeBuyListingPartialFillCalldata(
-        address cPortAddress, 
-        FillAmounts memory fillAmounts,
-        Order memory saleDetails, 
-        SignatureECDSA memory signature,
-        Cosignature memory cosignature,
-        FeeOnTop memory feeOnTop
-    ) external view returns (bytes memory) {
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "buyListingPartialFill(bytes32,(uint248,uint248),(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
-                IcPort(cPortAddress).getDomainSeparator(),
-                fillAmounts,
                 saleDetails,
                 signature,
                 cosignature,
@@ -200,7 +181,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]))",
+                "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
                 saleDetails,
@@ -218,7 +199,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "acceptOfferWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,uint256))",
+                "acceptOfferWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
                 saleDetails,
@@ -237,7 +218,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "acceptOfferCosigned(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32))",
+                "acceptOfferCosigned(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
                 saleDetails,
@@ -257,32 +238,9 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "acceptOfferCosignedWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                "acceptOfferCosignedWithFeeOnTop(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
-                saleDetails,
-                signature,
-                tokenSetProof,
-                cosignature,
-                feeOnTop));
-    }
-
-    function encodeAcceptOfferPartialFillCalldata(
-        address cPortAddress, 
-        bool isCollectionLevelOffer,
-        FillAmounts memory fillAmounts,
-        Order memory saleDetails, 
-        SignatureECDSA memory signature,
-        TokenSetProof memory tokenSetProof,
-        Cosignature memory cosignature,
-        FeeOnTop memory feeOnTop
-    ) external view returns (bytes memory) {
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "acceptOfferPartialFill(bytes32,bool,(uint248,uint248),(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
-                IcPort(cPortAddress).getDomainSeparator(),
-                isCollectionLevelOffer,
-                fillAmounts,
                 saleDetails,
                 signature,
                 tokenSetProof,
@@ -297,7 +255,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetailsArray,
                 signatures));
@@ -311,7 +269,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkBuyListingsWithFeesOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,uint256)[])",
+                "bulkBuyListingsWithFeesOnTop(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,uint256)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetailsArray,
                 signatures,
@@ -326,7 +284,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkBuyListingsCosigned(bytes32,(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
+                "bulkBuyListingsCosigned(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetailsArray,
                 signatures,
@@ -349,31 +307,8 @@ contract cPortEncoder {
 
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkBuyListingsCosignedWithFeesOnTop(bytes32,((uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
+                "bulkBuyListingsCosignedWithFeesOnTop(bytes32,((uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
-                params));
-    }
-
-    function encodeBulkBuyListingsPartialFillCalldata(
-        address cPortAddress, 
-        FillAmounts[] calldata fillAmountsArray,
-        Order[] calldata saleDetailsArray, 
-        SignatureECDSA[] calldata signatures,
-        Cosignature[] calldata cosignatures,
-        FeeOnTop[] calldata feesOnTop
-    ) external view returns (bytes memory) {
-        BulkBuyListingsCosignedWithFeeOnTopParams memory params = BulkBuyListingsCosignedWithFeeOnTopParams({
-            saleDetailsArray: saleDetailsArray,
-            sellerSignatures: signatures,
-            cosignatures: cosignatures,
-            feesOnTop: feesOnTop
-        });
-
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "bulkBuyListingsPartialFill(bytes32,(uint248,uint248)[],((uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
-                IcPort(cPortAddress).getDomainSeparator(),
-                fillAmountsArray,
                 params));
     }
 
@@ -386,7 +321,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffers(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[])",
+                "bulkAcceptOffers(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOfferArray,
                 saleDetailsArray,
@@ -404,7 +339,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffersWithFeesOnTop(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,uint256)[])",
+                "bulkAcceptOffersWithFeesOnTop(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,uint256)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOfferArray,
                 saleDetailsArray,
@@ -423,7 +358,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffersCosigned(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[])",
+                "bulkAcceptOffersCosigned(bytes32,bool[],(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOfferArray,
                 saleDetailsArray,
@@ -452,35 +387,8 @@ contract cPortEncoder {
 
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffersCosignedWithFeesOnTop(bytes32,(bool[],(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
+                "bulkAcceptOffersCosignedWithFeesOnTop(bytes32,(bool[],(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
-                params));
-    }
-
-    function encodeBulkAcceptOffersPartialFillCalldata(
-        address cPortAddress, 
-        bool[] memory isCollectionLevelOfferArray,
-        FillAmounts[] memory fillAmountsArray,
-        Order[] memory saleDetailsArray,
-        SignatureECDSA[] memory signatures,
-        TokenSetProof[] memory tokenSetProofsArray,
-        Cosignature[] memory cosignaturesArray,
-        FeeOnTop[] memory feesOnTopArray
-    ) external view returns (bytes memory) {
-        BulkAcceptOffersCosignedWithFeeOnTopParams memory params = BulkAcceptOffersCosignedWithFeeOnTopParams({
-            isCollectionLevelOfferArray: isCollectionLevelOfferArray,
-            saleDetailsArray: saleDetailsArray,
-            buyerSignaturesArray: signatures,
-            tokenSetProofsArray: tokenSetProofsArray,
-            cosignaturesArray: cosignaturesArray,
-            feesOnTopArray: feesOnTopArray
-        });
-
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "bulkAcceptOffersPartialFill(bytes32,(uint248,uint248)[],(bool[],(uint8,address,address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
-                IcPort(cPortAddress).getDomainSeparator(),
-                fillAmountsArray,
                 params));
     }
 
@@ -492,7 +400,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "sweepCollection(bytes32,(uint8,address,address,address),(address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                "sweepCollection(bytes32,(uint8,address,address,address),(address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 sweepOrder,
                 items,
@@ -508,7 +416,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "sweepCollectionWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address),(address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
+                "sweepCollectionWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address),(address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 feeOnTop,
                 sweepOrder,
@@ -525,7 +433,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "sweepCollectionCosigned(bytes32,(uint8,address,address,address),(address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
+                "sweepCollectionCosigned(bytes32,(uint8,address,address,address),(address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 sweepOrder,
                 items,
@@ -543,7 +451,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "sweepCollectionCosignedWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address),(address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
+                "sweepCollectionCosignedWithFeeOnTop(bytes32,(address,uint256),(uint8,address,address,address),(address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 feeOnTop,
                 sweepOrder,

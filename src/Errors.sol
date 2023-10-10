@@ -6,6 +6,7 @@ error cPort__AmountForERC1155SalesGreaterThanZero();
 error cPort__BadPaymentMethod();
 error cPort__CallerDoesNotOwnPaymentMethodWhitelist();
 error cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+error cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
 error cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
 error cPort__CeilingPriceMustBeGreaterThanFloorPrice();
 error cPort__CoinIsNotApproved();
