@@ -384,7 +384,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(alice),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -457,7 +459,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(alice),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -549,25 +553,25 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(alice),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
-                _buySignedListingPartialFill(
+                _buySignedListing(
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
                     saleDetails, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             } else {
-                _buySignedListingWithFeeOnTopPartialFill(
+                _buySignedListingWithFeeOnTop(
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     feeOnTop, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             }
         }
@@ -624,45 +628,43 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(alice),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
-                    _buyEmptyCosignedListingPartialFill(
+                    _buyEmptyCosignedListing(
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _buyCosignedListingPartialFill(
+                    _buyCosignedListing(
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             } else {
                 if (params.emptyCosignature) {
-                    _buyEmptyCosignedListingWithFeeOnTopPartialFill(
+                    _buyEmptyCosignedListingWithFeeOnTop(
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _buyCosignedListingWithFeeOnTopPartialFill(
+                    _buyCosignedListingWithFeeOnTop(
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             }
@@ -720,7 +722,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -791,7 +795,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -878,7 +884,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -948,7 +956,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -1042,7 +1052,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -1127,7 +1139,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 1,
+                minimumFillAmount: 1
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
@@ -1231,23 +1245,23 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
-                _acceptSignedItemOfferPartialFill(
+                _acceptSignedItemOffer(
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             } else {
-                _acceptSignedItemOfferWithFeeOnTopPartialFill(
+                _acceptSignedItemOfferWithFeeOnTop(
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     feeOnTop, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             }
         }
@@ -1304,41 +1318,39 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedItemOfferPartialFill(
+                    _acceptEmptyCosignedItemOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedItemOfferPartialFill(
+                    _acceptCosignedItemOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             } else {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedItemOfferWithFeeOnTopPartialFill(
+                    _acceptEmptyCosignedItemOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedItemOfferWithFeeOnTopPartialFill(
+                    _acceptCosignedItemOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             }
@@ -1395,23 +1407,23 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
-                _acceptSignedCollectionOfferPartialFill(
+                _acceptSignedCollectionOffer(
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             } else {
-                _acceptSignedCollectionOfferWithFeeOnTopPartialFill(
+                _acceptSignedCollectionOfferWithFeeOnTop(
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     feeOnTop, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             }
         }    
@@ -1467,41 +1479,39 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedCollectionOfferPartialFill(
+                    _acceptEmptyCosignedCollectionOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedCollectionOfferPartialFill(
+                    _acceptCosignedCollectionOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             } else {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedCollectionOfferWithFeeOnTopPartialFill(
+                    _acceptEmptyCosignedCollectionOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedCollectionOfferWithFeeOnTopPartialFill(
+                    _acceptCosignedCollectionOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             }
@@ -1565,11 +1575,13 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
-                _acceptSignedTokenSetOfferPartialFill(
+                _acceptSignedTokenSetOffer(
                     alice,
                     fuzzedOrderInputs,
                     saleDetails, 
@@ -1577,10 +1589,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         rootHash: merkle.getRoot(data),
                         proof: merkle.getProof(data, tokenId - 1)
                     }),
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             } else {
-                _acceptSignedTokenSetOfferWithFeeOnTopPartialFill(
+                _acceptSignedTokenSetOfferWithFeeOnTop(
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1589,7 +1600,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         proof: merkle.getProof(data, tokenId - 1)
                     }),
                     feeOnTop, 
-                    FillAmounts({requested: 500, minimum: 500}),
                     EMPTY_SELECTOR);
             }
         }    
@@ -1652,12 +1662,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 nonce: _getNextNonce(vm.addr(params.buyerKey)),
                 expiration: type(uint256).max,
                 marketplaceFeeNumerator: params.marketplaceFeeRate,
-                maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                requestedFillAmount: 500,
+                minimumFillAmount: 500
             });
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedTokenSetOfferPartialFill(
+                    _acceptEmptyCosignedTokenSetOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1665,10 +1677,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                             rootHash: merkle.getRoot(data),
                             proof: merkle.getProof(data, tokenId - 1)
                         }),
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedTokenSetOfferPartialFill(
+                    _acceptCosignedTokenSetOffer(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1676,12 +1687,11 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                             rootHash: merkle.getRoot(data),
                             proof: merkle.getProof(data, tokenId - 1)
                         }),
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             } else {
                 if (params.emptyCosignature) {
-                    _acceptEmptyCosignedTokenSetOfferWithFeeOnTopPartialFill(
+                    _acceptEmptyCosignedTokenSetOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1690,10 +1700,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                             proof: merkle.getProof(data, tokenId - 1)
                         }),
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 } else {
-                    _acceptCosignedTokenSetOfferWithFeeOnTopPartialFill(
+                    _acceptCosignedTokenSetOfferWithFeeOnTop(
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1702,7 +1711,6 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                             proof: merkle.getProof(data, tokenId - 1)
                         }),
                         feeOnTop,
-                        FillAmounts({requested: 500, minimum: 500}),
                         EMPTY_SELECTOR);
                 }
             }
@@ -1766,7 +1774,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(alice),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -1848,7 +1858,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(alice),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -1949,7 +1961,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -2029,7 +2043,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -2126,7 +2142,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -2206,7 +2224,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 feesOnTop[batchIndex] = feeOnTop;
@@ -2309,7 +2329,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 tokenSetProofsArray[batchIndex] = TokenSetProof({
@@ -2402,7 +2424,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(vm.addr(params.buyerKey)),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
 
                 tokenSetProofsArray[batchIndex] = TokenSetProof({
@@ -2514,7 +2538,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(alice),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
             }
     
@@ -2602,7 +2628,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     nonce: _getNextNonce(alice),
                     expiration: type(uint256).max,
                     marketplaceFeeNumerator: params.marketplaceFeeRate,
-                    maxRoyaltyFeeNumerator: params.royaltyFeeRate
+                    maxRoyaltyFeeNumerator: params.royaltyFeeRate,
+                    requestedFillAmount: 1,
+                    minimumFillAmount: 1
                 });
             }
 

@@ -54,12 +54,14 @@ struct Order {
     address paymentMethod;
     address tokenAddress;
     uint256 tokenId;
-    uint256 amount;
+    uint248 amount;
     uint256 itemPrice;
     uint256 nonce;
     uint256 expiration;
     uint256 marketplaceFeeNumerator;
     uint256 maxRoyaltyFeeNumerator;
+    uint248 requestedFillAmount;
+    uint248 minimumFillAmount;
 }
 
 struct Cosignature {
@@ -79,11 +81,6 @@ struct FeeOnTop {
 struct TokenSetProof {
     bytes32 rootHash;
     bytes32[] proof;
-}
-
-struct FillAmounts {
-    uint248 requested;
-    uint248 minimum;
 }
 
 enum PartiallyFillableOrderState { 
@@ -115,7 +112,7 @@ struct SweepItem {
     address maker;
     address marketplace;
     uint256 tokenId;
-    uint256 amount;
+    uint248 amount;
     uint256 itemPrice;
     uint256 nonce;
     uint256 expiration;

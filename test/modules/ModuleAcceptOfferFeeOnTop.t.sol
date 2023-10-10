@@ -38,7 +38,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(seller, uint128(MAX_INT));
@@ -88,7 +90,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(seller, uint128(MAX_INT));
@@ -138,7 +142,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(seller, uint128(MAX_INT));
@@ -188,7 +194,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(seller, uint128(MAX_INT));
@@ -249,7 +257,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(vm.addr(fuzzedOrderInputs.sellerKey), uint128(MAX_INT));
@@ -316,7 +326,9 @@ contract ModuleAcceptOfferFeeOnTopTest is cPortModuleTest {
             nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.buyerKey)),
             expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
             marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
-            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: 1,
+            minimumFillAmount: 1
         });
 
         _allocateTokensAndApprovals(vm.addr(fuzzedOrderInputs.sellerKey), uint128(MAX_INT));
