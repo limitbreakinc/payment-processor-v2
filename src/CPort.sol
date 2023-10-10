@@ -128,9 +128,6 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The Sweep Collection module implements all sweep collection-related functionality.
     address private immutable moduleSweepCollection;
 
-    /// @dev The Partially Fillable Trades module implements all partially fillable trade-related functionality.
-    address private immutable modulePartiallyFillableTrades;
-
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
@@ -139,8 +136,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleSingleTradesCosigned_,
         address moduleBulkTrades_,
         address moduleBulkTradesCosigned_,
-        address moduleSweepCollection_,
-        address modulePartiallyFillableTrades_) 
+        address moduleSweepCollection_) 
         EIP712("cPort", "1") {
         modulePaymentSettings = modulePaymentSettings_;
         moduleOnChainCancellation = moduleOnChainCancellation_;
@@ -149,7 +145,6 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         moduleBulkTrades = moduleBulkTrades_;
         moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
         moduleSweepCollection = moduleSweepCollection_;
-        modulePartiallyFillableTrades = modulePartiallyFillableTrades_;
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -599,7 +594,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"be0af963")
+            mstore(0x00, hex"8ef40e40")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -615,7 +610,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"a59eda2d")
+            mstore(0x00, hex"8b03b8fa")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -631,7 +626,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"ddb75e64")
+            mstore(0x00, hex"dfc759a3")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -647,23 +642,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"4f2c9506")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function buyListingPartialFill(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = modulePartiallyFillableTrades;
-        assembly {
-            mstore(0x00, hex"ddc1bc09")
+            mstore(0x00, hex"6ea9a286")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -679,7 +658,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"208cad1a")
+            mstore(0x00, hex"089b2f82")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -695,7 +674,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTrades;
         assembly {
-            mstore(0x00, hex"a9427fc4")
+            mstore(0x00, hex"13096dc3")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -711,7 +690,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"ef050907")
+            mstore(0x00, hex"ab105cd3")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -727,23 +706,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSingleTradesCosigned;
         assembly {
-            mstore(0x00, hex"84bbfbff")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function acceptOfferPartialFill(bytes calldata data) external {
-        _requireNotPaused();
-        address module = modulePartiallyFillableTrades;
-        assembly {
-            mstore(0x00, hex"1d715fba")
+            mstore(0x00, hex"70ca4dcc")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -759,7 +722,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"ec5b058f")
+            mstore(0x00, hex"d30ebf67")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -775,7 +738,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"fcf3e6f5")
+            mstore(0x00, hex"fe936b43")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -791,7 +754,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"196281be")
+            mstore(0x00, hex"e4569986")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -807,23 +770,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"fa2d3368")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function bulkBuyListingsPartialFill(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = modulePartiallyFillableTrades;
-        assembly {
-            mstore(0x00, hex"87dc7fd1")
+            mstore(0x00, hex"95634dcf")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -839,7 +786,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"babbda57")
+            mstore(0x00, hex"f2d99f07")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -855,7 +802,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTrades;
         assembly {
-            mstore(0x00, hex"54eccc1d")
+            mstore(0x00, hex"2496dd8d")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -871,7 +818,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"7359eaed")
+            mstore(0x00, hex"29d9ed85")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -887,23 +834,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleBulkTradesCosigned;
         assembly {
-            mstore(0x00, hex"53b8ecae")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
-
-    function bulkAcceptOffersPartialFill(bytes calldata data) external {
-        _requireNotPaused();
-        address module = modulePartiallyFillableTrades;
-        assembly {
-            mstore(0x00, hex"ed10c494")
+            mstore(0x00, hex"66449220")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -919,7 +850,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"2daa77c7")
+            mstore(0x00, hex"d1ce07aa")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -935,7 +866,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"6eef207c")
+            mstore(0x00, hex"51eac725")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -951,7 +882,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"3c085444")
+            mstore(0x00, hex"e921d907")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -967,7 +898,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _requireNotPaused();
         address module = moduleSweepCollection;
         assembly {
-            mstore(0x00, hex"d2ec183f")
+            mstore(0x00, hex"5a14c119")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
