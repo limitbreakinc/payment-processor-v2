@@ -128,6 +128,9 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The Sweep Collection module implements all sweep collection-related functionality.
     address private immutable moduleSweepCollection;
 
+    /// @dev The Partially Fillable Trades module implements all partially fillable trade-related functionality.
+    address private immutable modulePartiallyFillableTrades;
+
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
@@ -136,7 +139,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleSingleTradesCosigned_,
         address moduleBulkTrades_,
         address moduleBulkTradesCosigned_,
-        address moduleSweepCollection_) 
+        address moduleSweepCollection_,
+        address modulePartiallyFillableTrades_) 
         EIP712("cPort", "1") {
         modulePaymentSettings = modulePaymentSettings_;
         moduleOnChainCancellation = moduleOnChainCancellation_;
@@ -145,6 +149,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         moduleBulkTrades = moduleBulkTrades_;
         moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
         moduleSweepCollection = moduleSweepCollection_;
+        modulePartiallyFillableTrades = modulePartiallyFillableTrades_;
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -209,6 +214,16 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     }
 
     /**
+     * @notice Returns the state and remaining fillable quantity of an order digest given the maker address.
+     */
+    function remainingFillableQuantity(
+        address account, 
+        bytes32 orderDigest
+    ) external view returns (PartiallyFillableOrderStatus memory) {
+        return appStorage().partiallyFillableOrderStatuses[account][orderDigest];
+    }
+
+    /**
      * @notice Returns the payment settings for a given collection.
      *
      * @notice paymentSettings: The payment setting type for a given collection 
@@ -231,7 +246,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @notice Returns the optional creator-defined royalty bounty settings for a given collection.
      * 
      * @return royaltyBountyNumerator  The royalty bounty percentage for a given collection.  When set, this percentage
-     *        is applied to the creator's royalty amount and paid to the maker marketplace as a bounty.
+     *         is applied to the creator's royalty amount and paid to the maker marketplace as a bounty.
      * @return exclusiveBountyReceiver When non-zero, only the designated marketplace is eligible for royalty bounty.
      */
     function collectionBountySettings(
@@ -270,22 +285,23 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                 address(0));
     }
 
+    /**
+     * @notice Returns the address of the account that owns the specified payment method whitelist id.
+     */
     function paymentMethodWhitelistOwners(uint32 paymentMethodWhitelistId) external view returns (address) {
         return appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId];
     }
 
+    /**
+     * @notice Returns true if the specified payment method is whitelisted for the specified payment method whitelist.
+     */
     function isPaymentMethodWhitelisted(uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
         return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId][paymentMethod];
     }
 
-    function isCollectionPricingImmutable(address tokenAddress) external view returns (bool) {
-        return appStorage().collectionPricingBounds[tokenAddress].isImmutable;
-    }
-
-    function isTokenPricingImmutable(address tokenAddress, uint256 tokenId) external view returns (bool) {
-        return appStorage().tokenPricingBounds[tokenAddress][tokenId].isImmutable;
-    }
-
+    /**
+     * @notice Returns the floor price for a given collection and token id, when applicable.
+     */
     function getFloorPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
         PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
         if (tokenLevelPricingBounds.isSet) {
@@ -300,6 +316,9 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         return 0;
     }
 
+    /**
+     * @notice Returns the ceiling price for a given collection and token id, when applicable.
+     */
     function getCeilingPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
         PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
         if (tokenLevelPricingBounds.isSet) {
@@ -318,6 +337,18 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
 
+    /**
+     * @notice Allows any user to create a new custom payment method whitelist.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The payment method whitelist id tracker has been incremented by `1`.
+     * @dev    2. The caller has been assigned as the owner of the payment method whitelist.
+     * @dev    3. A `CreatedPaymentMethodWhitelist` event has been emitted.
+     *
+     * @param  data  Calldata encoded with cPortEncoder.  Matches calldata for:
+     *               `createPaymentMethodWhitelist(string calldata whitelistName)`
+     * @return paymentMethodWhitelistId  The id of the newly created payment method whitelist.
+     */
     function createPaymentMethodWhitelist(bytes calldata data) external returns (uint32 paymentMethodWhitelistId) {
         address module = modulePaymentSettings;
         assembly {
@@ -337,6 +368,19 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
+     *
+     * @dev    Throws when caller is not the owner of the specified payment method whitelist.
+     * @dev    Throws when the specified coin is already whitelisted under the specified whitelist id.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `paymentMethod` has been approved in `paymentMethodWhitelist` mapping.
+     * @dev    2. A `PaymentMethodAddedToWhitelist` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
+     */
     function whitelistPaymentMethod(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
@@ -352,6 +396,19 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows custom payment method whitelist owners to remove a coin from the list of approved payment currencies.
+     *
+     * @dev    Throws when caller is not the owner of the specified payment method whitelist.
+     * @dev    Throws when the specified coin is not currently whitelisted under the specified whitelist id.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
+     * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
+     */
     function unwhitelistPaymentMethod(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
@@ -367,6 +424,37 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify the payment settings for their collections.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the royalty backfill numerator is greater than 10,000.
+     * @dev    Throws when the royalty bounty numerator is greater than 10,000.
+     * @dev    Throws when the specified payment method whitelist id does not exist.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The `PaymentSettings` type for the collection has been set.
+     * @dev    2. The `paymentMethodWhitelistId` for the collection has been set, if applicable.
+     * @dev    3. The `constrainedPricingPaymentMethod` for the collection has been set, if applicable.
+     * @dev    4. The `royaltyBackfillNumerator` for the collection has been set.
+     * @dev    5. The `royaltyBackfillReceiver` for the collection has been set.
+     * @dev    6. The `royaltyBountyNumerator` for the collection has been set.
+     * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
+     * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `setCollectionPaymentSettings(
+                        address tokenAddress, 
+                        PaymentSettings paymentSettings,
+                        uint32 paymentMethodWhitelistId,
+                        address constrainedPricingPaymentMethod,
+                        uint16 royaltyBackfillNumerator,
+                        address royaltyBackfillReceiver,
+                        uint16 royaltyBountyNumerator,
+                        address exclusiveBountyReceiver)`
+     */
     function setCollectionPaymentSettings(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
@@ -382,10 +470,25 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify their own bounded price at the collection level.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified floor price is greater than the ceiling price.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The collection-level pricing bounds for the specified tokenAddress has been set.
+     * @dev    2. An `UpdatedCollectionLevelPricingBoundaries` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds)`
+     */
     function setCollectionPricingBounds(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"5e2180e7")
+            mstore(0x00, hex"7141ae10")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -397,10 +500,30 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify their own bounded price at the individual token level.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the lengths of the tokenIds and pricingBounds array don't match.
+     * @dev    Throws when the tokenIds or pricingBounds array length is zero. 
+     * @dev    Throws when the any of the specified floor prices is greater than the ceiling price for that token id.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The token-level pricing bounds for the specified tokenAddress and token ids has been set.
+     * @dev    2. An `UpdatedTokenLevelPricingBoundaries` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `setTokenPricingBounds(
+                        address tokenAddress, 
+                        uint256[] calldata tokenIds, 
+                        PricingBounds[] calldata pricingBounds)`
+     */
     function setTokenPricingBounds(bytes calldata data) external {
         address module = modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"b0c88721")
+            mstore(0x00, hex"22146d70")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -416,6 +539,14 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
 
+    /**
+     * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The maker's master nonce has been incremented by `1` in contract storage, rendering all signed
+     *            approvals using the prior nonce unusable.
+     * @dev    2. A `MasterNonceInvalidated` event has been emitted.
+     */
     function revokeMasterNonce() external {
         address module = moduleOnChainCancellation;
         assembly {
@@ -430,6 +561,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    /**
+     * @notice Allows a maker to revoke/cancel a single, previously signed listing or offer by specifying the
+     *         nonce of the listing or offer.
+     *
+     * @dev    Throws when the maker has already revoked the nonce.
+     * @dev    Throws when the nonce was already used by the maker to successfully buy or sell an NFT.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The specified `nonce` for the `msg.sender` has been revoked and can
+     *            no longer be used to execute a sale or purchase.
+     * @dev    2. A `NonceInvalidated` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `revokeSingleNonce(uint256 nonce)`
+     */
     function revokeSingleNonce(bytes calldata data) external {
         address module = moduleOnChainCancellation;
         assembly {
@@ -513,6 +659,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function buyListingPartialFill(bytes calldata data) external payable {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"ddc1bc09")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function acceptOffer(bytes calldata data) external {
         _requireNotPaused();
         address module = moduleSingleTrades;
@@ -566,6 +728,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address module = moduleSingleTradesCosigned;
         assembly {
             mstore(0x00, hex"84bbfbff")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function acceptOfferPartialFill(bytes calldata data) external {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"1d715fba")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {
@@ -641,6 +819,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         }
     }
 
+    function bulkBuyListingsPartialFill(bytes calldata data) external payable {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"87dc7fd1")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
     function bulkAcceptOffers(bytes calldata data) external {
         _requireNotPaused();
         address module = moduleBulkTrades;
@@ -694,6 +888,22 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address module = moduleBulkTradesCosigned;
         assembly {
             mstore(0x00, hex"53b8ecae")
+            calldatacopy(0x04, data.offset, data.length)
+            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+    }
+
+    function bulkAcceptOffersPartialFill(bytes calldata data) external {
+        _requireNotPaused();
+        address module = modulePartiallyFillableTrades;
+        assembly {
+            mstore(0x00, hex"ed10c494")
             calldatacopy(0x04, data.offset, data.length)
             let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
             if iszero(result) {

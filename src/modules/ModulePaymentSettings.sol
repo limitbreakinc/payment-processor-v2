@@ -24,7 +24,20 @@ contract ModulePaymentSettings is cPortModule {
         DefaultPaymentMethods memory defaultPaymentMethods) 
     cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
 
-    function createPaymentMethodWhitelist(string calldata whitelistName) external returns (uint32 paymentMethodWhitelistId) {
+    /**
+     * @notice Allows any user to create a new custom payment method whitelist.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The payment method whitelist id tracker has been incremented by `1`.
+     * @dev    2. The caller has been assigned as the owner of the payment method whitelist.
+     * @dev    3. A `CreatedPaymentMethodWhitelist` event has been emitted.
+     *
+     * @param  whitelistName             The name of the payment method whitelist.
+     * @return paymentMethodWhitelistId  The id of the newly created payment method whitelist.
+     */
+    function createPaymentMethodWhitelist(
+        string calldata whitelistName
+    ) external returns (uint32 paymentMethodWhitelistId) {
         unchecked {
             paymentMethodWhitelistId = ++appStorage().lastPaymentMethodWhitelistId;
         }
@@ -34,10 +47,24 @@ contract ModulePaymentSettings is cPortModule {
         emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
     }
 
+    /**
+     * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
+     *
+     * @dev    Throws when caller is not the owner of the specified payment method whitelist.
+     * @dev    Throws when the specified coin is already whitelisted under the specified whitelist id.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `paymentMethod` has been approved in `paymentMethodWhitelist` mapping.
+     * @dev    2. A `PaymentMethodAddedToWhitelist` event has been emitted.
+     *
+     * @param  paymentMethodWhitelistId The id of the payment method whitelist to update.
+     * @param  paymentMethod            The address of the payment method to whitelist.
+     */
     function whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
+        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
+            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (ptrPaymentMethodWhitelist[paymentMethod]) {
             revert cPort__PaymentMethodIsAlreadyApproved();
@@ -47,10 +74,25 @@ contract ModulePaymentSettings is cPortModule {
         emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
+    /**
+     * @notice Allows custom payment method whitelist owners to remove a coin from the list of approved payment 
+     *         currencies.
+     *
+     * @dev    Throws when caller is not the owner of the specified payment method whitelist.
+     * @dev    Throws when the specified coin is not currently whitelisted under the specified whitelist id.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
+     * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
+     *
+     * @param  paymentMethodWhitelistId The id of the payment method whitelist to update.
+     * @param  paymentMethod                     The address of the payment method to unwhitelist.
+     */
     function unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
+        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
+            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (!ptrPaymentMethodWhitelist[paymentMethod]) {
             revert cPort__CoinIsNotApproved();
@@ -60,6 +102,35 @@ contract ModulePaymentSettings is cPortModule {
         emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify the payment settings for their collections.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the royalty backfill numerator is greater than 10,000.
+     * @dev    Throws when the royalty bounty numerator is greater than 10,000.
+     * @dev    Throws when the specified payment method whitelist id does not exist.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The `PaymentSettings` type for the collection has been set.
+     * @dev    2. The `paymentMethodWhitelistId` for the collection has been set, if applicable.
+     * @dev    3. The `constrainedPricingPaymentMethod` for the collection has been set, if applicable.
+     * @dev    4. The `royaltyBackfillNumerator` for the collection has been set.
+     * @dev    5. The `royaltyBackfillReceiver` for the collection has been set.
+     * @dev    6. The `royaltyBountyNumerator` for the collection has been set.
+     * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
+     * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
+     *
+     * @param  tokenAddress                    The smart contract address of the NFT collection.
+     * @param  paymentSettings                 The payment settings for the collection.
+     * @param  paymentMethodWhitelistId        The id of the payment method whitelist to use for the collection.
+     * @param  constrainedPricingPaymentMethod The payment method to use for min/max pricing.
+     * @param  royaltyBackfillNumerator        The royalty backfill numerator for the collection.
+     * @param  royaltyBackfillReceiver         The royalty backfill receiver for the collection.
+     * @param  royaltyBountyNumerator          The royalty bounty numerator for the collection.
+     * @param  exclusiveBountyReceiver         The exclusive bounty receiver for the collection.
+     */
     function setCollectionPaymentSettings(
         address tokenAddress, 
         PaymentSettings paymentSettings,
@@ -117,12 +188,23 @@ contract ModulePaymentSettings is cPortModule {
                 exclusiveBountyReceiver);
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify their own bounded price at the collection level.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified floor price is greater than the ceiling price.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The collection-level pricing bounds for the specified tokenAddress has been set.
+     * @dev    2. An `UpdatedCollectionLevelPricingBoundaries` event has been emitted.
+     *
+     * @param  tokenAddress The smart contract address of the NFT collection.
+     * @param  pricingBounds Includes the floor price and ceiling price.
+     */
     function setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds) external {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
-
-        if(appStorage().collectionPricingBounds[tokenAddress].isImmutable) {
-            revert cPort__PricingBoundsAreImmutable();
-        }
 
         if(pricingBounds.floorPrice > pricingBounds.ceilingPrice) {
             revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
@@ -136,6 +218,24 @@ contract ModulePaymentSettings is cPortModule {
             pricingBounds.ceilingPrice);
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         specify their own bounded price at the individual token level.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the lengths of the tokenIds and pricingBounds array don't match.
+     * @dev    Throws when the tokenIds or pricingBounds array length is zero. 
+     * @dev    Throws when the any of the specified floor prices is greater than the ceiling price for that token id.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The token-level pricing bounds for the specified tokenAddress and token ids has been set.
+     * @dev    2. An `UpdatedTokenLevelPricingBoundaries` event has been emitted.
+     *
+     * @param  tokenAddress  The smart contract address of the NFT collection.
+     * @param  tokenIds      An array of token ids for which pricing bounds are being set.
+     * @param  pricingBounds An array of pricing bounds used to set the floor and ceiling per token.
+     */
     function setTokenPricingBounds(
         address tokenAddress, 
         uint256[] calldata tokenIds, 
@@ -150,16 +250,13 @@ contract ModulePaymentSettings is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
-        mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = appStorage().tokenPricingBounds[tokenAddress];
+        mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = 
+            appStorage().tokenPricingBounds[tokenAddress];
 
         uint256 tokenId;
         for(uint256 i = 0; i < tokenIds.length;) {
             tokenId = tokenIds[i];
             PricingBounds memory pricingBounds_ = pricingBounds[i];
-
-            if(ptrTokenPricingBounds[tokenId].isImmutable) {
-                revert cPort__PricingBoundsAreImmutable();
-            }
 
             if(pricingBounds_.floorPrice > pricingBounds_.ceilingPrice) {
                 revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();

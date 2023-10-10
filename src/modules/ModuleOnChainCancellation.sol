@@ -24,6 +24,14 @@ contract ModuleOnChainCancellation is cPortModule {
         DefaultPaymentMethods memory defaultPaymentMethods) 
     cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
 
+    /**
+     * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The maker's master nonce has been incremented by `1` in contract storage, rendering all signed
+     *            approvals using the prior nonce unusable.
+     * @dev    2. A `MasterNonceInvalidated` event has been emitted.
+     */
     function revokeMasterNonce() external {
         emit MasterNonceInvalidated(appStorage().masterNonces[msg.sender], msg.sender);
 
@@ -32,7 +40,38 @@ contract ModuleOnChainCancellation is cPortModule {
         }
     }
 
+    /**
+     * @notice Allows a maker to revoke/cancel a single, previously signed listing or offer by specifying the
+     *         nonce of the listing or offer.
+     *
+     * @dev    Throws when the maker has already revoked the nonce.
+     * @dev    Throws when the nonce was already used by the maker to successfully buy or sell an NFT.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The specified `nonce` for the `msg.sender` has been revoked and can
+     *            no longer be used to execute a sale or purchase.
+     * @dev    2. A `NonceInvalidated` event has been emitted.
+     *
+     * @param  nonce The nonce that was signed in the revoked listing or offer.
+     */
     function revokeSingleNonce(uint256 nonce) external {
         _checkAndInvalidateNonce(msg.sender, nonce, true);
+    }
+
+    /**
+     * @notice Allows a maker to revoke/cancel a partially fillable order by specifying the order digest hash.
+     *
+     * @dev    Throws when the maker has already revoked the order digest.
+     * @dev    Throws when the order digest was already used by the maker and has been fully filled.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The specified `orderDigest` for the `msg.sender` has been revoked and can
+     *            no longer be used to execute a sale or purchase.
+     * @dev    2. An `OrderDigestInvalidated` event has been emitted.
+     *
+     * @param  orderDigest The order digest that was signed in the revoked listing or offer.
+     */
+    function revokeOrderDigest(bytes32 orderDigest) external {
+        _revokeOrderDigest(msg.sender, orderDigest);
     }
 }
