@@ -113,10 +113,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
-            if (saleDetails.paymentMethod == address(0)) {
-                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
-            }
-
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
@@ -142,10 +138,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
-            if (saleDetails.paymentMethod == address(0)) {
-                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
-            }
-
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
@@ -190,10 +182,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            if (saleDetails.paymentMethod == address(0)) {
-                revert cPort__CannotPartiallyFillOrdersWithNativePaymentMethod();
-            }
-
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
