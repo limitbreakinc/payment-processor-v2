@@ -150,10 +150,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
         }
 
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
-        }
-
         uint256 msgValueItemPrice = 0;
 
         if (saleDetails.paymentMethod == address(0)) {
@@ -188,17 +184,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         if (cosignature.signer != address(0)) {
             quantityToFill = 
-                _verifyCosignedSaleApproval(
-                    domainSeparator, 
-                    saleDetails, 
-                    signedSellOrder, 
-                    cosignature);
+                _verifyCosignedSaleApproval(domainSeparator, saleDetails, signedSellOrder, cosignature);
         } else {
-            quantityToFill = 
-                _verifySignedSaleApproval(
-                    domainSeparator, 
-                    saleDetails, 
-                    signedSellOrder);
+            quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
         }
 
         if (quantityToFill != saleDetails.amount) {
@@ -208,10 +196,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
-        }
-
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         uint256 msgValueItemPrice = 0;
@@ -261,11 +245,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     revert cPort__IncorrectTokenSetMerkleProof();
                 }
 
-                quantityToFill = _verifySignedTokenSetOffer(
-                    domainSeparator, 
-                    saleDetails, 
-                    buyerSignature, 
-                    tokenSetProof);
+                quantityToFill = 
+                    _verifySignedTokenSetOffer(domainSeparator, saleDetails, buyerSignature, tokenSetProof);
             }
         } else {
             quantityToFill = _verifySignedItemOffer(domainSeparator, saleDetails, buyerSignature);
@@ -323,10 +304,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         if (quantityToFill != saleDetails.amount) {
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
-        }
-
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         _fulfillSingleOrderWithFeeOnTop(
@@ -467,10 +444,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         if (quantityToFill != saleDetails.amount) {
             saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
-        }
-
-        if (feeOnTop.amount > saleDetails.itemPrice) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(msgValue, saleDetails);
@@ -861,6 +834,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty,
         FeeOnTop memory feeOnTop
     ) private {
+        if (feeOnTop.amount > saleDetails.itemPrice) {
+            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
         if (!fnPointers.funcDispenseToken(
                 seller, 
                 saleDetails.beneficiary, 
