@@ -116,8 +116,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;            
         }
 
         _fulfillSingleOrder(
@@ -141,8 +141,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         uint256 msgValueItemPrice = 0;
@@ -185,8 +185,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         uint256 msgValueItemPrice = 0;
@@ -244,8 +244,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         _fulfillSingleOrder(
@@ -293,8 +293,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         _fulfillSingleOrderWithFeeOnTop(
@@ -363,8 +363,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         _fulfillSingleOrder(
@@ -433,8 +433,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
-            saleDetails.amount = quantityToFill;
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
+            saleDetails.amount = quantityToFill;
         }
 
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(msgValue, saleDetails);
