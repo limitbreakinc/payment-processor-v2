@@ -44,8 +44,8 @@ interface cPortEvents {
         uint256 salePrice);
 
     event CreatedPaymentMethodWhitelist(
-        uint88 indexed paymentMethodWhitelistId, 
-        address whitelistOwner, 
+        uint32 indexed paymentMethodWhitelistId, 
+        address indexed whitelistOwner,
         string whitelistName);
 
     /// @notice Emitted when a user revokes all of their existing listings or offers that share the master nonce.
@@ -67,12 +67,12 @@ interface cPortEvents {
 
     /// @notice Emitted when a coin is added to the approved coins mapping for a security policy
     event PaymentMethodAddedToWhitelist(
-        uint88 indexed paymentMethodWhitelistId, 
+        uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
 
     /// @notice Emitted when a coin is removed from the approved coins mapping for a security policy
     event PaymentMethodRemovedFromWhitelist(
-        uint88 indexed paymentMethodWhitelistId, 
+        uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
 
     /// @notice Emitted whenever pricing bounds change at a collection level for price-constrained collections.
