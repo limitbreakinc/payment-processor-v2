@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "./CPortModule.t.sol";
+import "../CPortModule.t.sol";
 
 contract ModuleBuyListingTest is cPortModuleTest {
 
