@@ -33,6 +33,13 @@ contract cPortModuleTest is Test, cPortEvents {
         uint128 itemPrice;
         address beneficiary;
         uint160 cosignerKey;
+        address marketplace;
+        address royaltyReceiver;
+    }
+
+    struct FuzzedFeeOnTop {
+        uint24 rate;
+        address receiver;
     }
 
     bytes4 internal constant EMPTY_SELECTOR = bytes4(0x00000000);
@@ -2003,12 +2010,130 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.buyerKey);
         vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.cosignerKey);
         vm.assume(fuzzedOrderInputs.buyerKey != fuzzedOrderInputs.cosignerKey);
-        
-        _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), new address[](0));
-        _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), new address[](0));
-        _sanitizeAddress(vm.addr(fuzzedOrderInputs.cosignerKey), new address[](0));
-        _sanitizeAddress(fuzzedOrderInputs.beneficiary, new address[](0));
+
+        address[] memory exclusionList = new address[](7);
+        exclusionList[0] = alice;
+        exclusionList[1] = bob;
+        exclusionList[2] = cal;
+        exclusionList[3] = abe;
+        exclusionList[4] = benchmarkBeneficiary;
+        exclusionList[5] = cosigner;
+        exclusionList[6] = benchmarkFeeRecipient;
+
+        _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), exclusionList);
+        _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), exclusionList);
+        _sanitizeAddress(vm.addr(fuzzedOrderInputs.cosignerKey), exclusionList);
+        _sanitizeAddress(fuzzedOrderInputs.beneficiary, exclusionList);
+        _sanitizeAddress(fuzzedOrderInputs.marketplace, exclusionList);
+        _sanitizeAddress(fuzzedOrderInputs.royaltyReceiver, exclusionList);
+
+        vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.marketplace);
+        vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.royaltyReceiver);
+        vm.assume(fuzzedOrderInputs.marketplace != fuzzedOrderInputs.royaltyReceiver);
         
         vm.assume(0 < fuzzedOrderInputs.expirationSeconds);
+
+        vm.assume(fuzzedOrderInputs.marketplace.balance == 0);
+        vm.assume(fuzzedOrderInputs.royaltyReceiver.balance == 0);
+        vm.assume(vm.addr(fuzzedOrderInputs.sellerKey).balance == 0);
+        vm.assume(vm.addr(fuzzedOrderInputs.buyerKey).balance == 0);
+    }
+
+    function _scrubFuzzedOrderInputs(
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        FuzzedFeeOnTop memory fuzzedFeeOnTop
+    ) internal view {
+        _scrubFuzzedOrderInputs(fuzzedOrderInputs);
+
+        address[] memory exclusionList = new address[](13);
+        exclusionList[0] = alice;
+        exclusionList[1] = bob;
+        exclusionList[2] = cal;
+        exclusionList[3] = abe;
+        exclusionList[4] = benchmarkBeneficiary;
+        exclusionList[5] = cosigner;
+        exclusionList[6] = benchmarkFeeRecipient;
+        exclusionList[7] = vm.addr(fuzzedOrderInputs.sellerKey);
+        exclusionList[8] = vm.addr(fuzzedOrderInputs.buyerKey);
+        exclusionList[9] = vm.addr(fuzzedOrderInputs.cosignerKey);
+        exclusionList[10] = fuzzedOrderInputs.beneficiary;
+        exclusionList[11] = fuzzedOrderInputs.marketplace;
+        exclusionList[12] = fuzzedOrderInputs.royaltyReceiver;
+
+        _sanitizeAddress(fuzzedFeeOnTop.receiver, exclusionList);
+        vm.assume(fuzzedFeeOnTop.receiver.balance == 0);
+
+        vm.assume(10000 >= fuzzedFeeOnTop.rate);
+
+        uint256 feeAmount = uint256(fuzzedOrderInputs.itemPrice) * fuzzedFeeOnTop.rate / 10000;
+
+        vm.assume(uint256(fuzzedOrderInputs.itemPrice) + feeAmount < type(uint128).max);
+    }
+
+    function _verifyExpectedTradeStateChanges(address buyer, Order memory order, FuzzedOrder721 memory fuzzedOrderInputs) internal {
+        address seller = vm.addr(fuzzedOrderInputs.sellerKey);
+        uint256 expectedRoyalty = uint256(fuzzedOrderInputs.itemPrice) * fuzzedOrderInputs.royaltyFeeRate / FEE_DENOMINATOR;
+        uint256 expectedMarketplaceFee = uint256(fuzzedOrderInputs.itemPrice) * fuzzedOrderInputs.marketplaceFeeRate / FEE_DENOMINATOR;
+        uint256 expectedSellerProceeds = fuzzedOrderInputs.itemPrice - expectedRoyalty - expectedMarketplaceFee;
+        uint256 expectedBuyerBalance = 0;
+
+        if (order.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            assertEq(test721.ownerOf(fuzzedOrderInputs.tokenId), fuzzedOrderInputs.beneficiary);
+        } else if (order.protocol == OrderProtocols.ERC1155_FILL_OR_KILL) {
+            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.amount);
+        } else if (order.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.requestedFillAmount);
+
+            uint256 unitPrice = order.itemPrice / order.amount;
+            uint256 adjustedPrice = unitPrice * order.requestedFillAmount;
+
+            expectedRoyalty = uint256(adjustedPrice) * fuzzedOrderInputs.royaltyFeeRate / FEE_DENOMINATOR;
+            expectedMarketplaceFee = uint256(adjustedPrice) * fuzzedOrderInputs.marketplaceFeeRate / FEE_DENOMINATOR;
+            expectedSellerProceeds = adjustedPrice - expectedRoyalty - expectedMarketplaceFee;
+            expectedBuyerBalance = order.itemPrice - adjustedPrice;
+        } 
+
+        if (order.paymentMethod == address(0)) {
+            assertEq(buyer.balance, expectedBuyerBalance);
+            assertEq(seller.balance, expectedSellerProceeds);
+            assertEq(fuzzedOrderInputs.royaltyReceiver.balance, expectedRoyalty);
+            assertEq(fuzzedOrderInputs.marketplace.balance, expectedMarketplaceFee);
+        } else {
+            assertEq(IERC20(order.paymentMethod).balanceOf(buyer), expectedBuyerBalance);
+            assertEq(IERC20(order.paymentMethod).balanceOf(seller), expectedSellerProceeds);
+            assertEq(IERC20(order.paymentMethod).balanceOf(fuzzedOrderInputs.royaltyReceiver), expectedRoyalty);
+            assertEq(IERC20(order.paymentMethod).balanceOf(fuzzedOrderInputs.marketplace), expectedMarketplaceFee);
+        }
+    }
+
+    function _verifyExpectedTradeStateChanges(
+        address buyer, 
+        Order memory order, 
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        FeeOnTop memory feeOnTop
+    ) internal {
+        _verifyExpectedTradeStateChanges(buyer, order, fuzzedOrderInputs);
+
+        if (feeOnTop.recipient != address(0)) {
+            if (order.paymentMethod == address(0)) {
+                assertEq(feeOnTop.recipient.balance, feeOnTop.amount);
+            } else {
+                assertEq(IERC20(order.paymentMethod).balanceOf(feeOnTop.recipient), feeOnTop.amount);
+            }
+        }
+    }
+
+    function _getFeeOnTop(
+        uint256 totalSalePrice, 
+        FuzzedFeeOnTop memory fuzzedFeeOnTop
+    ) internal pure returns (FeeOnTop memory feeOnTop) {
+        feeOnTop = FeeOnTop({
+            amount: totalSalePrice * fuzzedFeeOnTop.rate / 10_000,
+            recipient: fuzzedFeeOnTop.receiver
+        });
+
+        if (feeOnTop.amount == 0) {
+            feeOnTop.recipient = address(0);
+        }
     }
 }

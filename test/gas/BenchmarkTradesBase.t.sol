@@ -368,7 +368,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -443,7 +445,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -537,7 +541,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -612,7 +618,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
 
             Order memory saleDetails = Order({
@@ -706,7 +714,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -779,7 +789,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -868,7 +880,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -940,7 +954,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1036,7 +1052,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(100 ether),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1123,7 +1141,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(100 ether),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1229,7 +1249,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1302,7 +1324,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1391,7 +1415,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1463,7 +1489,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(paymentAmount),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1559,7 +1587,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(100 ether),
                 beneficiary: params.beneficiary,
-                cosignerKey: 0
+                cosignerKey: 0,
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1646,7 +1676,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 tokenId: tokenId,
                 itemPrice: uint128(100 ether),
                 beneficiary: params.beneficiary,
-                cosignerKey: uint160(cosignerPk)
+                cosignerKey: uint160(cosignerPk),
+                marketplace: cal,
+                royaltyReceiver: abe
             });
     
             Order memory saleDetails = Order({
@@ -1758,7 +1790,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: 0
+                    cosignerKey: 0,
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
 
                 saleDetailsArray[batchIndex] = Order({
@@ -1842,7 +1876,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: uint160(cosignerPk)
+                    cosignerKey: uint160(cosignerPk),
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
 
                 saleDetailsArray[batchIndex] = Order({
@@ -1945,7 +1981,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: 0
+                    cosignerKey: 0,
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2027,7 +2065,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: uint160(cosignerPk)
+                    cosignerKey: uint160(cosignerPk),
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2126,7 +2166,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: 0
+                    cosignerKey: 0,
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2208,7 +2250,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: uint160(cosignerPk)
+                    cosignerKey: uint160(cosignerPk),
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2313,7 +2357,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(100 ether),
                     beneficiary: params.beneficiary,
-                    cosignerKey: 0
+                    cosignerKey: 0,
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2408,7 +2454,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(100 ether),
                     beneficiary: params.beneficiary,
-                    cosignerKey: uint160(cosignerPk)
+                    cosignerKey: uint160(cosignerPk),
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
     
                 saleDetailsArray[batchIndex] = Order({
@@ -2522,7 +2570,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: 0
+                    cosignerKey: 0,
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
 
                 saleDetailsArray[batchIndex] = Order({
@@ -2612,7 +2662,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     tokenId: tokenId,
                     itemPrice: uint128(paymentAmount),
                     beneficiary: params.beneficiary,
-                    cosignerKey: uint160(cosignerPk)
+                    cosignerKey: uint160(cosignerPk),
+                    marketplace: cal,
+                    royaltyReceiver: abe
                 });
 
                 saleDetailsArray[batchIndex] = Order({
