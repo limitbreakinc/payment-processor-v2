@@ -855,8 +855,6 @@ contract ModuleBuyListingTest is cPortModuleTest {
         _verifyExpectedTradeStateChanges(buyer, saleDetails, fuzzedOrderInputs);
     }
 
-    // TODO
-
     /***************************/
     /* Cosigned ETH Fee On Top */
     /***************************/
