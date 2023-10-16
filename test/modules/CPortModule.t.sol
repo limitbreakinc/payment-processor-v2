@@ -42,6 +42,17 @@ contract cPortModuleTest is Test, cPortEvents {
         address receiver;
     }
 
+    struct TestTradeSingleItemParams {
+        uint8 paymentSettings;
+        OrderProtocols orderProtocol;
+        bool cosigned;
+        bool isCosignatureEmpty;
+        address paymentMethod;
+        uint248 amount;
+        uint248 fillAmount;
+        FuzzedOrder721 fuzzedOrderInputs;
+    }
+
     bytes4 internal constant EMPTY_SELECTOR = bytes4(0x00000000);
 
     uint256 constant MAX_INT = ~uint256(0);
@@ -2134,6 +2145,73 @@ contract cPortModuleTest is Test, cPortEvents {
 
         if (feeOnTop.amount == 0) {
             feeOnTop.recipient = address(0);
+        }
+    }
+
+    function _setPaymentSettings(
+        uint8 paymentSettings,
+        uint256 itemPrice,
+        address token, 
+        address paymentMethod,
+        uint16 royaltyBackfillNumerator,
+        address royaltyBackfillReceiver,
+        uint16 royaltyBountyNumerator,
+        address exclusiveBountyReceiver
+    ) internal {
+        paymentSettings = paymentSettings % 4;
+        PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
+
+        if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
+            bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort), 
+                token, 
+                PaymentSettings.AllowAnyPaymentMethod, 
+                0, 
+                paymentMethod, 
+                royaltyBackfillNumerator, 
+                royaltyBackfillReceiver, 
+                royaltyBountyNumerator, 
+                exclusiveBountyReceiver);
+
+            _cPort.setCollectionPaymentSettings(data);
+        } else if (paymentSettingsEnum == PaymentSettings.CustomPaymentMethodWhitelist) {
+            bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort), 
+                token, 
+                PaymentSettings.CustomPaymentMethodWhitelist, 
+                customPaymentMethodWhitelistId, 
+                paymentMethod, 
+                royaltyBackfillNumerator, 
+                royaltyBackfillReceiver, 
+                royaltyBountyNumerator, 
+                exclusiveBountyReceiver);
+
+            _cPort.setCollectionPaymentSettings(data);
+        } else if (paymentSettingsEnum == PaymentSettings.PricingConstraints) {
+            vm.assume(itemPrice >= 1 ether && itemPrice <= 500 ether);
+            
+            bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort), 
+                token, 
+                PaymentSettings.PricingConstraints, 
+                0, 
+                paymentMethod, 
+                royaltyBackfillNumerator, 
+                royaltyBackfillReceiver, 
+                royaltyBountyNumerator, 
+                exclusiveBountyReceiver);
+
+            bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(
+                address(_cPort), 
+                address(test721), 
+                PricingBounds({
+                    isSet: true,
+                    floorPrice: 1 ether,
+                    ceilingPrice: 500 ether
+                }));
+    
+            _cPort.setCollectionPaymentSettings(data1);
+            _cPort.setCollectionPricingBounds(data2);
         }
     }
 }
