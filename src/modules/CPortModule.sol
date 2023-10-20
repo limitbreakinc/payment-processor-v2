@@ -109,15 +109,29 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _executeOrderBuySide(
         bytes32 domainSeparator,
         bool disablePartialFill,
-        uint256 msgValue,
+        uint256 startingNativeFunds,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder
-    ) internal {
+    ) internal returns (uint256 endingNativeFunds) {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
             saleDetails.amount = quantityToFill;            
+        }
+
+        uint256 msgValueItemPrice;
+
+        if (saleDetails.paymentMethod == address(0)) {
+            msgValueItemPrice = saleDetails.itemPrice;
+
+            if (startingNativeFunds < msgValueItemPrice) {
+                revert cPort__RanOutOfNativeFunds();
+            }
+
+            unchecked {
+                endingNativeFunds = startingNativeFunds - msgValueItemPrice;
+            }
         }
 
         _fulfillSingleOrder(
@@ -127,17 +141,17 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             IERC20(saleDetails.paymentMethod),
             _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
-            _validateBasicOrderDetails(msgValue, saleDetails));
+            _validateBasicOrderDetails(msgValueItemPrice, saleDetails));
     }
 
     function _executeOrderBuySide(
         bytes32 domainSeparator,
         bool disablePartialFill,
-        uint256 msgValue,
+        uint256 startingNativeFunds,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
         FeeOnTop memory feeOnTop
-    ) internal {
+    ) internal returns (uint256 endingNativeFunds) {
         uint248 quantityToFill = _verifySignedSaleApproval(domainSeparator, saleDetails, signedSellOrder);
 
         if (quantityToFill != saleDetails.amount) {
@@ -148,11 +162,15 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint256 msgValueItemPrice = 0;
 
         if (saleDetails.paymentMethod == address(0)) {
-            if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
-                revert cPort__IncorrectFundsToCoverFeeOnTop();
-            }
-            
             msgValueItemPrice = saleDetails.itemPrice;
+
+            if (startingNativeFunds < msgValueItemPrice + feeOnTop.amount) {
+                revert cPort__RanOutOfNativeFunds();
+            }
+
+            unchecked {
+                endingNativeFunds = startingNativeFunds - msgValueItemPrice - feeOnTop.amount;
+            }
         }
 
         _fulfillSingleOrderWithFeeOnTop(
@@ -169,12 +187,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     function _executeOrderBuySide(
         bytes32 domainSeparator,
         bool disablePartialFill,
-        uint256 msgValue,
+        uint256 startingNativeFunds,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
-    ) internal {
+    ) internal returns (uint256 endingNativeFunds) {
         uint248 quantityToFill;
 
         if (cosignature.signer != address(0)) {
@@ -192,11 +210,15 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint256 msgValueItemPrice = 0;
 
         if (saleDetails.paymentMethod == address(0)) {
-            if (feeOnTop.amount + saleDetails.itemPrice != msgValue) {
-                revert cPort__IncorrectFundsToCoverFeeOnTop();
-            }
-            
             msgValueItemPrice = saleDetails.itemPrice;
+
+            if (startingNativeFunds < msgValueItemPrice + feeOnTop.amount) {
+                revert cPort__RanOutOfNativeFunds();
+            }
+
+            unchecked {
+                endingNativeFunds = startingNativeFunds - msgValueItemPrice - feeOnTop.amount;
+            }
         }
 
         _fulfillSingleOrderWithFeeOnTop(

@@ -659,7 +659,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListingWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuyCosignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+    function _bulkBuyCosignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
 
@@ -682,7 +682,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuyCosignedListingsWithFeesOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+    function _bulkBuyCosignedListingsWithFeesOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
 
@@ -690,7 +690,7 @@ contract cPortModuleTest is Test, cPortEvents {
             (sellerSignaturesArray[i], cosignatureArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], caller);
 
             if (saleDetailsArray[i].paymentMethod == address(0)) {
-                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+                nativePaymentValue = nativePaymentValue + feesOnTop[i].amount;
             }
         }
 
@@ -710,7 +710,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuyEmptyCosignedListingsWithFeesOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+    function _bulkBuyEmptyCosignedListingsWithFeesOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
 
@@ -719,7 +719,7 @@ contract cPortModuleTest is Test, cPortEvents {
             cosignatureArray[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
             if (saleDetailsArray[i].paymentMethod == address(0)) {
-                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+                nativePaymentValue = nativePaymentValue + feesOnTop[i].amount;
             }
         }
 
@@ -739,7 +739,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuyEmptyCosignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+    function _bulkBuyEmptyCosignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
 
@@ -994,7 +994,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.sweepCollectionCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuySignedListings(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
+    function _bulkBuySignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
@@ -1015,14 +1015,14 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _bulkBuySignedListingsWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+    function _bulkBuySignedListingsWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
 
             if (saleDetailsArray[i].paymentMethod == address(0)) {
-                nativePaymentValue = nativePaymentValue + uint128(feesOnTop[i].amount);
+                nativePaymentValue = nativePaymentValue + feesOnTop[i].amount;
             }
         }
 
@@ -2130,6 +2130,208 @@ contract cPortModuleTest is Test, cPortEvents {
                 assertEq(feeOnTop.recipient.balance, feeOnTop.amount);
             } else {
                 assertEq(IERC20(order.paymentMethod).balanceOf(feeOnTop.recipient), feeOnTop.amount);
+            }
+        }
+    }
+
+    function _getExpectedBeneficiaryBalance1155(Order memory order) private returns (uint256 expectedBalance1155) {
+        if (order.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            return 0;
+        } else if (order.protocol == OrderProtocols.ERC1155_FILL_OR_KILL) {
+            return order.amount;
+        } else if (order.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            return order.requestedFillAmount;
+        }
+        return 0;
+    }
+
+    function _verifyExpectedTradeStateChanges(
+        address buyer, 
+        Order memory order1, 
+        Order memory order2, 
+        FuzzedOrder721 memory fuzzedOrderInputs1, 
+        FuzzedOrder721 memory fuzzedOrderInputs2) internal {
+        if (order1.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            assertEq(test721.ownerOf(order1.tokenId), order1.beneficiary);
+        }
+
+        if (order2.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            assertEq(test721.ownerOf(order2.tokenId), order2.beneficiary);
+        }
+
+        assertEq(test1155.balanceOf(order1.beneficiary, order1.tokenId), _getExpectedBeneficiaryBalance1155(order1));
+        assertEq(test1155.balanceOf(order2.beneficiary, order2.tokenId), _getExpectedBeneficiaryBalance1155(order2));
+
+        uint256 expectedRoyalty1 = order1.itemPrice * order1.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedMarketplaceFee1 = order1.itemPrice * order1.marketplaceFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedSellerProceeds1 = order1.itemPrice - expectedRoyalty1 - expectedMarketplaceFee1;
+
+        if (order1.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            uint256 unitPrice = order1.itemPrice / order1.amount;
+            uint256 adjustedPrice = unitPrice * order1.requestedFillAmount;
+    
+            expectedRoyalty1 = adjustedPrice * order1.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+            expectedMarketplaceFee1 = adjustedPrice * order1.marketplaceFeeNumerator / FEE_DENOMINATOR;
+            expectedSellerProceeds1 = adjustedPrice - expectedRoyalty1 - expectedMarketplaceFee1;
+        }
+
+        uint256 expectedRoyalty2 = order2.itemPrice * order2.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedMarketplaceFee2 = order2.itemPrice * order2.marketplaceFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedSellerProceeds2 = order2.itemPrice - expectedRoyalty2 - expectedMarketplaceFee2;
+
+        if (order2.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            uint256 unitPrice = order2.itemPrice / order2.amount;
+            uint256 adjustedPrice = unitPrice * order2.requestedFillAmount;
+    
+            expectedRoyalty2 = adjustedPrice * order2.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+            expectedMarketplaceFee2 = adjustedPrice * order2.marketplaceFeeNumerator / FEE_DENOMINATOR;
+            expectedSellerProceeds2 = adjustedPrice - expectedRoyalty2 - expectedMarketplaceFee2;
+        }
+
+        if (fuzzedOrderInputs1.royaltyReceiver != fuzzedOrderInputs2.royaltyReceiver) {
+            if (order1.paymentMethod == address(0)) {
+                assertEq(fuzzedOrderInputs1.royaltyReceiver.balance, expectedRoyalty1);
+            } else {
+                 assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1);
+            }
+
+            if (order2.paymentMethod == address(0)) {
+                assertEq(fuzzedOrderInputs2.royaltyReceiver.balance, expectedRoyalty2);
+            } else {
+                 assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.royaltyReceiver), expectedRoyalty2);
+            }
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs1.royaltyReceiver.balance, expectedRoyalty1 + expectedRoyalty2);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1 + expectedRoyalty2);
+                }
+            } else {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs1.royaltyReceiver.balance, expectedRoyalty1);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1);
+                }
+
+                if (order2.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs2.royaltyReceiver.balance, expectedRoyalty2);
+                } else {
+                    assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.royaltyReceiver), expectedRoyalty2);
+                }
+            }
+        }
+
+        if (fuzzedOrderInputs1.marketplace != fuzzedOrderInputs2.marketplace) {
+            if (order1.paymentMethod == address(0)) {
+                assertEq(fuzzedOrderInputs1.marketplace.balance, expectedMarketplaceFee1);
+            } else {
+                 assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1);
+            }
+
+            if (order2.paymentMethod == address(0)) {
+                assertEq(fuzzedOrderInputs2.marketplace.balance, expectedMarketplaceFee2);
+            } else {
+                 assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.marketplace), expectedMarketplaceFee2);
+            }
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs1.marketplace.balance, expectedMarketplaceFee1 + expectedMarketplaceFee2);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1 + expectedMarketplaceFee2);
+                }
+            } else {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs1.marketplace.balance, expectedMarketplaceFee1);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1);
+                }
+
+                if (order2.paymentMethod == address(0)) {
+                    assertEq(fuzzedOrderInputs2.marketplace.balance, expectedMarketplaceFee2);
+                } else {
+                    assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.marketplace), expectedMarketplaceFee2);
+                }
+            }
+        }
+
+        if (fuzzedOrderInputs1.sellerKey != fuzzedOrderInputs2.sellerKey) {
+            if (order1.paymentMethod == address(0)) {
+                assertEq(vm.addr(fuzzedOrderInputs1.sellerKey).balance, expectedSellerProceeds1);
+            } else {
+                 assertEq(IERC20(order1.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs1.sellerKey)), expectedSellerProceeds1);
+            }
+
+            if (order2.paymentMethod == address(0)) {
+                assertEq(vm.addr(fuzzedOrderInputs2.sellerKey).balance, expectedSellerProceeds2);
+            } else {
+                 assertEq(IERC20(order2.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs2.sellerKey)), expectedSellerProceeds2);
+            }
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(vm.addr(fuzzedOrderInputs1.sellerKey).balance, expectedSellerProceeds1 + expectedSellerProceeds2);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs1.sellerKey)), expectedSellerProceeds1 + expectedSellerProceeds2);
+                }
+            } else {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(vm.addr(fuzzedOrderInputs1.sellerKey).balance, expectedSellerProceeds1);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs1.sellerKey)), expectedSellerProceeds1);
+                }
+
+                if (order2.paymentMethod == address(0)) {
+                    assertEq(vm.addr(fuzzedOrderInputs2.sellerKey).balance, expectedSellerProceeds2);
+                } else {
+                    assertEq(IERC20(order2.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs2.sellerKey)), expectedSellerProceeds2);
+                }
+            }
+        }
+    }
+
+    function _verifyExpectedTradeStateChanges(
+        address buyer, 
+        Order memory order1, 
+        Order memory order2, 
+        FuzzedOrder721 memory fuzzedOrderInputs1, 
+        FuzzedOrder721 memory fuzzedOrderInputs2,
+        FeeOnTop memory feeOnTop1,
+        FeeOnTop memory feeOnTop2) internal {
+        _verifyExpectedTradeStateChanges(buyer, order1, order2, fuzzedOrderInputs1, fuzzedOrderInputs2);
+
+        if (feeOnTop1.recipient != feeOnTop2.recipient) {
+            if (order1.paymentMethod == address(0)) {
+                assertEq(feeOnTop1.recipient.balance, feeOnTop1.amount);
+            } else {
+                 assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount);
+            }
+
+            if (order2.paymentMethod == address(0)) {
+                assertEq(feeOnTop2.recipient.balance, feeOnTop2.amount);
+            } else {
+                 assertEq(IERC20(order2.paymentMethod).balanceOf(feeOnTop2.recipient), feeOnTop2.amount);
+            }
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(feeOnTop1.recipient.balance, feeOnTop1.amount + feeOnTop2.amount);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount + feeOnTop2.amount);
+                }
+            } else {
+                if (order1.paymentMethod == address(0)) {
+                    assertEq(feeOnTop1.recipient.balance, feeOnTop1.amount);
+                } else {
+                    assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount);
+                }
+
+                if (order2.paymentMethod == address(0)) {
+                    assertEq(feeOnTop2.recipient.balance, feeOnTop2.amount);
+                } else {
+                    assertEq(IERC20(order2.paymentMethod).balanceOf(feeOnTop2.recipient), feeOnTop2.amount);
+                }
             }
         }
     }

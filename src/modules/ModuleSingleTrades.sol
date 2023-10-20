@@ -31,13 +31,18 @@ contract ModuleSingleTrades is cPortModule {
         Order memory saleDetails, 
         SignatureECDSA memory sellerSignature
     ) public payable {
-        _executeOrderBuySide(
-            domainSeparator, 
-            true,
-            msg.value,
-            saleDetails, 
-            sellerSignature
-        );
+        uint256 remainingMsgValue = 
+            _executeOrderBuySide(
+                domainSeparator, 
+                true,
+                msg.value,
+                saleDetails, 
+                sellerSignature
+            );
+
+        if (remainingMsgValue > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
     }
 
     function buyListingWithFeeOnTop(
@@ -46,14 +51,19 @@ contract ModuleSingleTrades is cPortModule {
         SignatureECDSA memory sellerSignature,
         FeeOnTop memory feeOnTop
     ) public payable {
-        _executeOrderBuySide(
-            domainSeparator, 
-            true,
-            msg.value,
-            saleDetails, 
-            sellerSignature,
-            feeOnTop
-        );
+        uint256 remainingMsgValue = 
+            _executeOrderBuySide(
+                domainSeparator, 
+                true,
+                msg.value,
+                saleDetails, 
+                sellerSignature,
+                feeOnTop
+            );
+
+        if (remainingMsgValue > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
     }
 
     function acceptOffer(

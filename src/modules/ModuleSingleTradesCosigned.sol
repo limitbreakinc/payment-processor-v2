@@ -32,15 +32,20 @@ contract ModuleSingleTradesCosigned is cPortModule {
         SignatureECDSA memory sellerSignature,
         Cosignature memory cosignature
     ) public payable {
-        _executeOrderBuySide(
-            domainSeparator, 
-            true,
-            msg.value,
-            saleDetails, 
-            sellerSignature,
-            cosignature,
-            FeeOnTop({recipient: address(0), amount: 0})
-        );
+        uint256 remainingMsgValue = 
+            _executeOrderBuySide(
+                domainSeparator, 
+                true,
+                msg.value,
+                saleDetails, 
+                sellerSignature,
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0})
+            );
+
+        if (remainingMsgValue > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
     }
 
     function buyListingCosignedWithFeeOnTop(
@@ -50,15 +55,20 @@ contract ModuleSingleTradesCosigned is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
-        _executeOrderBuySide(
-            domainSeparator, 
-            true,
-            msg.value,
-            saleDetails, 
-            sellerSignature,
-            cosignature,
-            feeOnTop
-        );
+        uint256 remainingMsgValue = 
+            _executeOrderBuySide(
+                domainSeparator, 
+                true,
+                msg.value,
+                saleDetails, 
+                sellerSignature,
+                cosignature,
+                feeOnTop
+            );
+
+        if (remainingMsgValue > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
     }
 
     function acceptOfferCosigned(
