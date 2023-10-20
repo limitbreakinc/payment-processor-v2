@@ -5,7 +5,7 @@ import "forge-std/console.sol";
 
 import "../CPortModule.t.sol";
 
-contract ModuleBuyListingTest is cPortModuleTest {
+contract ModuleBulkBuyListingsTest is cPortModuleTest {
 
     function _getBulkBuyListingsInput(
         address buyer, 
