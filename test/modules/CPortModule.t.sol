@@ -2336,6 +2336,97 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     }
 
+    function _verifyExpectedTradeStateChanges(
+        Order memory order1, 
+        Order memory order2, 
+        FuzzedOrder721 memory fuzzedOrderInputs1, 
+        FuzzedOrder721 memory fuzzedOrderInputs2) internal {
+        if (order1.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            assertEq(test721.ownerOf(order1.tokenId), order1.beneficiary);
+        }
+
+        if (order2.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            assertEq(test721.ownerOf(order2.tokenId), order2.beneficiary);
+        }
+
+        assertEq(test1155.balanceOf(order1.beneficiary, order1.tokenId), _getExpectedBeneficiaryBalance1155(order1));
+        assertEq(test1155.balanceOf(order2.beneficiary, order2.tokenId), _getExpectedBeneficiaryBalance1155(order2));
+
+        uint256 expectedRoyalty1 = order1.itemPrice * order1.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedMarketplaceFee1 = order1.itemPrice * order1.marketplaceFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedSellerProceeds1 = order1.itemPrice - expectedRoyalty1 - expectedMarketplaceFee1;
+
+        if (order1.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            uint256 unitPrice = order1.itemPrice / order1.amount;
+            uint256 adjustedPrice = unitPrice * order1.requestedFillAmount;
+    
+            expectedRoyalty1 = adjustedPrice * order1.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+            expectedMarketplaceFee1 = adjustedPrice * order1.marketplaceFeeNumerator / FEE_DENOMINATOR;
+            expectedSellerProceeds1 = adjustedPrice - expectedRoyalty1 - expectedMarketplaceFee1;
+        }
+
+        uint256 expectedRoyalty2 = order2.itemPrice * order2.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedMarketplaceFee2 = order2.itemPrice * order2.marketplaceFeeNumerator / FEE_DENOMINATOR;
+        uint256 expectedSellerProceeds2 = order2.itemPrice - expectedRoyalty2 - expectedMarketplaceFee2;
+
+        if (order2.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            uint256 unitPrice = order2.itemPrice / order2.amount;
+            uint256 adjustedPrice = unitPrice * order2.requestedFillAmount;
+    
+            expectedRoyalty2 = adjustedPrice * order2.maxRoyaltyFeeNumerator / FEE_DENOMINATOR;
+            expectedMarketplaceFee2 = adjustedPrice * order2.marketplaceFeeNumerator / FEE_DENOMINATOR;
+            expectedSellerProceeds2 = adjustedPrice - expectedRoyalty2 - expectedMarketplaceFee2;
+        }
+
+        if (fuzzedOrderInputs1.royaltyReceiver != fuzzedOrderInputs2.royaltyReceiver) {
+            assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1);
+            assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.royaltyReceiver), expectedRoyalty2);
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1 + expectedRoyalty2);
+            } else {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.royaltyReceiver), expectedRoyalty1);
+                assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.royaltyReceiver), expectedRoyalty2);
+            }
+        }
+
+        if (fuzzedOrderInputs1.marketplace != fuzzedOrderInputs2.marketplace) {
+            assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1);
+            assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.marketplace), expectedMarketplaceFee2);
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1 + expectedMarketplaceFee2);
+            } else {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(fuzzedOrderInputs1.marketplace), expectedMarketplaceFee1);
+                assertEq(IERC20(order2.paymentMethod).balanceOf(fuzzedOrderInputs2.marketplace), expectedMarketplaceFee2);
+            }
+        }
+
+        assertEq(IERC20(order1.paymentMethod).balanceOf(vm.addr(fuzzedOrderInputs1.sellerKey)), expectedSellerProceeds1 + expectedSellerProceeds2);
+    }
+
+    function _verifyExpectedTradeStateChanges(
+        Order memory order1, 
+        Order memory order2, 
+        FuzzedOrder721 memory fuzzedOrderInputs1, 
+        FuzzedOrder721 memory fuzzedOrderInputs2,
+        FeeOnTop memory feeOnTop1,
+        FeeOnTop memory feeOnTop2) internal {
+        _verifyExpectedTradeStateChanges(order1, order2, fuzzedOrderInputs1, fuzzedOrderInputs2);
+
+        if (feeOnTop1.recipient != feeOnTop2.recipient) {
+            assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount);
+            assertEq(IERC20(order2.paymentMethod).balanceOf(feeOnTop2.recipient), feeOnTop2.amount);
+        } else {
+            if (order1.paymentMethod == order2.paymentMethod) {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount + feeOnTop2.amount);
+            } else {
+                assertEq(IERC20(order1.paymentMethod).balanceOf(feeOnTop1.recipient), feeOnTop1.amount);
+                assertEq(IERC20(order2.paymentMethod).balanceOf(feeOnTop2.recipient), feeOnTop2.amount);
+            }
+        }
+    }
+
     function _getFeeOnTop(
         uint256 totalSalePrice, 
         FuzzedFeeOnTop memory fuzzedFeeOnTop
