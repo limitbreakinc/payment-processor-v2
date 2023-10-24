@@ -230,7 +230,12 @@ contract cPortModuleTest is Test, cPortEvents {
     }
 
     function _getSignedSaleApproval(uint256 sellerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
-        bytes32 listingDigest = 
+        (SignatureECDSA memory signedListing,) = _getSignedSaleApprovalAndDigest(sellerKey_, saleDetails);
+        return signedListing;
+    }
+
+    function _getSignedSaleApprovalAndDigest(uint256 sellerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory, bytes32 digest) {
+        digest = 
             ECDSA.toTypedDataHash(
                 _cPort.getDomainSeparator(), 
                 keccak256(
@@ -257,10 +262,10 @@ contract cPortModuleTest is Test, cPortEvents {
                 )
             );
     
-        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(sellerKey_, listingDigest);
+        (uint8 listingV, bytes32 listingR, bytes32 listingS) = vm.sign(sellerKey_, digest);
         SignatureECDSA memory signedListing = SignatureECDSA({v: listingV, r: listingR, s: listingS});
     
-        return signedListing;
+        return (signedListing, digest);
     }
 
     function _getCosignature(uint256 cosignerKey_, SignatureECDSA memory signature, uint256 cosignatureExpiration, address cosignatureTaker) internal view returns (Cosignature memory) {
@@ -534,7 +539,42 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
+    function _revokeMasterNonce(address caller, bytes4 expectedRevertSelector) internal {
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
 
+        vm.prank(caller, caller);
+        _cPort.revokeMasterNonce();
+    }
+
+    function _revokeSingleNonce(address caller, uint256 nonce, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeRevokeSingleNonceCalldata(
+                address(_cPort), 
+                nonce);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.revokeSingleNonce(fnCalldata);
+    }
+
+    function _revokeOrderDigest(address caller, bytes32 digest, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeRevokeOrderDigestCalldata(
+                address(_cPort), 
+                digest);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.revokeOrderDigest(fnCalldata);
+    }
 
     function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);

@@ -110,6 +110,13 @@ contract cPortEncoder {
                 nonce));
     }
 
+    function encodeRevokeOrderDigestCalldata(address /*cPortAddress*/, bytes32 digest) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "revokeOrderDigest(bytes32)",
+                digest));
+    }
+
     /**************************************************************/
     /*                     TRADING OPERATIONS                     */
     /**************************************************************/
