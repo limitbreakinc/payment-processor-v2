@@ -171,13 +171,13 @@ contract ModulePaymentSettings is cPortModule {
             appStorage().collectionRoyaltyBackfillReceivers[tokenAddress] = royaltyBackfillReceiver;
             appStorage().collectionExclusiveBountyReceivers[tokenAddress] = exclusiveBountyReceiver;
 
-            appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
-                paymentSettings,
-                paymentMethodWhitelistId,
-                constrainedPricingPaymentMethod,
-                royaltyBackfillNumerator,
-                royaltyBountyNumerator,
-                exclusiveBountyReceiver != address(0));
+            appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings({
+                paymentSettings: paymentSettings,
+                paymentMethodWhitelistId: paymentMethodWhitelistId,
+                constrainedPricingPaymentMethod: constrainedPricingPaymentMethod,
+                royaltyBackfillNumerator: royaltyBackfillNumerator,
+                royaltyBountyNumerator: royaltyBountyNumerator,
+                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0)});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
