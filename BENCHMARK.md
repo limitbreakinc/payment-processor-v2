@@ -18,72 +18,71 @@ forge t --mt ".*MarketplaceFees.*" --gas-report
 
 forge t --mt ".*MarketplaceAndRoyaltyFees.*" --gas-report
 
+| Combined Benchmark                    | Min             | Avg    | Median | Max    | # calls |
+|---------------------------------------|-----------------|--------|--------|--------|---------|
+| acceptOffer                           | 63600           | 102000 | 104954 | 122652 | 720     |
+| acceptOfferCosigned                   | 60765           | 100558 | 103690 | 126338 | 1440    |
+| acceptOfferCosignedWithFeeOnTop       | 61216           | 107145 | 111750 | 139062 | 2880    |
+| acceptOfferWithFeeOnTop               | 64028           | 108564 | 111911 | 135354 | 1440    |
+| bulkAcceptOffers                      | 342201          | 436630 | 436791 | 551798 | 360     |
+| bulkAcceptOffersCosigned              | 352436          | 447122 | 445676 | 562116 | 720     |
+| bulkAcceptOffersCosignedWithFeesOnTop | 358331          | 484016 | 483829 | 630049 | 1440    |
+| bulkAcceptOffersWithFeesOnTop         | 346866          | 472219 | 471879 | 618371 | 720     |
+| bulkBuyListings                       | 333835          | 428199 | 429142 | 549358 | 240     |
+| bulkBuyListingsCosigned               | 344630          | 439654 | 437705 | 561137 | 240     |
+| bulkBuyListingsCosignedWithFeesOnTop  | 349348          | 477463 | 474880 | 638300 | 480     |
+| bulkBuyListingsWithFeesOnTop          | 338677          | 466604 | 462902 | 627639 | 480     |
+| buyListing                            | 50924           | 93336  | 97447  | 121092 | 360     |
+| buyListingCosigned                    | 48277           | 90285  | 93073  | 122379 | 360     |
+| buyListingCosignedWithFeeOnTop        | 48525           | 95540  | 98088  | 132901 | 720     |
+| buyListingWithFeeOnTop                | 51395           | 98748  | 102616 | 131737 | 720     |
+| sweepCollection                       | 273345          | 315989 | 316216 | 374422 | 240     |
+| sweepCollectionCosigned               | 277505          | 320548 | 319591 | 378582 | 240     |
+| sweepCollectionCosignedWithFeeOnTop   | 277750          | 325752 | 325572 | 389133 | 480     |
+| sweepCollectionWithFeeOnTop           | 273569          | 321172 | 320631 | 384952 | 480     |
+
 | Warm Benchmark                        | Min             | Avg    | Median | Max    | # calls |
 |---------------------------------------|-----------------|--------|--------|--------|---------|
-| acceptOffer                           | 62790           | 75194  | 75182  | 87872  | 180     |
-| acceptOfferCosigned                   | 59869           | 74005  | 73669  | 88412  | 360     |
-| acceptOfferCosignedWithFeeOnTop       | 60324           | 80593  | 80699  | 101133 | 720     |
-| acceptOfferWithFeeOnTop               | 63193           | 81729  | 81837  | 100539 | 360     |
-| bulkAcceptOffers                      | 334073          | 412191 | 404657 | 511734 | 180     |
-| bulkAcceptOffersCosigned              | 343164          | 425671 | 422067 | 529520 | 360     |
-| bulkAcceptOffersCosignedWithFeesOnTop | 348992          | 462438 | 471446 | 597311 | 720     |
-| bulkAcceptOffersWithFeesOnTop         | 338706          | 447690 | 458006 | 578164 | 360     |
-| bulkBuyListings                       | 323941          | 402053 | 399694 | 507669 | 120     |
-| bulkBuyListingsCosigned               | 333871          | 417023 | 413403 | 527664 | 120     |
-| bulkBuyListingsCosignedWithFeesOnTop  | 338532          | 455156 | 458134 | 605568 | 240     |
-| bulkBuyListingsWithFeesOnTop          | 329217          | 441445 | 444414 | 587506 | 240     |
-| buyListing                            | 49861           | 67581  | 67181  | 86115  | 120     |
-| buyListingCosigned                    | 47226           | 66616  | 66216  | 86820  | 120     |
-| buyListingCosignedWithFeeOnTop        | 47472           | 71800  | 71818  | 97330  | 240     |
-| buyListingWithFeeOnTop                | 50449           | 73041  | 72738  | 96835  | 240     |
-| sweepCollection                       | 262431          | 288902 | 286422 | 331850 | 120     |
-| sweepCollectionCosigned               | 265825          | 296858 | 296572 | 344381 | 120     |
-| sweepCollectionCosignedWithFeeOnTop   | 266026          | 302016 | 299483 | 354886 | 240     |
-| sweepCollectionWithFeeOnTop           | 262719          | 294147 | 294258 | 342440 | 240     |
+| acceptOffer                           | 63600           | 93450  | 94374  | 121969 | 360     |
+| acceptOfferCosigned                   | 60765           | 94145  | 94989  | 126338 | 720     |
+| acceptOfferCosignedWithFeeOnTop       | 61216           | 100732 | 101367 | 139062 | 1440    |
+| acceptOfferWithFeeOnTop               | 64028           | 100014 | 100723 | 134671 | 720     |
+| bulkAcceptOffers                      | 342201          | 419530 | 410797 | 517598 | 180     |
+| bulkAcceptOffersCosigned              | 352436          | 434297 | 429625 | 536822 | 360     |
+| bulkAcceptOffersCosignedWithFeesOnTop | 358331          | 471191 | 480276 | 604796 | 720     |
+| bulkAcceptOffersWithFeesOnTop         | 346866          | 455119 | 465095 | 584171 | 360     |
+| bulkBuyListings                       | 333835          | 411099 | 409631 | 515158 | 120     |
+| bulkBuyListingsCosigned               | 344630          | 426829 | 423630 | 535799 | 120     |
+| bulkBuyListingsCosignedWithFeesOnTop  | 349348          | 464638 | 467286 | 612977 | 240     |
+| bulkBuyListingsWithFeesOnTop          | 338677          | 449504 | 452145 | 593439 | 240     |
+| buyListing                            | 50924           | 81936  | 75259  | 120410 | 180     |
+| buyListingCosigned                    | 48277           | 81735  | 74003  | 122379 | 180     |
+| buyListingCosignedWithFeeOnTop        | 48525           | 86990  | 81879  | 132901 | 360     |
+| buyListingWithFeeOnTop                | 51395           | 87348  | 83580  | 131056 | 360     |
+| sweepCollection                       | 273345          | 298889 | 297354 | 340222 | 120     |
+| sweepCollectionCosigned               | 277505          | 307723 | 306393 | 353744 | 120     |
+| sweepCollectionCosignedWithFeeOnTop   | 277750          | 312927 | 311404 | 364297 | 240     |
+| sweepCollectionWithFeeOnTop           | 273569          | 304072 | 303130 | 350752 | 240     |
 
 | Cold Benchmark                        | Min             | Avg    | Median | Max    | # calls |
 |---------------------------------------|-----------------|--------|--------|--------|---------|
-| acceptOffer                           | 96990           | 109394 | 109382 | 122072 | 180     |
-| acceptOfferCosigned                   | 76969           | 99655  | 99773  | 122612 | 360     |
-| acceptOfferCosignedWithFeeOnTop       | 77424           | 106243 | 106249 | 135333 | 720     |
-| acceptOfferWithFeeOnTop               | 97393           | 115929 | 116037 | 134739 | 360     |
-| bulkAcceptOffers                      | 368273          | 446391 | 438857 | 545934 | 180     |
-| bulkAcceptOffersCosigned              | 368991          | 451321 | 447604 | 555098 | 360     |
-| bulkAcceptOffersCosignedWithFeesOnTop | 374837          | 488088 | 497235 | 622856 | 720     |
-| bulkAcceptOffersWithFeesOnTop         | 372906          | 481890 | 492206 | 612364 | 360     |
-| bulkBuyListings                       | 358141          | 436253 | 433894 | 541869 | 120     |
-| bulkBuyListingsCosigned               | 359706          | 442673 | 439034 | 553129 | 120     |
-| bulkBuyListingsCosignedWithFeesOnTop  | 364381          | 480806 | 483800 | 631019 | 240     |
-| bulkBuyListingsWithFeesOnTop          | 363417          | 475645 | 478614 | 621706 | 240     |
-| buyListing                            | 84061           | 101781 | 101381 | 120315 | 120     |
-| buyListingCosigned                    | 64326           | 92266  | 92158  | 121020 | 120     |
-| buyListingCosignedWithFeeOnTop        | 64572           | 97450  | 97172  | 131530 | 240     |
-| buyListingWithFeeOnTop                | 84649           | 107241 | 106938 | 131035 | 240     |
-| sweepCollection                       | 296631          | 323102 | 320622 | 366050 | 120     |
-| sweepCollectionCosigned               | 292042          | 322508 | 321650 | 369444 | 120     |
-| sweepCollectionCosignedWithFeeOnTop   | 292243          | 327666 | 325034 | 379947 | 240     |
-| sweepCollectionWithFeeOnTop           | 296919          | 328347 | 328458 | 376640 | 240     |
-
-
-| Warmed Slots Benchmark (Misleading)   | Min             | Avg     | Median  | Max     | # calls |
-|---------------------------------------|-----------------|---------|---------|---------|---------|
-| acceptOffer                           | 24472           | 36404   | 36072   | 124506  | 18000   |
-| acceptOfferCosigned                   | 24913           | 37426   | 36653   | 125048  | 36000   |
-| acceptOfferCosignedWithFeeOnTop       | 25278           | 40438   | 39440   | 137769  | 72000   |
-| acceptOfferWithFeeOnTop               | 24795           | 39366   | 38117   | 137175  | 36000   |
-| bulkAcceptOffers                      | 281973          | 379725  | 373195  | 558265  | 1800    |
-| bulkAcceptOffersCosigned              | 291064          | 394515  | 393282  | 567440  | 3600    |
-| bulkAcceptOffersCosignedWithFeesOnTop | 296892          | 428228  | 428092  | 635221  | 7200    |
-| bulkAcceptOffersWithFeesOnTop         | 286606          | 412168  | 409416  | 624709  | 3600    |
-| bulkBuyListings                       | 271841          | 372638  | 377569  | 541869  | 1200    |
-| bulkBuyListingsCosigned               | 281771          | 388913  | 388810  | 553129  | 1200    |
-| bulkBuyListingsCosignedWithFeesOnTop  | 286432          | 425403  | 419021  | 631019  | 2400    |
-| bulkBuyListingsWithFeesOnTop          | 277117          | 410387  | 407242  | 621706  | 2400    |
-| buyListing                            | 23783           | 35881   | 35210   | 120315  | 12000   |
-| buyListingCosigned                    | 24347           | 37112   | 36016   | 121020  | 12000   |
-| buyListingCosignedWithFeeOnTop        | 24544           | 40267   | 39348   | 131530  | 24000   |
-| buyListingWithFeeOnTop                | 24148           | 39294   | 38835   | 131035  | 24000   |
-| sweepCollection                       | 222304          | 259487  | 252424  | 366050  | 1200    |
-| sweepCollectionCosigned               | 225698          | 268748  | 264090  | 369444  | 1200    |
-| sweepCollectionCosignedWithFeeOnTop   | 225899          | 272264  | 266605  | 379947  | 2400    |
-| sweepCollectionWithFeeOnTop           | 222592          | 263090  | 257260  | 376640  | 2400    |
+| acceptOffer                           | 97800           | 110550 | 110627 | 122652 | 360     |
+| acceptOfferCosigned                   | 77865           | 106970 | 107136 | 126338 | 720     |
+| acceptOfferCosignedWithFeeOnTop       | 78316           | 113557 | 113910 | 139062 | 1440    |
+| acceptOfferWithFeeOnTop               | 98228           | 117114 | 116761 | 135354 | 720     |
+| bulkAcceptOffers                      | 376401          | 453730 | 444997 | 551798 | 180     |
+| bulkAcceptOffersCosigned              | 378479          | 459947 | 454879 | 562116 | 360     |
+| bulkAcceptOffersCosignedWithFeesOnTop | 384396          | 496841 | 506351 | 630049 | 720     |
+| bulkAcceptOffersWithFeesOnTop         | 381066          | 489319 | 499295 | 618371 | 360     |
+| bulkBuyListings                       | 368035          | 445299 | 443831 | 549358 | 120     |
+| bulkBuyListingsCosigned               | 370597          | 452479 | 449577 | 561137 | 120     |
+| bulkBuyListingsCosignedWithFeesOnTop  | 375331          | 490288 | 492958 | 638300 | 240     |
+| bulkBuyListingsWithFeesOnTop          | 372877          | 483704 | 486345 | 627639 | 240     |
+| buyListing                            | 85124           | 104736 | 106340 | 121092 | 180     |
+| buyListingCosigned                    | 65377           | 98835  | 99983  | 122379 | 180     |
+| buyListingCosignedWithFeeOnTop        | 65625           | 104090 | 107287 | 132901 | 360     |
+| buyListingWithFeeOnTop                | 85595           | 110148 | 109822 | 131737 | 360     |
+| sweepCollection                       | 307545          | 333089 | 331554 | 374422 | 120     |
+| sweepCollectionCosigned               | 303947          | 333373 | 332042 | 378582 | 120     |
+| sweepCollectionCosignedWithFeeOnTop   | 304192          | 338577 | 336658 | 389133 | 240     |
+| sweepCollectionWithFeeOnTop           | 307769          | 338272 | 337330 | 384952 | 240     |

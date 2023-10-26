@@ -39,30 +39,17 @@ contract ModuleBulkTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
-        uint256 runningBalanceNativeProceeds = msg.value;
+        uint256 remainingNativeProceeds = msg.value;
 
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
-        uint256 msgValue;
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
             sellerSignature = sellerSignatures[i];
-            msgValue = 0;
 
             if(saleDetails.paymentMethod == address(0)) {
-                msgValue = saleDetails.itemPrice;
-
-                if (runningBalanceNativeProceeds < msgValue) {
-                    revert cPort__RanOutOfNativeFunds();
-                }
-
-                unchecked {
-                    runningBalanceNativeProceeds -= msgValue;
-                }
-
-                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature);
-
+                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature);
             } else {
                 _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature);
             }
@@ -72,7 +59,7 @@ contract ModuleBulkTrades is cPortModule {
             }
         }
 
-        if (runningBalanceNativeProceeds > 0) {
+        if (remainingNativeProceeds > 0) {
             revert cPort__OverpaidNativeFunds();
         }
     }
@@ -95,31 +82,19 @@ contract ModuleBulkTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
-        uint256 runningBalanceNativeProceeds = msg.value;
+        uint256 remainingNativeProceeds = msg.value;
 
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
         FeeOnTop memory feeOnTop;
-        uint256 msgValue;
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
             sellerSignature = sellerSignatures[i];
             feeOnTop = feesOnTop[i];
-            msgValue = 0;
 
             if(saleDetails.paymentMethod == address(0)) {
-                msgValue = saleDetails.itemPrice + feeOnTop.amount;
-
-                if (runningBalanceNativeProceeds < msgValue) {
-                    revert cPort__RanOutOfNativeFunds();
-                }
-
-                unchecked {
-                    runningBalanceNativeProceeds -= msgValue;
-                }
-
-                _executeOrderBuySide(domainSeparator, false, msgValue, saleDetails, sellerSignature, feeOnTop);
+                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, feeOnTop);
             } else {
                 _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, feeOnTop);
             }
@@ -129,7 +104,7 @@ contract ModuleBulkTrades is cPortModule {
             }
         }
 
-        if (runningBalanceNativeProceeds > 0) {
+        if (remainingNativeProceeds > 0) {
             revert cPort__OverpaidNativeFunds();
         }
     }
