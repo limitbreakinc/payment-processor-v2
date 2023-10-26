@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/cPortEncoder.sol";
+import "src/CPortEncoder.sol";
 
 contract DeployCPortEncoder is Script {
     function run() public {

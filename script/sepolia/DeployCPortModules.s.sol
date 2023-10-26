@@ -3,13 +3,13 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/Modules/ModuleBulkTrades.sol";
-import "src/Modules/ModuleBulkTradesCosigned.sol";
-import "src/Modules/ModuleOnChainCancellation.sol";
-import "src/Modules/ModulePaymentSettings.sol";
-import "src/Modules/ModuleSingleTrades.sol";
-import "src/Modules/ModuleSingleTradesCosigned.sol";
-import "src/Modules/ModuleSweepCollection.sol";
+import "src/modules/ModuleBulkTrades.sol";
+import "src/modules/ModuleBulkTradesCosigned.sol";
+import "src/modules/ModuleOnChainCancellation.sol";
+import "src/modules/ModulePaymentSettings.sol";
+import "src/modules/ModuleSingleTrades.sol";
+import "src/modules/ModuleSingleTradesCosigned.sol";
+import "src/modules/ModuleSweepCollection.sol";
 
 contract DeployCPortModules is Script {
     struct ModuleAddresses {

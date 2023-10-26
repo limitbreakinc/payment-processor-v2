@@ -76,6 +76,10 @@ contract ModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
+        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+        }
+
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
                 _buyEmptyCosignedListing(
@@ -175,6 +179,10 @@ contract ModuleBuyListingTest is cPortModuleTest {
             address(0),
             0,
             address(0));
+
+        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+        }
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {

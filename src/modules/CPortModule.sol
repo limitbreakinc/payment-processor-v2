@@ -752,16 +752,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     ) private view {
         (uint256 floorPrice, uint256 ceilingPrice) = _getFloorAndCeilingPrices(tokenAddress, tokenId);
 
-        if(salePrice < amount * floorPrice) {
-            revert cPort__SalePriceBelowMinimumFloor();
-        }
+        unchecked {
+            uint256 unitPrice = salePrice / amount;
 
-        if(ceilingPrice < type(uint120).max) {
-            ceilingPrice *= amount;
-        }
+            if (unitPrice > ceilingPrice) {
+                revert cPort__SalePriceAboveMaximumCeiling();
+            }
 
-        if(salePrice > ceilingPrice) {
-            revert cPort__SalePriceAboveMaximumCeiling();
+            if (unitPrice < floorPrice) {
+                revert cPort__SalePriceBelowMinimumFloor();
+            }
         }
     }
 

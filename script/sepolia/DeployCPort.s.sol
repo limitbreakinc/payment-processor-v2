@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/cPort.sol";
+import "src/CPort.sol";
 
 contract DeployCPort is Script {
     struct ModuleAddresses {

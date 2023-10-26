@@ -79,6 +79,7 @@ contract cPortModuleTest is Test, cPortEvents {
     SeaportTestERC20 public usdc;
     SeaportTestERC20 public usdt;
     SeaportTestERC20 public dai;
+    SeaportTestERC20 public memecoin;
 
     SeaportTestERC721 public test721;
     SeaportTestERC1155 public test1155;
@@ -105,8 +106,9 @@ contract cPortModuleTest is Test, cPortEvents {
         usdc = new SeaportTestERC20();
         usdt = new SeaportTestERC20();
         dai = new SeaportTestERC20();
+        memecoin = new SeaportTestERC20();
 
-        erc20s = [weth, usdc, usdt, dai];
+        erc20s = [weth, usdc, usdt, dai, memecoin];
 
         test721 = new SeaportTestERC721();
 
@@ -195,7 +197,7 @@ contract cPortModuleTest is Test, cPortEvents {
     /**
      * @dev allocate amount of each token, 1 of each 721, and 1, 5, and 10 of respective 1155s
      */
-    function _allocateTokensAndApprovals(address _to, uint128 _amount) internal {
+    function _allocateTokensAndApprovals(address _to, uint256 _amount) internal {
         vm.deal(_to, _amount);
         for (uint256 i = 0; i < erc20s.length; ++i) {
             erc20s[i].mint(_to, _amount);
@@ -576,7 +578,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.revokeOrderDigest(fnCalldata);
     }
 
-    function _buyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+    function _buyCosignedListing(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
@@ -594,7 +596,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListingCosigned{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _buyEmptyCosignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+    function _buyEmptyCosignedListing(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
@@ -613,7 +615,7 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListingCosigned{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _buySignedListing(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
+    function _buySignedListing(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
 
         bytes memory fnCalldata = 
@@ -630,11 +632,11 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _buyCosignedListingWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+    function _buyCosignedListingWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         if (saleDetails.paymentMethod == address(0)) {
-            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+            nativePaymentValue = nativePaymentValue + feeOnTop.amount;
         }
 
         bytes memory fnCalldata = 
@@ -653,12 +655,12 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListingCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _buyEmptyCosignedListingWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+    function _buyEmptyCosignedListingWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         if (saleDetails.paymentMethod == address(0)) {
-            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+            nativePaymentValue = nativePaymentValue + feeOnTop.amount;
         }
 
         bytes memory fnCalldata = 
@@ -677,11 +679,11 @@ contract cPortModuleTest is Test, cPortEvents {
         _cPort.buyListingCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
     }
 
-    function _buySignedListingWithFeeOnTop(address caller, uint128 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
+    function _buySignedListingWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory sellerSignature = _getSignedSaleApproval(fuzzedOrderInputs.sellerKey, saleDetails);
 
         if (saleDetails.paymentMethod == address(0)) {
-            nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
+            nativePaymentValue = nativePaymentValue + feeOnTop.amount;
         }
 
         bytes memory fnCalldata = 
@@ -2521,8 +2523,6 @@ contract cPortModuleTest is Test, cPortEvents {
 
             _cPort.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.PricingConstraints) {
-            vm.assume(itemPrice >= 1 ether && itemPrice <= 500 ether);
-            
             bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
                 address(_cPort), 
                 token, 
@@ -2536,7 +2536,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
             bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(
                 address(_cPort), 
-                address(test721), 
+                token, 
                 PricingBounds({
                     isSet: true,
                     floorPrice: 1 ether,
