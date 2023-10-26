@@ -7,7 +7,7 @@ contract cPortStorageAccess {
     bytes32 constant DIAMOND_STORAGE_C_PORT = 
         keccak256("diamond.storage.c.port");
 
-    function appStorage() internal view returns (cPortStorage storage diamondStorage) {
+    function appStorage() internal pure returns (cPortStorage storage diamondStorage) {
         bytes32 slot = DIAMOND_STORAGE_C_PORT;
         assembly {
             diamondStorage.slot := slot
