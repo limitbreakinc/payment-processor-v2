@@ -30,7 +30,7 @@ bytes32 constant SALE_APPROVAL_COSIGNED_HASH = 0x08b356dc681531d988a5790f847e169
 
 // The denominator used when calculating the marketplace fee.
 // 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
-uint256 constant FEE_DENOMINATOR = 10_000;
+uint256 constant FEE_DENOMINATOR = 100_00;
 
 // Convenience to avoid magic number in bitmask get/set logic.
 uint256 constant ONE = uint256(1);
