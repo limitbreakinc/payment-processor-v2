@@ -505,13 +505,14 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 new Cosignature[](items.length));
 
         _fulfillSweepOrderWithFeeOnTop(
-            SweepCollectionComputeAndDistributeProceedsParams(
-                IERC20(sweepOrder.paymentMethod),
-                _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
-                feeOnTop,
-                royaltyBackfillAndBounty,
-                saleDetailsBatch
-            ));
+            SweepCollectionComputeAndDistributeProceedsParams({
+                paymentCoin: IERC20(sweepOrder.paymentMethod),
+                fnPointers: _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
+                feeOnTop: feeOnTop,
+                royaltyBackfillAndBounty: royaltyBackfillAndBounty,
+                saleDetailsBatch: saleDetailsBatch
+            })
+        );
     }
 
     function _executeSweepOrder(
@@ -551,13 +552,14 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             );
 
         _fulfillSweepOrderWithFeeOnTop(
-            SweepCollectionComputeAndDistributeProceedsParams(
-                IERC20(sweepOrder.paymentMethod),
-                _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
-                feeOnTop,
-                royaltyBackfillAndBounty,
-                saleDetailsBatch
-            ));
+            SweepCollectionComputeAndDistributeProceedsParams({
+                paymentCoin: IERC20(sweepOrder.paymentMethod),
+                fnPointers: _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
+                feeOnTop: feeOnTop,
+                royaltyBackfillAndBounty: royaltyBackfillAndBounty,
+                saleDetailsBatch: saleDetailsBatch
+            })
+        );
     }
 
     /*************************************************************************/
