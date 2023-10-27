@@ -45,6 +45,11 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
 
         paymentAmount = saleDetails.itemPrice;
 
+        uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+        }
+
         if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
             test721.mint(saleDetails.maker, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
@@ -64,7 +69,6 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
 
-                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
             }
         }
@@ -108,6 +112,11 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
         paymentAmount = saleDetails.itemPrice;
         feeOnTop = _getFeeOnTop(fuzzedOrderInputs.itemPrice, fuzzedFeeOnTop);
 
+        uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+        }
+
         if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
             test721.mint(saleDetails.maker, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
@@ -127,7 +136,6 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
 
-                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
 
                 feeOnTop = _getFeeOnTop(paymentAmount, fuzzedFeeOnTop);

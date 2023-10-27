@@ -78,7 +78,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 
@@ -182,7 +182,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 
@@ -397,7 +397,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 
@@ -503,7 +503,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 
@@ -603,7 +603,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 
@@ -705,7 +705,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0));
 
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
         }
 

@@ -51,6 +51,11 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
 
         uint256 paymentAmount = saleDetails.itemPrice;
 
+        uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+        }
+
         if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
             test721.mint(seller, saleDetails.tokenId);
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
@@ -70,7 +75,6 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
 
-                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
             }
         }
@@ -86,10 +90,6 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
             address(0),
             0,
             address(0));
-
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
-            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
-        }
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -178,6 +178,11 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
 
             vm.prank(seller);
             test721.setApprovalForAll(address(_cPort), true);
+
+            uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+            if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+                vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+            }
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
@@ -185,13 +190,17 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
             vm.prank(seller);
             test1155.setApprovalForAll(address(_cPort), true);
 
+            uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+            if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+                vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+            }
+
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
 
-                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
 
                 feeOnTop = _getFeeOnTop(unitPrice * saleDetails.requestedFillAmount, fuzzedFeeOnTop);
@@ -210,10 +219,6 @@ contract ModuleAcceptTokenSetOfferTest is cPortModuleTest {
             address(0),
             0,
             address(0));
-
-        if (params.paymentSettings == uint8(PaymentSettings.PricingConstraints)) {
-            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
-        }
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
