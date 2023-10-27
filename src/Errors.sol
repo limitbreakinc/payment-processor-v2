@@ -9,6 +9,7 @@ error cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
 error cPort__CannotIncludeNativeFundsWhenPaymentMethodIsAnERC20Coin();
 error cPort__CeilingPriceMustBeGreaterThanFloorPrice();
 error cPort__CoinIsNotApproved();
+error cPort__CosignatureHasExpired();
 error cPort__DispensingTokenWasUnsuccessful();
 error cPort__EIP1271SignatureInvalid();
 error cPort__FailedToTransferProceeds();

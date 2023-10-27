@@ -1608,6 +1608,14 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         SignatureECDSA memory signature, 
         Cosignature memory cosignature
     ) private view {
+        if (block.timestamp > cosignature.expiration) {
+            revert cPort__CosignatureHasExpired();
+        }
+
+        if (msg.sender != cosignature.taker) {
+            revert cPort__UnauthorizedTaker();
+        }
+
         if (cosignature.signer != _ecdsaRecover(
             _hashTypedDataV4(domainSeparator, keccak256(
                 abi.encode(
@@ -1623,10 +1631,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             cosignature.r, 
             cosignature.s)) {
             revert cPort__NotAuthorizedByCoSigner();
-        }
-
-        if (msg.sender != cosignature.taker) {
-            revert cPort__UnauthorizedTaker();
         }
     }
 
