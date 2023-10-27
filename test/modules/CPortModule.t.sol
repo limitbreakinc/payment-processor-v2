@@ -2477,7 +2477,7 @@ contract cPortModuleTest is Test, cPortEvents {
         FuzzedFeeOnTop memory fuzzedFeeOnTop
     ) internal pure returns (FeeOnTop memory feeOnTop) {
         feeOnTop = FeeOnTop({
-            amount: totalSalePrice * fuzzedFeeOnTop.rate / 10_000,
+            amount: totalSalePrice * fuzzedFeeOnTop.rate / 100_00,
             recipient: fuzzedFeeOnTop.receiver
         });
 

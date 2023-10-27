@@ -342,7 +342,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -419,7 +419,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -515,7 +515,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -592,7 +592,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -688,7 +688,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -763,7 +763,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -854,7 +854,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -928,7 +928,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1026,7 +1026,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         Merkle merkle = new Merkle();
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1115,7 +1115,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         Merkle merkle = new Merkle();
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1223,7 +1223,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1298,7 +1298,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1389,7 +1389,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1463,7 +1463,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether * 1000;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1561,7 +1561,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         Merkle merkle = new Merkle();
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1650,7 +1650,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         Merkle merkle = new Merkle();
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1757,7 +1757,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1843,7 +1843,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -1948,7 +1948,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2032,7 +2032,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2133,7 +2133,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2217,7 +2217,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2323,7 +2323,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         }
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2420,7 +2420,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         }
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : 100 ether * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2531,7 +2531,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : params.batchSize * paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : params.batchSize * paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
@@ -2623,7 +2623,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         uint256 paymentAmount = 100 ether;
 
         FeeOnTop memory feeOnTop = FeeOnTop({
-            amount: params.feeOnTopRate == type(uint96).max ? 0 : params.batchSize * paymentAmount * params.feeOnTopRate / 10_000,
+            amount: params.feeOnTopRate == type(uint96).max ? 0 : params.batchSize * paymentAmount * params.feeOnTopRate / 100_00,
             recipient: benchmarkFeeRecipient
         });
 
