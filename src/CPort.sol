@@ -111,25 +111,25 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
-    address private immutable modulePaymentSettings;
+    address private immutable _modulePaymentSettings;
 
     /// @dev The On-Chain Cancellation module implements of all on-chain cancellation-related functionality.
-    address private immutable moduleOnChainCancellation;
+    address private immutable _moduleOnChainCancellation;
 
     /// @dev The Single Trades module implements all single trade-related functionality.
-    address private immutable moduleSingleTrades;
+    address private immutable _moduleSingleTrades;
 
     /// @dev The Single Trades Cosigned module implements all single trade-related functionality requiring a co-signer.
-    address private immutable moduleSingleTradesCosigned;
+    address private immutable _moduleSingleTradesCosigned;
 
     /// @dev The Bulk Trades module implements all bulk trade-related functionality.
-    address private immutable moduleBulkTrades;
+    address private immutable _moduleBulkTrades;
 
     /// @dev The Bulk Trades Cosigned module implements all bulk trade-related functionality requiring a co-signer.
-    address private immutable moduleBulkTradesCosigned;
+    address private immutable _moduleBulkTradesCosigned;
 
     /// @dev The Sweep Collection module implements all sweep collection-related functionality.
-    address private immutable moduleSweepCollection;
+    address private immutable _moduleSweepCollection;
 
     constructor(
         address defaultContractOwner_,
@@ -141,15 +141,52 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleBulkTradesCosigned_,
         address moduleSweepCollection_) 
         EIP712("cPort", "1") {
-        modulePaymentSettings = modulePaymentSettings_;
-        moduleOnChainCancellation = moduleOnChainCancellation_;
-        moduleSingleTrades = moduleSingleTrades_;
-        moduleSingleTradesCosigned = moduleSingleTradesCosigned_;
-        moduleBulkTrades = moduleBulkTrades_;
-        moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
-        moduleSweepCollection = moduleSweepCollection_;
+        _modulePaymentSettings = modulePaymentSettings_;
+        _moduleOnChainCancellation = moduleOnChainCancellation_;
+        _moduleSingleTrades = moduleSingleTrades_;
+        _moduleSingleTradesCosigned = moduleSingleTradesCosigned_;
+        _moduleBulkTrades = moduleBulkTrades_;
+        _moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
+        _moduleSweepCollection = moduleSweepCollection_;
 
         _transferOwnership(defaultContractOwner_);
+    }
+
+    /**************************************************************/
+    /*                         MODIFIERS                          */
+    /**************************************************************/
+
+    modifier delegateCallNoData(address module, bytes4 selector) {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            let result := delegatecall(gas(), module, ptr, 4, 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+        _;
+    }
+
+    modifier delegateCall(address module, bytes4 selector, bytes calldata data) {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            calldatacopy(add(ptr,0x04), data.offset, data.length)
+            mstore(0x40, add(ptr,add(0x04, data.length)))
+
+            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }        
+        _;
     }
 
     /**************************************************************/
@@ -167,8 +204,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. The contract has been placed in the `paused` state.
      * @dev    2. Trading is frozen.
      */
-    function pause() external {
-        _checkOwner();
+    function pause() external onlyOwner {
         _pause();
     }
 
@@ -183,8 +219,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. The contract has been placed in the `unpaused` state.
      * @dev    2. Trading is resumed.
      */
-    function unpause() external {
-        _checkOwner();
+    function unpause() external onlyOwner {
         _unpause();
     }
 
@@ -355,19 +390,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @return paymentMethodWhitelistId  The id of the newly created payment method whitelist.
      */
     function createPaymentMethodWhitelist(bytes calldata data) external returns (uint32 paymentMethodWhitelistId) {
-        address module = modulePaymentSettings;
+        address module = _modulePaymentSettings;
         assembly {
-            mstore(0x00, hex"f83116c9")
-            calldatacopy(0x04, data.offset, data.length)
+            let ptr := mload(0x40)
+            mstore(ptr, hex"f83116c9")
+            calldatacopy(add(ptr, 0x04), data.offset, data.length)
+            mstore(0x40, add(ptr, add(0x04, data.length)))
 
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0x00, 0x20)
+            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0x00, 0x20)
 
             switch result case 0 {
                 let size := returndatasize()
                 returndatacopy(0, 0, size)
                 revert(0, size)
             } default {
-                returndatacopy(0x00, 0x00, 0x20)
                 return (0x00, 0x20)
             }
         }
@@ -386,20 +422,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
      *              `whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
      */
-    function whitelistPaymentMethod(bytes calldata data) external {
-        address module = modulePaymentSettings;
-        assembly {
-            mstore(0x00, hex"bb39ce91")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function whitelistPaymentMethod(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_WHITELIST_PAYMENT_METHOD, data) {}
 
     /**
      * @notice Allows custom payment method whitelist owners to remove a coin from the list of approved payment currencies.
@@ -414,20 +438,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
      *              `unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
      */
-    function unwhitelistPaymentMethod(bytes calldata data) external {
-        address module = modulePaymentSettings;
-        assembly {
-            mstore(0x00, hex"e9d4c14e")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function unwhitelistPaymentMethod(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_UNWHITELIST_PAYMENT_METHOD, data) {}
 
     /**
      * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
@@ -460,20 +472,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                         uint16 royaltyBountyNumerator,
                         address exclusiveBountyReceiver)`
      */
-    function setCollectionPaymentSettings(bytes calldata data) external {
-        address module = modulePaymentSettings;
-        assembly {
-            mstore(0x00, hex"eeabfa03")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function setCollectionPaymentSettings(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS, data) {}
 
     /**
      * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
@@ -490,20 +490,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
      *              `setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds)`
      */
-    function setCollectionPricingBounds(bytes calldata data) external {
-        address module = modulePaymentSettings;
-        assembly {
-            mstore(0x00, hex"7141ae10")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function setCollectionPricingBounds(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_SET_COLLECTION_PRICING_BOUNDS, data) {}
 
     /**
      * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
@@ -525,20 +513,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                         uint256[] calldata tokenIds, 
                         PricingBounds[] calldata pricingBounds)`
      */
-    function setTokenPricingBounds(bytes calldata data) external {
-        address module = modulePaymentSettings;
-        assembly {
-            mstore(0x00, hex"22146d70")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function setTokenPricingBounds(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_SET_TOKEN_PRICING_BOUNDS, data) {}
 
     /**************************************************************/
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
@@ -552,19 +528,8 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      *            approvals using the prior nonce unusable.
      * @dev    2. A `MasterNonceInvalidated` event has been emitted.
      */
-    function revokeMasterNonce() external {
-        address module = moduleOnChainCancellation;
-        assembly {
-            mstore(0x00, hex"226d4adb")
-            let result := delegatecall(gas(), module, 0, 4, 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function revokeMasterNonce() external 
+    delegateCallNoData(_moduleOnChainCancellation, SELECTOR_REVOKE_MASTER_NONCE) {}
 
     /**
      * @notice Allows a maker to revoke/cancel a single, previously signed listing or offer by specifying the
@@ -581,357 +546,93 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
      *              `revokeSingleNonce(uint256 nonce)`
      */
-    function revokeSingleNonce(bytes calldata data) external {
-        address module = moduleOnChainCancellation;
-        assembly {
-            mstore(0x00, hex"b6d7dc33")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function revokeSingleNonce(bytes calldata data) external 
+    delegateCall(_moduleOnChainCancellation, SELECTOR_REVOKE_SINGLE_NONCE, data) {}
 
-    function revokeOrderDigest(bytes calldata data) external {
-        address module = moduleOnChainCancellation;
-        assembly {
-            mstore(0x00, hex"96ae0380")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function revokeOrderDigest(bytes calldata data) external 
+    delegateCall(_moduleOnChainCancellation, SELECTOR_REVOKE_ORDER_DIGEST, data) {}
 
     /**************************************************************/
     /*                      TAKER OPERATIONS                      */
     /**************************************************************/
 
-    function buyListing(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSingleTrades;
-        assembly {
-            mstore(0x00, hex"8ef40e40")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function buyListing(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTrades, SELECTOR_BUY_LISTING, data) {}
 
-    function buyListingWithFeeOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSingleTrades;
-        assembly {
-            mstore(0x00, hex"8b03b8fa")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function buyListingWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTrades, SELECTOR_BUY_LISTING_WITH_FEE_ON_TOP, data) {}
 
-    function buyListingCosigned(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSingleTradesCosigned;
-        assembly {
-            mstore(0x00, hex"dfc759a3")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function buyListingCosigned(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTradesCosigned, SELECTOR_BUY_LISTING_COSIGNED, data) {}
 
-    function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSingleTradesCosigned;
-        assembly {
-            mstore(0x00, hex"6ea9a286")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTradesCosigned, SELECTOR_BUY_LISTING_COSIGNED_WITH_FEE_ON_TOP, data) {}
 
-    function acceptOffer(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleSingleTrades;
-        assembly {
-            mstore(0x00, hex"089b2f82")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function acceptOffer(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
-    function acceptOfferWithFeeOnTop(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleSingleTrades;
-        assembly {
-            mstore(0x00, hex"13096dc3")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function acceptOfferWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTrades, SELECTOR_ACCEPT_OFFER_WITH_FEE_ON_TOP, data) {}
 
-    function acceptOfferCosigned(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleSingleTradesCosigned;
-        assembly {
-            mstore(0x00, hex"ab105cd3")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function acceptOfferCosigned(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTradesCosigned, SELECTOR_ACCEPT_OFFER_COSIGNED, data) {}
 
-    function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleSingleTradesCosigned;
-        assembly {
-            mstore(0x00, hex"70ca4dcc")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSingleTradesCosigned, SELECTOR_ACCEPT_OFFER_COSIGNED_WITH_FEE_ON_TOP, data) {}
 
-    function bulkBuyListings(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleBulkTrades;
-        assembly {
-            mstore(0x00, hex"d30ebf67")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkBuyListings(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
-    function bulkBuyListingsWithFeesOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleBulkTrades;
-        assembly {
-            mstore(0x00, hex"fe936b43")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkBuyListingsWithFeesOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTrades, SELECTOR_BULK_BUY_LISTINGS_WITH_FEES_ON_TOP, data) {}
 
-    function bulkBuyListingsCosigned(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleBulkTradesCosigned;
-        assembly {
-            mstore(0x00, hex"e4569986")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkBuyListingsCosigned(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_BUY_LISTINGS_COSIGNED, data) {}
 
-    function bulkBuyListingsCosignedWithFeesOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleBulkTradesCosigned;
-        assembly {
-            mstore(0x00, hex"95634dcf")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkBuyListingsCosignedWithFeesOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_BUY_LISTINGS_COSIGNED_WITH_FEES_ON_TOP, data) {}
 
-    function bulkAcceptOffers(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleBulkTrades;
-        assembly {
-            mstore(0x00, hex"f2d99f07")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkAcceptOffers(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
-    function bulkAcceptOffersWithFeesOnTop(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleBulkTrades;
-        assembly {
-            mstore(0x00, hex"2496dd8d")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkAcceptOffersWithFeesOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTrades, SELECTOR_BULK_ACCEPT_OFFERS_WITH_FEES_ON_TOP, data) {}
 
-    function bulkAcceptOffersCosigned(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleBulkTradesCosigned;
-        assembly {
-            mstore(0x00, hex"29d9ed85")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkAcceptOffersCosigned(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_ACCEPT_OFFERS_COSIGNED, data) {}
 
-    function bulkAcceptOffersCosignedWithFeesOnTop(bytes calldata data) external {
-        _requireNotPaused();
-        address module = moduleBulkTradesCosigned;
-        assembly {
-            mstore(0x00, hex"66449220")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function bulkAcceptOffersCosignedWithFeesOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_ACCEPT_OFFERS_COSIGNED_WITH_FEES_ON_TOP, data) {}
 
-    function sweepCollection(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSweepCollection;
-        assembly {
-            mstore(0x00, hex"d1ce07aa")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function sweepCollection(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION, data) {}
 
-    function sweepCollectionWithFeeOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSweepCollection;
-        assembly {
-            mstore(0x00, hex"51eac725")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function sweepCollectionWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_WITH_FEE_ON_TOP, data) {}
 
-    function sweepCollectionCosigned(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSweepCollection;
-        assembly {
-            mstore(0x00, hex"e921d907")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function sweepCollectionCosigned(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_COSIGNED, data) {}
 
-    function sweepCollectionCosignedWithFeeOnTop(bytes calldata data) external payable {
-        _requireNotPaused();
-        address module = moduleSweepCollection;
-        assembly {
-            mstore(0x00, hex"5a14c119")
-            calldatacopy(0x04, data.offset, data.length)
-            let result := delegatecall(gas(), module, 0, add(data.length, 4), 0, 0)
-            if iszero(result) {
-                // Call has failed, retrieve the error message and revert
-                let size := returndatasize()
-                returndatacopy(0, 0, size)
-                revert(0, size)
-            }
-        }
-    }
+    function sweepCollectionCosignedWithFeeOnTop(bytes calldata data) external payable 
+    whenNotPaused 
+    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_COSIGNED_WITH_FEE_ON_TOP, data) {}
 }
