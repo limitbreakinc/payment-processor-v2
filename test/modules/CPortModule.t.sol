@@ -541,9 +541,12 @@ contract cPortModuleTest is Test, cPortEvents {
         return signedOffer;
     }
 
-    function _revokeMasterNonce(address caller, bytes4 expectedRevertSelector) internal {
+    function _revokeMasterNonce(address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, false, false, true);
+            emit MasterNonceInvalidated(caller, previousMasterNonce);
         }
 
         vm.prank(caller, caller);
