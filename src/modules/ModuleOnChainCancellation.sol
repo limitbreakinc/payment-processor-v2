@@ -35,10 +35,8 @@ contract ModuleOnChainCancellation is cPortModule {
      * @dev    2. A `MasterNonceInvalidated` event has been emitted.
      */
     function revokeMasterNonce() external {
-        emit MasterNonceInvalidated(appStorage().masterNonces[msg.sender], msg.sender);
-
         unchecked {
-            ++appStorage().masterNonces[msg.sender];
+            emit MasterNonceInvalidated(msg.sender, appStorage().masterNonces[msg.sender]++);
         }
     }
 

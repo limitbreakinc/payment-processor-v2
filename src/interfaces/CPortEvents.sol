@@ -49,9 +49,7 @@ interface cPortEvents {
         string whitelistName);
 
     /// @notice Emitted when a user revokes all of their existing listings or offers that share the master nonce.
-    event MasterNonceInvalidated(
-        uint256 indexed nonce, 
-        address indexed account);
+    event MasterNonceInvalidated(address indexed account, uint256 nonce);
 
     /// @notice Emitted when a user revokes a single listing or offer nonce for a specific marketplace.
     event NonceInvalidated(

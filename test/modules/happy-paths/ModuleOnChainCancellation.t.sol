@@ -7,12 +7,11 @@ import "../CPortModule.t.sol";
 
 contract ModuleOnChainCancellationTest is cPortModuleTest {
 
-    function testRevokeMasterNonce(address account, uint8 iterations) public {
+    function testRevokeMasterNonce(address account) public {
         _sanitizeAddress(account, new address[](0));
-
-        for (uint256 i = 0; i < iterations; i++) {
+        for (uint256 i = 0; i < 100; i++) {
             uint256 previousMasterNonce = _cPort.masterNonces(account);
-            _revokeMasterNonce(account, EMPTY_SELECTOR);
+            _revokeMasterNonce(account, previousMasterNonce, EMPTY_SELECTOR);
             uint256 updatedMasterNonce = _cPort.masterNonces(account);
             assertEq(updatedMasterNonce - previousMasterNonce, 1);
         }
