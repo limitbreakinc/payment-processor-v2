@@ -245,13 +245,14 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             SALE_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
+                            address(0),
                             saleDetails.maker,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
-                            saleDetails.tokenAddress
+                            saleDetails.tokenAddress,
+                            saleDetails.tokenId
                         ),
                         abi.encode(
-                            saleDetails.tokenId,
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
@@ -308,21 +309,23 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            SALE_APPROVAL_COSIGNED_HASH,
+                            SALE_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
                             saleDetails.marketplace,
                             saleDetails.paymentMethod,
-                            saleDetails.tokenAddress
+                            saleDetails.tokenAddress,
+                            saleDetails.tokenId
                         ),
                         abi.encode(
-                            saleDetails.tokenId,
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
-                            saleDetails.maxRoyaltyFeeNumerator
+                            saleDetails.maxRoyaltyFeeNumerator,
+                            saleDetails.nonce,
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -343,7 +346,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            ITEM_OFFER_APPROVAL_COSIGNED_HASH,
+                            ITEM_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
@@ -357,7 +360,9 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
-                            saleDetails.marketplaceFeeNumerator
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.nonce,
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -378,7 +383,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            COLLECTION_OFFER_APPROVAL_COSIGNED_HASH,
+                            COLLECTION_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
@@ -391,7 +396,9 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.amount,
                             saleDetails.itemPrice,
                             saleDetails.expiration,
-                            saleDetails.marketplaceFeeNumerator
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.nonce,
+                            _cPort.masterNonces(saleDetails.maker)
                         )
                     )
                 )
@@ -412,7 +419,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 keccak256(
                     bytes.concat(
                         abi.encode(
-                            TOKEN_SET_OFFER_APPROVAL_COSIGNED_HASH,
+                            TOKEN_SET_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
@@ -426,6 +433,8 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.itemPrice,
                             saleDetails.expiration,
                             saleDetails.marketplaceFeeNumerator,
+                            saleDetails.nonce,
+                            _cPort.masterNonces(saleDetails.maker),
                             tokenSetProof.rootHash
                         )
                     )
@@ -449,6 +458,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             ITEM_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
+                            address(0),
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
@@ -483,6 +493,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             COLLECTION_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
+                            address(0),
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
@@ -516,6 +527,7 @@ contract cPortModuleTest is Test, cPortEvents {
                         abi.encode(
                             TOKEN_SET_OFFER_APPROVAL_HASH,
                             uint8(saleDetails.protocol),
+                            address(0),
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
