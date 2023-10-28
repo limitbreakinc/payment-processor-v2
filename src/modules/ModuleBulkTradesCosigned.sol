@@ -149,6 +149,8 @@ contract ModuleBulkTradesCosigned is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
+        FeeOnTop memory emptyFeeOnTop = FeeOnTop({recipient: address(0), amount: 0});
+
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
@@ -158,7 +160,8 @@ contract ModuleBulkTradesCosigned is cPortModule {
                 saleDetailsArray[i], 
                 buyerSignaturesArray[i],
                 tokenSetProofsArray[i],
-                cosignaturesArray[i]);
+                cosignaturesArray[i],
+                emptyFeeOnTop);
 
             unchecked {
                 ++i;

@@ -87,7 +87,8 @@ contract ModuleSingleTradesCosigned is cPortModule {
             saleDetails, 
             buyerSignature,
             tokenSetProof,
-            cosignature);
+            cosignature,
+            FeeOnTop({recipient: address(0), amount: 0}));
     }
 
     function acceptOfferCosignedWithFeeOnTop(

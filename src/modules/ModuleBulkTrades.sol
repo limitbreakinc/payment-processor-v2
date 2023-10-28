@@ -43,15 +43,17 @@ contract ModuleBulkTrades is cPortModule {
 
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
+        Cosignature memory emptyCosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+        FeeOnTop memory emptyFeeOnTop = FeeOnTop({recipient: address(0), amount: 0});
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
             sellerSignature = sellerSignatures[i];
 
             if(saleDetails.paymentMethod == address(0)) {
-                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature);
+                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, emptyCosignature, emptyFeeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, emptyCosignature, emptyFeeOnTop);
             }
 
             unchecked {
@@ -87,6 +89,7 @@ contract ModuleBulkTrades is cPortModule {
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
         FeeOnTop memory feeOnTop;
+        Cosignature memory emptyCosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             saleDetails = saleDetailsArray[i];
@@ -94,9 +97,9 @@ contract ModuleBulkTrades is cPortModule {
             feeOnTop = feesOnTop[i];
 
             if(saleDetails.paymentMethod == address(0)) {
-                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, feeOnTop);
+                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, emptyCosignature, feeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, feeOnTop);
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, emptyCosignature, feeOnTop);
             }
 
             unchecked {
@@ -132,6 +135,9 @@ contract ModuleBulkTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
+        Cosignature memory emptyCosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+        FeeOnTop memory emptyFeeOnTop = FeeOnTop({recipient: address(0), amount: 0});
+
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
@@ -140,7 +146,9 @@ contract ModuleBulkTrades is cPortModule {
                 isCollectionLevelOfferArray[i], 
                 saleDetailsArray[i], 
                 buyerSignaturesArray[i],
-                tokenSetProofsArray[i]);
+                tokenSetProofsArray[i],
+                emptyCosignature,
+                emptyFeeOnTop);
 
             unchecked {
                 ++i;
@@ -176,6 +184,8 @@ contract ModuleBulkTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
+        Cosignature memory emptyCosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+
         for (uint256 i = 0; i < saleDetailsArray.length;) {
             _executeOrderSellSide(
                 domainSeparator, 
@@ -185,6 +195,7 @@ contract ModuleBulkTrades is cPortModule {
                 saleDetailsArray[i], 
                 buyerSignaturesArray[i],
                 tokenSetProofsArray[i],
+                emptyCosignature,
                 feesOnTopArray[i]);
 
             unchecked {

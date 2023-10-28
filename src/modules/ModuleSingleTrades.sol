@@ -37,7 +37,9 @@ contract ModuleSingleTrades is cPortModule {
                 true,
                 msg.value,
                 saleDetails, 
-                sellerSignature
+                sellerSignature,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                FeeOnTop({recipient: address(0), amount: 0})
             );
 
         if (remainingMsgValue > 0) {
@@ -58,6 +60,7 @@ contract ModuleSingleTrades is cPortModule {
                 msg.value,
                 saleDetails, 
                 sellerSignature,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
                 feeOnTop
             );
 
@@ -80,7 +83,9 @@ contract ModuleSingleTrades is cPortModule {
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
-            tokenSetProof);
+            tokenSetProof,
+            Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+            FeeOnTop({recipient: address(0), amount: 0}));
     }
 
     function acceptOfferWithFeeOnTop(
@@ -99,6 +104,7 @@ contract ModuleSingleTrades is cPortModule {
             saleDetails, 
             buyerSignature,
             tokenSetProof,
+            Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
             feeOnTop);
     }
 }
