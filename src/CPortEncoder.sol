@@ -230,7 +230,9 @@ contract cPortEncoder {
                 revert(0,0)
             }
             mstore(result, sub(mload(data), 0x04))
-            let a := staticcall(gas(), 0x04, add(data, 0x24), sub(mload(data), 0x04), add(result, 0x20), mload(result))
+            if iszero(staticcall(gas(), 0x04, add(data, 0x24), sub(mload(data), 0x04), add(result, 0x20), mload(result))){
+              revert(0,0)
+            }
         }
     }
 }
