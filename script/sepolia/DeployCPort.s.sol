@@ -9,11 +9,7 @@ contract DeployCPort is Script {
     struct ModuleAddresses {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
-        address moduleSingleTrades;
-        address moduleSingleTradesCosigned;
-        address moduleBulkTrades;
-        address moduleBulkTradesCosigned;
-        address moduleSweepCollection;
+        address moduleTrades;
     }
 
     
@@ -22,11 +18,7 @@ contract DeployCPort is Script {
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: vm.envAddress("MODULE_ADDRESS_ON_CHAIN_CANCELLATION"),
             modulePaymentSettings: vm.envAddress("MODULE_ADDRESS_PAYMENT_SETTINGS"),
-            moduleSingleTrades: vm.envAddress("MODULE_ADDRESS_SINGLE_TRADES"),
-            moduleSingleTradesCosigned: vm.envAddress("MODULE_ADDRESS_SINGLE_TRADES_COSIGNED"),
-            moduleBulkTrades: vm.envAddress("MODULE_ADDRESS_BULK_TRADES"),
-            moduleBulkTradesCosigned: vm.envAddress("MODULE_ADDRESS_BULK_TRADES_COSIGNED"),
-            moduleSweepCollection: vm.envAddress("MODULE_ADDRESS_SWEEP_COLLECTION")
+            moduleTrades: vm.envAddress("MODULE_ADDRESS_TRADES")
         });
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
@@ -36,11 +28,7 @@ contract DeployCPort is Script {
             vm.addr(deployerPrivateKey),
             moduleAddresses.modulePaymentSettings,
             moduleAddresses.moduleOnChainCancellation,
-            moduleAddresses.moduleSingleTrades,
-            moduleAddresses.moduleSingleTradesCosigned,
-            moduleAddresses.moduleBulkTrades,
-            moduleAddresses.moduleBulkTradesCosigned,
-            moduleAddresses.moduleSweepCollection
+            moduleAddresses.moduleTrades
         ));
 
         vm.stopBroadcast();

@@ -135,14 +135,7 @@ struct PricingBounds {
     uint120 ceilingPrice;
 }
 
-struct BulkBuyListingsCosignedWithFeeOnTopParams {
-    Order[] saleDetailsArray;
-    SignatureECDSA[] sellerSignatures;
-    Cosignature[] cosignatures;
-    FeeOnTop[] feesOnTop;
-}
-
-struct BulkAcceptOffersCosignedWithFeeOnTopParams {
+struct BulkAcceptOffersParams {
     bool[] isCollectionLevelOfferArray;
     Order[] saleDetailsArray;
     SignatureECDSA[] buyerSignaturesArray;
