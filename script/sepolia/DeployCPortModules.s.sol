@@ -11,11 +11,7 @@ contract DeployCPortModules is Script {
     struct ModuleAddresses {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
-        address moduleSingleTrades;
-        address moduleSingleTradesCosigned;
-        address moduleBulkTrades;
-        address moduleBulkTradesCosigned;
-        address moduleSweepCollection;
+        address moduleTrades;
     }
 
     address private immutable weth = address(0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9);
@@ -26,11 +22,7 @@ contract DeployCPortModules is Script {
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: address(0),
             modulePaymentSettings: address(0),
-            moduleSingleTrades: address(0),
-            moduleSingleTradesCosigned: address(0),
-            moduleBulkTrades: address(0),
-            moduleBulkTradesCosigned: address(0),
-            moduleSweepCollection: address(0)
+            moduleTrades: address(0)
         });
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
@@ -49,12 +41,12 @@ contract DeployCPortModules is Script {
 
         moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, defaultPaymentMethods));
         moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSingleTrades = address(new ModuleTrades(pushPaymentGasLimit, defaultPaymentMethods));
+        moduleAddresses.moduleTrades = address(new ModuleTrades(pushPaymentGasLimit, defaultPaymentMethods));
 
         vm.stopBroadcast();
 
         console.log("Module On Chain Cancellation: ", moduleAddresses.moduleOnChainCancellation);
         console.log("Module Payment Settings: ", moduleAddresses.modulePaymentSettings);
-        console.log("Module Single Trades: ", moduleAddresses.moduleSingleTrades);
+        console.log("Module Trades: ", moduleAddresses.moduleTrades);
     }
 }
