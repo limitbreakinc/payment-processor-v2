@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "forge-std/console2.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
-import "src/modules/ModuleSingleTrades.sol";
+import "src/modules/ModuleTrades.sol";
 
 contract DeployCPortModules is Script {
     struct ModuleAddresses {
@@ -49,7 +49,7 @@ contract DeployCPortModules is Script {
 
         moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, defaultPaymentMethods));
         moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSingleTrades = address(new ModuleSingleTrades(pushPaymentGasLimit, defaultPaymentMethods));
+        moduleAddresses.moduleSingleTrades = address(new ModuleTrades(pushPaymentGasLimit, defaultPaymentMethods));
 
         vm.stopBroadcast();
 

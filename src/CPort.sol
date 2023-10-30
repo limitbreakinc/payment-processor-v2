@@ -116,18 +116,18 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The On-Chain Cancellation module implements of all on-chain cancellation-related functionality.
     address private immutable _moduleOnChainCancellation;
 
-    /// @dev The Single Trades module implements all single trade-related functionality.
-    address private immutable _moduleSingleTrades;
+    /// @dev The Trades module implements all trade-related functionality.
+    address private immutable _moduleTrades;
 
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
         address moduleOnChainCancellation_,
-        address moduleSingleTrades_) 
+        address moduleTrades_) 
         EIP712("cPort", "1") {
         _modulePaymentSettings = modulePaymentSettings_;
         _moduleOnChainCancellation = moduleOnChainCancellation_;
-        _moduleSingleTrades = moduleSingleTrades_;
+        _moduleTrades = moduleTrades_;
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -538,21 +538,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     function buyListing(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_BUY_LISTING, data) {}
+    delegateCall(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
 
     function acceptOffer(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_ACCEPT_OFFER, data) {}
+    delegateCall(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
     function bulkBuyListings(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
+    delegateCall(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
     function bulkAcceptOffers(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
+    delegateCall(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
     function sweepCollection(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
+    delegateCall(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
 }

@@ -9,7 +9,7 @@ import "src/CPort.sol";
 import "src/CPortEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
-import "src/modules/ModuleSingleTrades.sol";
+import "src/modules/ModuleTrades.sol";
 
 import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
@@ -86,7 +86,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
     cPortModule public modulePaymentSettings;
     cPortModule public moduleOnChainCancellation;
-    cPortModule public moduleSingleTrades;
+    cPortModule public moduleTrades;
 
     uint32 public customPaymentMethodWhitelistId;
 
@@ -131,7 +131,7 @@ contract cPortModuleTest is Test, cPortEvents {
             2300, 
             defaultPaymentMethods);
 
-        moduleSingleTrades = new ModuleSingleTrades(
+        moduleTrades = new ModuleTrades(
             2300, 
             defaultPaymentMethods);
 
@@ -140,7 +140,7 @@ contract cPortModuleTest is Test, cPortEvents {
                 address(this),
                 address(modulePaymentSettings),
                 address(moduleOnChainCancellation),
-                address(moduleSingleTrades)
+                address(moduleTrades)
             );
 
         vm.label(alice, "alice");

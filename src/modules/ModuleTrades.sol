@@ -19,7 +19,7 @@ pragma solidity 0.8.19;
 
 import "./CPortModule.sol";
 
-contract ModuleSingleTrades is cPortModule {
+contract ModuleTrades is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
