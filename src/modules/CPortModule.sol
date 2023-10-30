@@ -222,47 +222,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
-        SignatureECDSA[] calldata signedSellOrders) internal {
-
-        if (sweepOrder.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            revert cPort__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
-        }
-
-        if (items.length != signedSellOrders.length) {
-            revert cPort__InputArrayLengthMismatch();
-        }
-
-        if (items.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
-        }
-
-        (Order[] memory saleDetailsBatch, RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) = 
-            _validateSweepOrder(
-                domainSeparator,
-                msgValue,
-                feeOnTop,
-                sweepOrder,
-                items,
-                signedSellOrders,
-                new Cosignature[](items.length));
-
-        _fulfillSweepOrderWithFeeOnTop(
-            SweepCollectionComputeAndDistributeProceedsParams({
-                paymentCoin: IERC20(sweepOrder.paymentMethod),
-                fnPointers: _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
-                feeOnTop: feeOnTop,
-                royaltyBackfillAndBounty: royaltyBackfillAndBounty,
-                saleDetailsBatch: saleDetailsBatch
-            })
-        );
-    }
-
-    function _executeSweepOrder(
-        bytes32 domainSeparator,
-        uint256 msgValue,
-        FeeOnTop memory feeOnTop,
-        SweepOrder memory sweepOrder,
-        SweepItem[] calldata items,
         SignatureECDSA[] calldata signedSellOrders,
         Cosignature[] memory cosignatures) internal {
 

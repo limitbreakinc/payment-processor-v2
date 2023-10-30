@@ -10,10 +10,6 @@ import "src/CPortEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModuleSingleTrades.sol";
-import "src/modules/ModuleSingleTradesCosigned.sol";
-import "src/modules/ModuleBulkTrades.sol";
-import "src/modules/ModuleBulkTradesCosigned.sol";
-import "src/modules/ModuleSweepCollection.sol";
 
 import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
@@ -91,10 +87,6 @@ contract cPortModuleTest is Test, cPortEvents {
     cPortModule public modulePaymentSettings;
     cPortModule public moduleOnChainCancellation;
     cPortModule public moduleSingleTrades;
-    cPortModule public moduleSingleTradesCosigned;
-    cPortModule public moduleBulkTrades;
-    cPortModule public moduleBulkTradesCosigned;
-    cPortModule public moduleSweepCollection;
 
     uint32 public customPaymentMethodWhitelistId;
 
@@ -143,32 +135,12 @@ contract cPortModuleTest is Test, cPortEvents {
             2300, 
             defaultPaymentMethods);
 
-        moduleSingleTradesCosigned = new ModuleSingleTradesCosigned(
-            2300, 
-            defaultPaymentMethods);
-
-        moduleBulkTrades = new ModuleBulkTrades(
-            2300, 
-            defaultPaymentMethods);
-
-        moduleBulkTradesCosigned = new ModuleBulkTradesCosigned(
-            2300, 
-            defaultPaymentMethods);
-
-        moduleSweepCollection = new ModuleSweepCollection(
-            2300,
-            defaultPaymentMethods);
-
         _cPort = 
             new cPort(
                 address(this),
                 address(modulePaymentSettings),
                 address(moduleOnChainCancellation),
-                address(moduleSingleTrades),
-                address(moduleSingleTradesCosigned),
-                address(moduleBulkTrades),
-                address(moduleBulkTradesCosigned),
-                address(moduleSweepCollection)
+                address(moduleSingleTrades)
             );
 
         vm.label(alice, "alice");
@@ -597,18 +569,19 @@ contract cPortModuleTest is Test, cPortEvents {
         (SignatureECDSA memory sellerSignature, Cosignature memory cosignature) = _getCosignedSaleApproval(fuzzedOrderInputs.sellerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingCosignedCalldata(
+            _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
                 sellerSignature,
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.buyListingCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
     function _buyEmptyCosignedListing(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -616,18 +589,19 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingCosignedCalldata(
+            _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
                 sellerSignature,
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.buyListingCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
     function _buySignedListing(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -637,7 +611,9 @@ contract cPortModuleTest is Test, cPortEvents {
             _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
-                sellerSignature);
+                sellerSignature,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -655,7 +631,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
                 sellerSignature,
@@ -667,7 +643,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.buyListingCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
     function _buyEmptyCosignedListingWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -679,7 +655,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
                 sellerSignature,
@@ -691,7 +667,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.buyListingCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
     function _buySignedListingWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -702,10 +678,11 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBuyListingWithFeeOnTopCalldata(
+            _cPortEncoder.encodeBuyListingCalldata(
                 address(_cPort), 
                 saleDetails, 
                 sellerSignature,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
                 feeOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -713,30 +690,32 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.buyListingWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.buyListing{value: nativePaymentValue}(fnCalldata);
     }
 
     function _bulkBuyCosignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             (sellerSignaturesArray[i], cosignatureArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], caller);
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkBuyListingsCosignedCalldata(
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
                 sellerSignaturesArray,
-                cosignatureArray);
+                cosignatureArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
     function _bulkBuyCosignedListingsWithFeesOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -752,7 +731,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
                 sellerSignaturesArray,
@@ -764,7 +743,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
     function _bulkBuyEmptyCosignedListingsWithFeesOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -781,7 +760,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
                 sellerSignaturesArray,
@@ -793,36 +772,41 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkBuyListingsCosignedWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
     function _bulkBuyEmptyCosignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignatureArray = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
             cosignatureArray[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkBuyListingsCosignedCalldata(
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
                 sellerSignaturesArray,
-                cosignatureArray);
+                cosignatureArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkBuyListingsCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
     function _sweepSignedListings(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop memory feeOnTop = FeeOnTop({recipient: address(0), amount: 0});
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
@@ -837,14 +821,17 @@ contract cPortModuleTest is Test, cPortEvents {
                 marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
         }
 
         bytes memory fnCalldata = 
             _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
+                feeOnTop,
                 sweepOrder,
                 sweepItems, 
-                sellerSignaturesArray);
+                sellerSignaturesArray,
+                cosignatures);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -857,6 +844,7 @@ contract cPortModuleTest is Test, cPortEvents {
     function _sweepSignedListingsWithFeeOnTop(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
 
         if (saleDetailsArray[0].paymentMethod == address(0)) {
             nativePaymentValue = nativePaymentValue + uint128(feeOnTop.amount);
@@ -875,28 +863,31 @@ contract cPortModuleTest is Test, cPortEvents {
                 marketplaceFeeNumerator: saleDetailsArray[i].marketplaceFeeNumerator,
                 maxRoyaltyFeeNumerator: saleDetailsArray[i].maxRoyaltyFeeNumerator
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeSweepCollectionWithFeeOnTopCalldata(
+            _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
                 feeOnTop,
                 sweepOrder,
                 sweepItems, 
-                sellerSignaturesArray);
+                sellerSignaturesArray,
+                cosignatures);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.sweepCollectionWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
     }
 
     function _sweepCosignedListings(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
         SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+        FeeOnTop memory feeOnTop = FeeOnTop({recipient: address(0), amount: 0});
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             (sellerSignaturesArray[i], cosignaturesArray[i]) = _getCosignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], caller);
@@ -914,8 +905,9 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeSweepCollectionCosignedCalldata(
+            _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
+                feeOnTop,
                 sweepOrder,
                 sweepItems, 
                 sellerSignaturesArray,
@@ -926,13 +918,14 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.sweepCollectionCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
     }
 
     function _sweepEmptyCosignedListings(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignaturesArray = new Cosignature[](saleDetailsArray.length);
         SweepItem[] memory sweepItems = new SweepItem[](saleDetailsArray.length);
+        FeeOnTop memory feeOnTop = FeeOnTop({recipient: address(0), amount: 0});
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
@@ -952,8 +945,9 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeSweepCollectionCosignedCalldata(
+            _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
+                feeOnTop,
                 sweepOrder,
                 sweepItems, 
                 sellerSignaturesArray,
@@ -964,7 +958,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.sweepCollectionCosigned{value: nativePaymentValue}(fnCalldata);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
     }
 
     function _sweepCosignedListingsWithFeeOnTop(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -992,7 +986,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
                 feeOnTop,
                 sweepOrder,
@@ -1005,7 +999,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.sweepCollectionCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
     }
 
     function _sweepEmptyCosignedListingsWithFeeOnTop(address caller, uint256 nativePaymentValue, SweepOrder memory sweepOrder, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -1035,7 +1029,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeSweepCollectionCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeSweepCollectionCalldata(
                 address(_cPort), 
                 feeOnTop,
                 sweepOrder,
@@ -1048,21 +1042,27 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.sweepCollectionCosignedWithFeeOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.sweepCollection{value: nativePaymentValue}(fnCalldata);
     }
 
     function _bulkBuySignedListings(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
             _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
-                sellerSignaturesArray);
+                sellerSignaturesArray,
+                cosignatures,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1074,9 +1074,11 @@ contract cPortModuleTest is Test, cPortEvents {
 
     function _bulkBuySignedListingsWithFeeOnTop(address caller, uint256 nativePaymentValue, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA[] memory sellerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             sellerSignaturesArray[i] = _getSignedSaleApproval(fuzzedOrderInputsArray[i].sellerKey, saleDetailsArray[i]);
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
             if (saleDetailsArray[i].paymentMethod == address(0)) {
                 nativePaymentValue = nativePaymentValue + feesOnTop[i].amount;
@@ -1084,10 +1086,11 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkBuyListingsWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkBuyListingsCalldata(
                 address(_cPort), 
                 saleDetailsArray, 
                 sellerSignaturesArray,
+                cosignatures,
                 feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1095,14 +1098,14 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkBuyListingsWithFeesOnTop{value: nativePaymentValue}(fnCalldata);
+        _cPort.bulkBuyListings{value: nativePaymentValue}(fnCalldata);
     }
 
     function _acceptCosignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedItemOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 false,
                 saleDetails, 
@@ -1111,14 +1114,15 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -1126,7 +1130,7 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 false,
                 saleDetails, 
@@ -1135,14 +1139,15 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedItemOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -1150,7 +1155,7 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 false,
                 saleDetails, 
@@ -1167,7 +1172,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedItemOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -1182,7 +1187,9 @@ contract cPortModuleTest is Test, cPortEvents {
                 TokenSetProof({
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
-                }));
+                }),
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1196,7 +1203,7 @@ contract cPortModuleTest is Test, cPortEvents {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedItemOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 false,
                 saleDetails, 
@@ -1213,14 +1220,14 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedItemOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory buyerSignature = _getSignedItemOffer(fuzzedOrderInputs.buyerKey, saleDetails);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 false,
                 saleDetails, 
@@ -1229,6 +1236,7 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
                 feeOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1236,14 +1244,14 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.acceptOfferWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptCosignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedCollectionOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1252,14 +1260,15 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -1267,7 +1276,7 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1276,14 +1285,15 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedCollectionOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -1291,7 +1301,7 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1308,7 +1318,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedCollectionOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, bytes4 expectedRevertSelector) internal {
@@ -1323,7 +1333,9 @@ contract cPortModuleTest is Test, cPortEvents {
                 TokenSetProof({
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
-                }));
+                }),
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1337,7 +1349,7 @@ contract cPortModuleTest is Test, cPortEvents {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedCollectionOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1354,14 +1366,14 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedCollectionOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory buyerSignature = _getSignedCollectionOffer(fuzzedOrderInputs.buyerKey, saleDetails);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1370,6 +1382,7 @@ contract cPortModuleTest is Test, cPortEvents {
                     rootHash: bytes32(0),
                     proof: new bytes32[](0)
                 }),
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
                 feeOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1377,27 +1390,28 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.acceptOfferWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptCosignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedTokenSetOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, tokenSetProof, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
                 buyerSignature,
                 tokenSetProof,
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
@@ -1405,20 +1419,21 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
                 buyerSignature,
                 tokenSetProof,
-                cosignature);
+                cosignature,
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosigned(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptEmptyCosignedTokenSetOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
@@ -1426,7 +1441,7 @@ contract cPortModuleTest is Test, cPortEvents {
         Cosignature memory cosignature = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1440,7 +1455,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedTokenSetOffer(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, bytes4 expectedRevertSelector) internal {
@@ -1452,7 +1467,9 @@ contract cPortModuleTest is Test, cPortEvents {
                 true,
                 saleDetails, 
                 buyerSignature,
-                tokenSetProof);
+                tokenSetProof,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                FeeOnTop({recipient: address(0), amount: 0}));
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1466,7 +1483,7 @@ contract cPortModuleTest is Test, cPortEvents {
         (SignatureECDSA memory buyerSignature, Cosignature memory cosignature) = _getCosignedTokenSetOffer(fuzzedOrderInputs.buyerKey, fuzzedOrderInputs.cosignerKey, saleDetails, tokenSetProof, caller);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferCosignedWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
@@ -1480,19 +1497,20 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.acceptOfferCosignedWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _acceptSignedTokenSetOfferWithFeeOnTop(address caller, FuzzedOrder721 memory fuzzedOrderInputs, Order memory saleDetails, TokenSetProof memory tokenSetProof, FeeOnTop memory feeOnTop, bytes4 expectedRevertSelector) internal {
         SignatureECDSA memory buyerSignature = _getSignedTokenSetOffer(fuzzedOrderInputs.buyerKey, saleDetails, tokenSetProof);
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeAcceptOfferWithFeeOnTopCalldata(
+            _cPortEncoder.encodeAcceptOfferCalldata(
                 address(_cPort), 
                 true,
                 saleDetails, 
                 buyerSignature,
                 tokenSetProof,
+                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
                 feeOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1500,7 +1518,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
     
         vm.prank(caller, caller);
-        _cPort.acceptOfferWithFeeOnTop(fnCalldata);
+        _cPort.acceptOffer(fnCalldata);
     }
 
     function _bulkAcceptCosignedItemOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
@@ -1508,6 +1526,7 @@ contract cPortModuleTest is Test, cPortEvents {
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = false;
@@ -1516,23 +1535,25 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
-                cosignerSignaturesArray);
+                cosignerSignaturesArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedItemOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
@@ -1540,6 +1561,7 @@ contract cPortModuleTest is Test, cPortEvents {
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = false;
@@ -1549,23 +1571,25 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
-                cosignerSignaturesArray);
+                cosignerSignaturesArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptCosignedItemOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -1584,7 +1608,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1598,7 +1622,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedItemOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -1618,7 +1642,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1632,13 +1656,15 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptSignedItemOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = false;
@@ -1647,6 +1673,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
@@ -1655,7 +1683,9 @@ contract cPortModuleTest is Test, cPortEvents {
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
-                tokenSetProofsArray);
+                tokenSetProofsArray,
+                cosignatures,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1669,6 +1699,7 @@ contract cPortModuleTest is Test, cPortEvents {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = false;
@@ -1677,15 +1708,17 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
+                cosignatures,
                 feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1693,7 +1726,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptCosignedCollectionOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
@@ -1701,6 +1734,7 @@ contract cPortModuleTest is Test, cPortEvents {
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
@@ -1709,23 +1743,25 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
-                cosignerSignaturesArray);
+                cosignerSignaturesArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptCosignedCollectionOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -1744,7 +1780,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1758,7 +1794,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedCollectionOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
@@ -1766,6 +1802,7 @@ contract cPortModuleTest is Test, cPortEvents {
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
@@ -1775,23 +1812,25 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
-                cosignerSignaturesArray);
+                cosignerSignaturesArray,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedCollectionOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -1811,7 +1850,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1825,13 +1864,15 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptSignedCollectionOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, bytes4 expectedRevertSelector) internal {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
@@ -1840,6 +1881,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
@@ -1848,7 +1891,9 @@ contract cPortModuleTest is Test, cPortEvents {
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
-                tokenSetProofsArray);
+                tokenSetProofsArray,
+                cosignatures,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -1862,6 +1907,7 @@ contract cPortModuleTest is Test, cPortEvents {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         TokenSetProof[] memory tokenSetProofsArray = new TokenSetProof[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
@@ -1870,15 +1916,17 @@ contract cPortModuleTest is Test, cPortEvents {
                 rootHash: bytes32(0),
                 proof: new bytes32[](0)
             });
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
+                cosignatures,
                 feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -1886,48 +1934,23 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptCosignedTokenSetOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, bytes4 expectedRevertSelector) internal {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
             (buyerSignaturesArray[i], cosignerSignaturesArray[i]) = _getCosignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], tokenSetProofsArray[i], caller);
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
-                address(_cPort), 
-                isCollectionOfferArray,
-                saleDetailsArray, 
-                buyerSignaturesArray,
-                tokenSetProofsArray,
-                cosignerSignaturesArray);
-
-        if(expectedRevertSelector != bytes4(0x00000000)) {
-            vm.expectRevert(expectedRevertSelector);
-        }
-
-        vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
-    }
-
-    function _bulkAcceptCosignedTokenSetOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
-        bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
-        SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
-        Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
-
-        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
-            isCollectionOfferArray[i] = true;
-            (buyerSignaturesArray[i], cosignerSignaturesArray[i]) = _getCosignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], tokenSetProofsArray[i], caller);
-        }
-
-        bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1941,7 +1964,35 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
+    }
+
+    function _bulkAcceptCosignedTokenSetOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
+        bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
+        SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            isCollectionOfferArray[i] = true;
+            (buyerSignaturesArray[i], cosignerSignaturesArray[i]) = _getCosignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, fuzzedOrderInputsArray[i].cosignerKey, saleDetailsArray[i], tokenSetProofsArray[i], caller);
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
+                address(_cPort), 
+                isCollectionOfferArray,
+                saleDetailsArray, 
+                buyerSignaturesArray,
+                tokenSetProofsArray,
+                cosignerSignaturesArray,
+                feesOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedTokenSetOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
@@ -1956,7 +2007,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
@@ -1970,44 +2021,20 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosignedWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _bulkAcceptEmptyCosignedTokenSetOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, bytes4 expectedRevertSelector) internal {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
         Cosignature[] memory cosignerSignaturesArray = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
             buyerSignaturesArray[i] = _getSignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, saleDetailsArray[i], tokenSetProofsArray[i]);
             cosignerSignaturesArray[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
-        }
-
-        bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersCosignedCalldata(
-                address(_cPort), 
-                isCollectionOfferArray,
-                saleDetailsArray, 
-                buyerSignaturesArray,
-                tokenSetProofsArray,
-                cosignerSignaturesArray);
-
-        if(expectedRevertSelector != bytes4(0x00000000)) {
-            vm.expectRevert(expectedRevertSelector);
-        }
-
-        vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersCosigned(fnCalldata);
-    }
-
-    function _bulkAcceptSignedTokenSetOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, bytes4 expectedRevertSelector) internal {
-        bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
-        SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
-
-        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
-            isCollectionOfferArray[i] = true;
-            buyerSignaturesArray[i] = _getSignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, saleDetailsArray[i], tokenSetProofsArray[i]);
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
         }
 
         bytes memory fnCalldata = 
@@ -2016,7 +2043,40 @@ contract cPortModuleTest is Test, cPortEvents {
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
-                tokenSetProofsArray);
+                tokenSetProofsArray,
+                cosignerSignaturesArray,
+                feesOnTop);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        }
+
+        vm.prank(caller, caller);
+        _cPort.bulkAcceptOffers(fnCalldata);
+    }
+
+    function _bulkAcceptSignedTokenSetOffers(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, bytes4 expectedRevertSelector) internal {
+        bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
+        SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
+        FeeOnTop[] memory feesOnTop = new FeeOnTop[](saleDetailsArray.length);
+
+        for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
+            isCollectionOfferArray[i] = true;
+            buyerSignaturesArray[i] = _getSignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, saleDetailsArray[i], tokenSetProofsArray[i]);
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
+            feesOnTop[i] = FeeOnTop({recipient: address(0), amount: 0});
+        }
+
+        bytes memory fnCalldata = 
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
+                address(_cPort), 
+                isCollectionOfferArray,
+                saleDetailsArray, 
+                buyerSignaturesArray,
+                tokenSetProofsArray,
+                cosignatures,
+                feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -2029,19 +2089,22 @@ contract cPortModuleTest is Test, cPortEvents {
     function _bulkAcceptSignedTokenSetOffersWithFeesOnTop(address caller, FuzzedOrder721[] memory fuzzedOrderInputsArray, Order[] memory saleDetailsArray, TokenSetProof[] memory tokenSetProofsArray, FeeOnTop[] memory feesOnTop, bytes4 expectedRevertSelector) internal {
         bool[] memory isCollectionOfferArray = new bool[](saleDetailsArray.length);
         SignatureECDSA[] memory buyerSignaturesArray = new SignatureECDSA[](saleDetailsArray.length);
+        Cosignature[] memory cosignatures = new Cosignature[](saleDetailsArray.length);
 
         for (uint256 i = 0; i < saleDetailsArray.length; ++i) {
             isCollectionOfferArray[i] = true;
             buyerSignaturesArray[i] = _getSignedTokenSetOffer(fuzzedOrderInputsArray[i].buyerKey, saleDetailsArray[i], tokenSetProofsArray[i]);
+            cosignatures[i] = Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)});
         }
 
         bytes memory fnCalldata = 
-            _cPortEncoder.encodeBulkAcceptOffersWithFeesOnTopCalldata(
+            _cPortEncoder.encodeBulkAcceptOffersCalldata(
                 address(_cPort), 
                 isCollectionOfferArray,
                 saleDetailsArray, 
                 buyerSignaturesArray,
                 tokenSetProofsArray,
+                cosignatures,
                 feesOnTop);
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
@@ -2049,7 +2112,7 @@ contract cPortModuleTest is Test, cPortEvents {
         }
 
         vm.prank(caller, caller);
-        _cPort.bulkAcceptOffersWithFeesOnTop(fnCalldata);
+        _cPort.bulkAcceptOffers(fnCalldata);
     }
 
     function _sanitizeAddress(address addr, address[] memory exclusionList) internal view {

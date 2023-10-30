@@ -3,13 +3,9 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/modules/ModuleBulkTrades.sol";
-import "src/modules/ModuleBulkTradesCosigned.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleSingleTrades.sol";
-import "src/modules/ModuleSingleTradesCosigned.sol";
-import "src/modules/ModuleSweepCollection.sol";
 
 contract DeployCPortModules is Script {
     struct ModuleAddresses {
@@ -54,19 +50,11 @@ contract DeployCPortModules is Script {
         moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, defaultPaymentMethods));
         moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, defaultPaymentMethods));
         moduleAddresses.moduleSingleTrades = address(new ModuleSingleTrades(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSingleTradesCosigned = address(new ModuleSingleTradesCosigned(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleBulkTrades = address(new ModuleBulkTrades(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleBulkTradesCosigned = address(new ModuleBulkTradesCosigned(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSweepCollection = address(new ModuleSweepCollection(pushPaymentGasLimit, defaultPaymentMethods));
 
         vm.stopBroadcast();
 
         console.log("Module On Chain Cancellation: ", moduleAddresses.moduleOnChainCancellation);
         console.log("Module Payment Settings: ", moduleAddresses.modulePaymentSettings);
         console.log("Module Single Trades: ", moduleAddresses.moduleSingleTrades);
-        console.log("Module Single Trades Cosigned: ", moduleAddresses.moduleSingleTradesCosigned);
-        console.log("Module Bulk Trades: ", moduleAddresses.moduleBulkTrades);
-        console.log("Module Bulk Trades Cosigned: ", moduleAddresses.moduleBulkTradesCosigned);
-        console.log("Module Sweep Collection: ", moduleAddresses.moduleSweepCollection);
     }
 }

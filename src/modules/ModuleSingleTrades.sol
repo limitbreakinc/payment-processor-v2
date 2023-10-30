@@ -29,28 +29,8 @@ contract ModuleSingleTrades is cPortModule {
     function buyListing(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
-        SignatureECDSA memory sellerSignature
-    ) public payable {
-        uint256 remainingMsgValue = 
-            _executeOrderBuySide(
-                domainSeparator, 
-                true,
-                msg.value,
-                saleDetails, 
-                sellerSignature,
-                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
-                FeeOnTop({recipient: address(0), amount: 0})
-            );
-
-        if (remainingMsgValue > 0) {
-            revert cPort__OverpaidNativeFunds();
-        }
-    }
-
-    function buyListingWithFeeOnTop(
-        bytes32 domainSeparator, 
-        Order memory saleDetails, 
         SignatureECDSA memory sellerSignature,
+        Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
         uint256 remainingMsgValue = 
@@ -60,7 +40,7 @@ contract ModuleSingleTrades is cPortModule {
                 msg.value,
                 saleDetails, 
                 sellerSignature,
-                Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+                cosignature,
                 feeOnTop
             );
 
@@ -74,26 +54,8 @@ contract ModuleSingleTrades is cPortModule {
         bool isCollectionLevelOffer, 
         Order memory saleDetails, 
         SignatureECDSA memory buyerSignature,
-        TokenSetProof memory tokenSetProof
-    ) public {
-        _executeOrderSellSide(
-            domainSeparator, 
-            true,
-            0,
-            isCollectionLevelOffer, 
-            saleDetails, 
-            buyerSignature,
-            tokenSetProof,
-            Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
-            FeeOnTop({recipient: address(0), amount: 0}));
-    }
-
-    function acceptOfferWithFeeOnTop(
-        bytes32 domainSeparator, 
-        bool isCollectionLevelOffer, 
-        Order memory saleDetails, 
-        SignatureECDSA memory buyerSignature,
         TokenSetProof memory tokenSetProof,
+        Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public {
         _executeOrderSellSide(
@@ -104,7 +66,124 @@ contract ModuleSingleTrades is cPortModule {
             saleDetails, 
             buyerSignature,
             tokenSetProof,
-            Cosignature({signer: address(0), taker: address(0), expiration: 0, v: 0, r: bytes32(0), s: bytes32(0)}),
+            cosignature,
             feeOnTop);
+    }
+
+    function bulkBuyListings(
+        bytes32 domainSeparator, 
+        Order[] calldata saleDetailsArray,
+        SignatureECDSA[] calldata sellerSignatures,
+        Cosignature[] calldata cosignatures,
+        FeeOnTop[] calldata feesOnTop
+    ) public payable {
+        if (saleDetailsArray.length != sellerSignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != cosignatures.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length != feesOnTop.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        uint256 remainingNativeProceeds = msg.value;
+
+        Order memory saleDetails;
+        SignatureECDSA memory sellerSignature;
+        Cosignature memory cosignature;
+        FeeOnTop memory feeOnTop;
+
+        for (uint256 i = 0; i < saleDetailsArray.length;) {
+            saleDetails = saleDetailsArray[i];
+            sellerSignature = sellerSignatures[i];
+            cosignature = cosignatures[i];
+            feeOnTop = feesOnTop[i];
+
+            if(saleDetails.paymentMethod == address(0)) {
+                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, cosignature, feeOnTop);
+            } else {
+                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        if (remainingNativeProceeds > 0) {
+            revert cPort__OverpaidNativeFunds();
+        }
+    }
+
+    function bulkAcceptOffers(
+        bytes32 domainSeparator, 
+        BulkAcceptOffersParams memory params
+    ) public {
+        if (params.saleDetailsArray.length != params.isCollectionLevelOfferArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (params.saleDetailsArray.length != params.buyerSignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (params.saleDetailsArray.length != params.tokenSetProofsArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (params.saleDetailsArray.length != params.cosignaturesArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (params.saleDetailsArray.length != params.feesOnTopArray.length) {
+            revert cPort__InputArrayLengthMismatch();
+        }
+
+        if (params.saleDetailsArray.length == 0) {
+            revert cPort__InputArrayLengthCannotBeZero();
+        }
+
+        for (uint256 i = 0; i < params.saleDetailsArray.length;) {
+            _executeOrderSellSide(
+                domainSeparator, 
+                false,
+                0, 
+                params.isCollectionLevelOfferArray[i], 
+                params.saleDetailsArray[i], 
+                params.buyerSignaturesArray[i],
+                params.tokenSetProofsArray[i],
+                params.cosignaturesArray[i],
+                params.feesOnTopArray[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function sweepCollection(
+        bytes32 domainSeparator, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] memory cosignatures
+    ) public payable {
+        _executeSweepOrder(
+            domainSeparator,
+            msg.value,
+            feeOnTop,
+            sweepOrder,
+            items,
+            signedSellOrders,
+            cosignatures
+        );
     }
 }

@@ -36,11 +36,7 @@ contract DeployCPort is Script {
             vm.addr(deployerPrivateKey),
             moduleAddresses.modulePaymentSettings,
             moduleAddresses.moduleOnChainCancellation,
-            moduleAddresses.moduleSingleTrades,
-            moduleAddresses.moduleSingleTradesCosigned,
-            moduleAddresses.moduleBulkTrades,
-            moduleAddresses.moduleBulkTradesCosigned,
-            moduleAddresses.moduleSweepCollection
+            moduleAddresses.moduleSingleTrades
         ));
 
         vm.stopBroadcast();

@@ -119,35 +119,15 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The Single Trades module implements all single trade-related functionality.
     address private immutable _moduleSingleTrades;
 
-    /// @dev The Single Trades Cosigned module implements all single trade-related functionality requiring a co-signer.
-    address private immutable _moduleSingleTradesCosigned;
-
-    /// @dev The Bulk Trades module implements all bulk trade-related functionality.
-    address private immutable _moduleBulkTrades;
-
-    /// @dev The Bulk Trades Cosigned module implements all bulk trade-related functionality requiring a co-signer.
-    address private immutable _moduleBulkTradesCosigned;
-
-    /// @dev The Sweep Collection module implements all sweep collection-related functionality.
-    address private immutable _moduleSweepCollection;
-
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
         address moduleOnChainCancellation_,
-        address moduleSingleTrades_,
-        address moduleSingleTradesCosigned_,
-        address moduleBulkTrades_,
-        address moduleBulkTradesCosigned_,
-        address moduleSweepCollection_) 
+        address moduleSingleTrades_) 
         EIP712("cPort", "1") {
         _modulePaymentSettings = modulePaymentSettings_;
         _moduleOnChainCancellation = moduleOnChainCancellation_;
         _moduleSingleTrades = moduleSingleTrades_;
-        _moduleSingleTradesCosigned = moduleSingleTradesCosigned_;
-        _moduleBulkTrades = moduleBulkTrades_;
-        _moduleBulkTradesCosigned = moduleBulkTradesCosigned_;
-        _moduleSweepCollection = moduleSweepCollection_;
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -560,79 +540,19 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     whenNotPaused 
     delegateCall(_moduleSingleTrades, SELECTOR_BUY_LISTING, data) {}
 
-    function buyListingWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_BUY_LISTING_WITH_FEE_ON_TOP, data) {}
-
-    function buyListingCosigned(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTradesCosigned, SELECTOR_BUY_LISTING_COSIGNED, data) {}
-
-    function buyListingCosignedWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTradesCosigned, SELECTOR_BUY_LISTING_COSIGNED_WITH_FEE_ON_TOP, data) {}
-
     function acceptOffer(bytes calldata data) external payable 
     whenNotPaused 
     delegateCall(_moduleSingleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
-    function acceptOfferWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTrades, SELECTOR_ACCEPT_OFFER_WITH_FEE_ON_TOP, data) {}
-
-    function acceptOfferCosigned(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTradesCosigned, SELECTOR_ACCEPT_OFFER_COSIGNED, data) {}
-
-    function acceptOfferCosignedWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSingleTradesCosigned, SELECTOR_ACCEPT_OFFER_COSIGNED_WITH_FEE_ON_TOP, data) {}
-
     function bulkBuyListings(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleBulkTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
-
-    function bulkBuyListingsWithFeesOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTrades, SELECTOR_BULK_BUY_LISTINGS_WITH_FEES_ON_TOP, data) {}
-
-    function bulkBuyListingsCosigned(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_BUY_LISTINGS_COSIGNED, data) {}
-
-    function bulkBuyListingsCosignedWithFeesOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_BUY_LISTINGS_COSIGNED_WITH_FEES_ON_TOP, data) {}
+    delegateCall(_moduleSingleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
     function bulkAcceptOffers(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleBulkTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
-
-    function bulkAcceptOffersWithFeesOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTrades, SELECTOR_BULK_ACCEPT_OFFERS_WITH_FEES_ON_TOP, data) {}
-
-    function bulkAcceptOffersCosigned(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_ACCEPT_OFFERS_COSIGNED, data) {}
-
-    function bulkAcceptOffersCosignedWithFeesOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleBulkTradesCosigned, SELECTOR_BULK_ACCEPT_OFFERS_COSIGNED_WITH_FEES_ON_TOP, data) {}
+    delegateCall(_moduleSingleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
     function sweepCollection(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION, data) {}
-
-    function sweepCollectionWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_WITH_FEE_ON_TOP, data) {}
-
-    function sweepCollectionCosigned(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_COSIGNED, data) {}
-
-    function sweepCollectionCosignedWithFeeOnTop(bytes calldata data) external payable 
-    whenNotPaused 
-    delegateCall(_moduleSweepCollection, SELECTOR_SWEEP_COLLECTION_COSIGNED_WITH_FEE_ON_TOP, data) {}
+    delegateCall(_moduleSingleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
 }
