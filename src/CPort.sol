@@ -227,10 +227,14 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     }
 
     function isNonceUsed(address account, uint256 nonce) public view returns (bool isUsed) {
-        uint256 slot = nonce / 256;
-        uint256 offset = nonce % 256;
-        uint256 slotValue = appStorage().invalidatedSignatures[account][slot];
-        isUsed = ((slotValue >> offset) & ONE) == ONE;
+        // The following code is equivalent to, but saves gas:
+        //
+        // uint256 slot = nonce / 256;
+        // uint256 offset = nonce % 256;
+        // uint256 slotValue = appStorage().invalidatedSignatures[account][slot];
+        // isUsed = ((slotValue >> offset) & ONE) == ONE;
+
+        isUsed = ((appStorage().invalidatedSignatures[account][uint248(nonce >> 8)] >> uint8(nonce)) & ONE) == ONE;
     }
 
     /**
