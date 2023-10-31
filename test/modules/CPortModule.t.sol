@@ -545,6 +545,9 @@ contract cPortModuleTest is Test, cPortEvents {
 
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, true, false, true);
+            emit NonceInvalidated(nonce, caller, true);
         }
 
         vm.prank(caller, caller);

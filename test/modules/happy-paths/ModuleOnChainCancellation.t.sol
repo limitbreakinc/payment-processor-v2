@@ -24,6 +24,22 @@ contract ModuleOnChainCancellationTest is cPortModuleTest {
         assertTrue(_cPort.isNonceUsed(account, nonce));
     }
 
+    function testRevokeConsecutiveNonces(address account) public {
+        _sanitizeAddress(account, new address[](0));
+
+        for (uint256 nonce = 0; nonce < 512; nonce++) {
+            vm.assume(!_cPort.isNonceUsed(account, nonce));
+            _revokeSingleNonce(account, nonce, EMPTY_SELECTOR);
+            assertTrue(_cPort.isNonceUsed(account, nonce));
+        }
+
+        for (uint256 nonce = type(uint256).max - 512; nonce < type(uint256).max; nonce++) {
+            vm.assume(!_cPort.isNonceUsed(account, nonce));
+            _revokeSingleNonce(account, nonce, EMPTY_SELECTOR);
+            assertTrue(_cPort.isNonceUsed(account, nonce));
+        }
+    }
+
     function testRevokeOrderDigest(address account, FuzzedOrder721 memory fuzzedOrderInputs, uint248 amount, uint248 fillAmount) public {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
         _sanitizeAddress(account, new address[](0));

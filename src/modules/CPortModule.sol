@@ -871,19 +871,28 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint256 nonce, 
         bool wasCancellation) internal returns (uint256) {
 
-        mapping(uint256 => uint256) storage ptrInvalidatedSignatureBitmap = 
-            appStorage().invalidatedSignatures[account];
+        // The following code is equivalent to, but saves 115 gas units:
+        // 
+        // mapping(uint256 => uint256) storage ptrInvalidatedSignatureBitmap = 
+        //     appStorage().invalidatedSignatures[account];
+
+        // unchecked {
+        //     uint256 slot = nonce / 256;
+        //     uint256 offset = nonce % 256;
+        //     uint256 slotValue = ptrInvalidatedSignatureBitmap[slot];
+        // 
+        //     if (((slotValue >> offset) & ONE) == ONE) {
+        //         revert cPort__SignatureAlreadyUsedOrRevoked();
+        //     }
+        // 
+        //     ptrInvalidatedSignatureBitmap[slot] = (slotValue | ONE << offset);
+        // }
 
         unchecked {
-            uint256 slot = nonce / 256;
-            uint256 offset = nonce % 256;
-            uint256 slotValue = ptrInvalidatedSignatureBitmap[slot];
-
-            if (((slotValue >> offset) & ONE) == ONE) {
+            if (uint256(appStorage().invalidatedSignatures[account][uint248(nonce >> 8)] ^= (ONE << uint8(nonce))) & 
+                (ONE << uint8(nonce)) == ZERO) {
                 revert cPort__SignatureAlreadyUsedOrRevoked();
             }
-
-            ptrInvalidatedSignatureBitmap[slot] = (slotValue | ONE << offset);
         }
 
         emit NonceInvalidated(nonce, account, wasCancellation);
