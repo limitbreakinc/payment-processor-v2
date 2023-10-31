@@ -3,6 +3,11 @@ pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+enum Sides { 
+    Buy, 
+    Sell 
+}
+
 enum OrderProtocols { 
     ERC721_FILL_OR_KILL, 
     ERC1155_FILL_OR_KILL,

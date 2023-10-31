@@ -145,7 +145,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             msg.sender,
             saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
-            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
+            _getOrderFulfillmentFunctionPointers(Sides.Buy, saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             _validateBasicOrderDetails(msgValueItemPrice, saleDetails),
             feeOnTop);
@@ -210,7 +210,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.maker,
             msg.sender,
             IERC20(saleDetails.paymentMethod),
-            _getOrderFulfillmentFunctionPointers(saleDetails.paymentMethod, saleDetails.protocol),
+            _getOrderFulfillmentFunctionPointers(Sides.Sell, saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
             royaltyBackfillAndBounty,
             feeOnTop);
@@ -255,7 +255,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         _fulfillSweepOrderWithFeeOnTop(
             SweepCollectionComputeAndDistributeProceedsParams({
                 paymentCoin: IERC20(sweepOrder.paymentMethod),
-                fnPointers: _getOrderFulfillmentFunctionPointers(sweepOrder.paymentMethod, sweepOrder.protocol),
+                fnPointers: _getOrderFulfillmentFunctionPointers(Sides.Buy, sweepOrder.paymentMethod, sweepOrder.protocol),
                 feeOnTop: feeOnTop,
                 royaltyBackfillAndBounty: royaltyBackfillAndBounty,
                 saleDetailsBatch: saleDetailsBatch
@@ -815,13 +815,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _getOrderFulfillmentFunctionPointers(
+        Sides side,
         address paymentMethod,
         OrderProtocols orderProtocol
     ) private view returns (FulfillOrderFunctionPointers memory orderFulfillmentFunctionPointers) {
         orderFulfillmentFunctionPointers = FulfillOrderFunctionPointers({
             funcPayout: paymentMethod == address(0) ? _payoutNativeCurrency : _payoutCoinCurrency,
             funcDispenseToken: orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? _dispenseERC721Token : _dispenseERC1155Token,
-            funcEmitOrderExecutionEvent: orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? _emitBuyListingERC721Event : _emitBuyListingERC1155Event
+            funcEmitOrderExecutionEvent: orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? 
+                (side == Sides.Buy ? _emitBuyListingERC721Event : _emitAcceptOfferERC721Event) : 
+                (side == Sides.Buy ?_emitBuyListingERC1155Event : _emitAcceptOfferERC1155Event)
         });
     }
 
