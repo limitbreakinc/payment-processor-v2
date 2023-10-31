@@ -688,15 +688,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         }
 
-        proceeds.marketplaceProceeds =
-            marketplaceFeeRecipient != address(0) ? (salePrice * marketplaceFeeNumerator) / FEE_DENOMINATOR : 0;
-        if (proceeds.marketplaceProceeds > 0) {
+        if (marketplaceFeeRecipient != address(0)) {
+            proceeds.marketplaceProceeds = (salePrice * marketplaceFeeNumerator) / FEE_DENOMINATOR;
             unchecked {
                 proceeds.sellerProceeds -= proceeds.marketplaceProceeds;
             }
-        }
 
-        if (marketplaceFeeRecipient != address(0)) {
             if (royaltyBackfillAndBounty.exclusiveMarketplace == address(0) || 
                 royaltyBackfillAndBounty.exclusiveMarketplace == marketplaceFeeRecipient) {
                 uint256 royaltyBountyProceeds = proceeds.royaltyProceeds * royaltyBackfillAndBounty.bountyNumerator / FEE_DENOMINATOR;
