@@ -3,23 +3,15 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/modules/ModuleBulkTrades.sol";
-import "src/modules/ModuleBulkTradesCosigned.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
-import "src/modules/ModuleSingleTrades.sol";
-import "src/modules/ModuleSingleTradesCosigned.sol";
-import "src/modules/ModuleSweepCollection.sol";
+import "src/modules/ModuleTrades.sol";
 
 contract DeployCPortModules is Script {
     struct ModuleAddresses {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
-        address moduleSingleTrades;
-        address moduleSingleTradesCosigned;
-        address moduleBulkTrades;
-        address moduleBulkTradesCosigned;
-        address moduleSweepCollection;
+        address moduleTrades;
     }
 
     address private immutable weth = address(0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9);
@@ -30,11 +22,7 @@ contract DeployCPortModules is Script {
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: address(0),
             modulePaymentSettings: address(0),
-            moduleSingleTrades: address(0),
-            moduleSingleTradesCosigned: address(0),
-            moduleBulkTrades: address(0),
-            moduleBulkTradesCosigned: address(0),
-            moduleSweepCollection: address(0)
+            moduleTrades: address(0)
         });
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
@@ -53,20 +41,12 @@ contract DeployCPortModules is Script {
 
         moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, defaultPaymentMethods));
         moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSingleTrades = address(new ModuleSingleTrades(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSingleTradesCosigned = address(new ModuleSingleTradesCosigned(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleBulkTrades = address(new ModuleBulkTrades(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleBulkTradesCosigned = address(new ModuleBulkTradesCosigned(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleSweepCollection = address(new ModuleSweepCollection(pushPaymentGasLimit, defaultPaymentMethods));
+        moduleAddresses.moduleTrades = address(new ModuleTrades(pushPaymentGasLimit, defaultPaymentMethods));
 
         vm.stopBroadcast();
 
         console.log("Module On Chain Cancellation: ", moduleAddresses.moduleOnChainCancellation);
         console.log("Module Payment Settings: ", moduleAddresses.modulePaymentSettings);
-        console.log("Module Single Trades: ", moduleAddresses.moduleSingleTrades);
-        console.log("Module Single Trades Cosigned: ", moduleAddresses.moduleSingleTradesCosigned);
-        console.log("Module Bulk Trades: ", moduleAddresses.moduleBulkTrades);
-        console.log("Module Bulk Trades Cosigned: ", moduleAddresses.moduleBulkTradesCosigned);
-        console.log("Module Sweep Collection: ", moduleAddresses.moduleSweepCollection);
+        console.log("Module Trades: ", moduleAddresses.moduleTrades);
     }
 }

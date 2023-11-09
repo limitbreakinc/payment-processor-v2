@@ -3,6 +3,11 @@ pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+enum Sides { 
+    Buy, 
+    Sell 
+}
+
 enum OrderProtocols { 
     ERC721_FILL_OR_KILL, 
     ERC1155_FILL_OR_KILL,
@@ -135,14 +140,7 @@ struct PricingBounds {
     uint120 ceilingPrice;
 }
 
-struct BulkBuyListingsCosignedWithFeeOnTopParams {
-    Order[] saleDetailsArray;
-    SignatureECDSA[] sellerSignatures;
-    Cosignature[] cosignatures;
-    FeeOnTop[] feesOnTop;
-}
-
-struct BulkAcceptOffersCosignedWithFeeOnTopParams {
+struct BulkAcceptOffersParams {
     bool[] isCollectionLevelOfferArray;
     Order[] saleDetailsArray;
     SignatureECDSA[] buyerSignaturesArray;
