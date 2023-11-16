@@ -37,6 +37,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     uint256 private immutable pushPaymentGasLimit;
+    address private immutable wrappedNativeCoinAddress;
     address private immutable defaultPaymentMethod1;
     address private immutable defaultPaymentMethod2;
     address private immutable defaultPaymentMethod3;
@@ -48,8 +49,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
+        address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) {
         pushPaymentGasLimit = defaultPushPaymentGasLimit_;        
+        wrappedNativeCoinAddress = wrappedNativeCoinAddress_;
         defaultPaymentMethod1 = defaultPaymentMethods.defaultPaymentMethod1;
         defaultPaymentMethod2 = defaultPaymentMethods.defaultPaymentMethod2;
         defaultPaymentMethod3 = defaultPaymentMethods.defaultPaymentMethod3;

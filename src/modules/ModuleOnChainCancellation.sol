@@ -23,8 +23,9 @@ contract ModuleOnChainCancellation is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
+        address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
+    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.

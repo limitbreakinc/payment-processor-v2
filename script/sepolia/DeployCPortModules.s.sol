@@ -39,9 +39,9 @@ contract DeployCPortModules is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, defaultPaymentMethods));
-        moduleAddresses.moduleTrades = address(new ModuleTrades(pushPaymentGasLimit, defaultPaymentMethods));
+        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.moduleTrades = address(new ModuleTrades(pushPaymentGasLimit, address(0), defaultPaymentMethods));
 
         vm.stopBroadcast();
 

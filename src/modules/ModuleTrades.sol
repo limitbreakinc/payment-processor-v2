@@ -23,8 +23,9 @@ contract ModuleTrades is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
+        address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
+    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     function buyListing(
         bytes32 domainSeparator, 

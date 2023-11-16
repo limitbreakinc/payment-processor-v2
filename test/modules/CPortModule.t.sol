@@ -15,6 +15,7 @@ import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
 import "../mocks/SeaportTestERC1155.sol";
+import "../mocks/WNative.sol";
 
 contract cPortModuleTest is Test, cPortEvents {
 
@@ -71,6 +72,8 @@ contract cPortModuleTest is Test, cPortEvents {
     cPort public _cPort;
     cPortEncoder public _cPortEncoder;
 
+    WNative public nativeWrapper;
+
     SeaportTestERC20 public weth;
     SeaportTestERC20 public usdc;
     SeaportTestERC20 public usdt;
@@ -94,6 +97,7 @@ contract cPortModuleTest is Test, cPortEvents {
     mapping (address => uint256) internal _nonces;
 
     function setUp() public virtual {
+        nativeWrapper = new WNative();
         weth = new SeaportTestERC20();
         usdc = new SeaportTestERC20();
         usdt = new SeaportTestERC20();
@@ -125,14 +129,17 @@ contract cPortModuleTest is Test, cPortEvents {
 
         modulePaymentSettings = new ModulePaymentSettings(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleTrades = new ModuleTrades(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         _cPort = 

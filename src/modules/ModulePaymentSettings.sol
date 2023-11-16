@@ -23,8 +23,9 @@ contract ModulePaymentSettings is cPortModule {
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
+        address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
+    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     /**
      * @notice Allows any user to create a new custom payment method whitelist.
