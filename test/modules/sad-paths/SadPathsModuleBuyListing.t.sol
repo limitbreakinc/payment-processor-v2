@@ -63,9 +63,9 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
         vm.assume(msgValue < paymentAmount);
 
         if (params.paymentMethod == address(0)) {
-            vm.deal(buyer, saleDetails.itemPrice);
+            vm.deal(buyer, msgValue);
         } else {
-            _allocateTokensAndApprovals(buyer, uint128(saleDetails.itemPrice));
+            _allocateTokensAndApprovals(buyer, msgValue);
         }
 
         _setPaymentSettings(
@@ -79,7 +79,12 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             address(0));
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
-            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+            if (params.orderProtocol != OrderProtocols.ERC721_FILL_OR_KILL) {
+                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+                vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+            } else {
+                vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+            }
         }
 
         if (params.cosigned) {
@@ -167,7 +172,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
         vm.assume(msgValue < paymentAmount);
 
         if (params.paymentMethod == address(0)) {
-            vm.deal(buyer, saleDetails.itemPrice + feeOnTop.amount);
+            vm.assume(msgValue < paymentAmount + feeOnTop.amount);
+            vm.deal(buyer, msgValue + feeOnTop.amount);
         } else {
             _allocateTokensAndApprovals(buyer, saleDetails.itemPrice + feeOnTop.amount);
         }
@@ -183,7 +189,12 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             address(0));
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
-            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+            if (params.orderProtocol != OrderProtocols.ERC721_FILL_OR_KILL) {
+                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+                vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+            } else {
+                vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+            }
         }
 
         if (params.cosigned) {
@@ -299,14 +310,14 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                     params.paymentMethod == address(0) ? msgValue: 0,
                     fuzzedOrderInputs,
                     saleDetails, 
-                    cPort__OverpaidNativeFunds.selector);
+                    EMPTY_SELECTOR);
             } else {
                 _buyCosignedListing(
                     buyer,
                     params.paymentMethod == address(0) ? msgValue: 0,
                     fuzzedOrderInputs,
                     saleDetails, 
-                    cPort__OverpaidNativeFunds.selector);
+                    EMPTY_SELECTOR);
             }
         } else {
             _buySignedListing(
@@ -314,7 +325,11 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 params.paymentMethod == address(0) ? msgValue: 0,
                 fuzzedOrderInputs,
                 saleDetails, 
-                cPort__OverpaidNativeFunds.selector);
+                EMPTY_SELECTOR);
+        }
+
+        if (params.paymentMethod == address(0)) {
+            assertEq(nativeWrapper.balanceOf(buyer), msgValue - paymentAmount);
         }
     }
 
@@ -377,10 +392,9 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             }
         }
 
-        vm.assume(msgValue > paymentAmount);
-
         if (params.paymentMethod == address(0)) {
-            vm.assume(type(uint256).max - msgValue > feeOnTop.amount);
+            vm.assume(type(uint256).max - msgValue > paymentAmount + feeOnTop.amount);
+            vm.assume(msgValue > paymentAmount + feeOnTop.amount);
             vm.deal(buyer, msgValue + feeOnTop.amount);
         } else {
             vm.assume(type(uint256).max - saleDetails.itemPrice > feeOnTop.amount);
@@ -409,7 +423,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                     fuzzedOrderInputs,
                     saleDetails, 
                     feeOnTop,
-                    cPort__OverpaidNativeFunds.selector);
+                    EMPTY_SELECTOR);
             } else {
                 _buyCosignedListingWithFeeOnTop(
                     buyer,
@@ -417,7 +431,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                     fuzzedOrderInputs,
                     saleDetails, 
                     feeOnTop,
-                    cPort__OverpaidNativeFunds.selector);
+                    EMPTY_SELECTOR);
             }
             
         } else {
@@ -427,7 +441,12 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 fuzzedOrderInputs,
                 saleDetails, 
                 feeOnTop,
-                cPort__OverpaidNativeFunds.selector);
+                EMPTY_SELECTOR);
+        }
+
+        if (params.paymentMethod == address(0)) {
+            //assertEq(nativeWrapper.balanceOf(buyer), msgValue - (paymentAmount + feeOnTop.amount));
+            assertEq(nativeWrapper.balanceOf(buyer), msgValue - paymentAmount);
         }
     }
 

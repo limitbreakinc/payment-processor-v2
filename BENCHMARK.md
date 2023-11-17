@@ -20,10 +20,10 @@ forge t --mt ".*MarketplaceAndRoyaltyFees.*" --gas-report
 
 | Combined Benchmark           | Min             | Avg    | Median | Max    | # calls |
 |------------------------------|-----------------|--------|--------|--------|---------|
-| acceptOffer                  | 64733           | 108626 | 112299 | 140129 | 6480    |
-| bulkAcceptOffers             | 359778          | 488537 | 486239 | 672621 | 3240    |
-| bulkBuyListings              | 349913          | 476882 | 473722 | 679815 | 1440    |
-| buyListing                   | 52132           | 98649  | 101690 | 136545 | 2160    |
+| acceptOffer                  | 64745           | 108638 | 112311 | 140140 | 6480    |
+| bulkAcceptOffers             | 359898          | 488657 | 486359 | 672741 | 3240    |
+| bulkBuyListings              | 350033          | 477002 | 473842 | 679935 | 1440    |
+| buyListing                   | 52144           | 98661  | 101702 | 136557 | 2160    |
 | sweepCollection              | 280172          | 336205 | 333661 | 432636 | 1440    |
 
 | Warm Benchmark               | Min             | Avg    | Median | Max    | # calls |

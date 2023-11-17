@@ -15,6 +15,7 @@ import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
 import "../mocks/SeaportTestERC1155.sol";
+import "../mocks/WNative.sol";
 
 contract cPortModuleTest is Test, cPortEvents {
 
@@ -71,6 +72,8 @@ contract cPortModuleTest is Test, cPortEvents {
     cPort public _cPort;
     cPortEncoder public _cPortEncoder;
 
+    WNative public nativeWrapper;
+
     SeaportTestERC20 public weth;
     SeaportTestERC20 public usdc;
     SeaportTestERC20 public usdt;
@@ -94,6 +97,7 @@ contract cPortModuleTest is Test, cPortEvents {
     mapping (address => uint256) internal _nonces;
 
     function setUp() public virtual {
+        nativeWrapper = new WNative();
         weth = new SeaportTestERC20();
         usdc = new SeaportTestERC20();
         usdt = new SeaportTestERC20();
@@ -125,14 +129,17 @@ contract cPortModuleTest is Test, cPortEvents {
 
         modulePaymentSettings = new ModulePaymentSettings(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleTrades = new ModuleTrades(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         _cPort = 
@@ -2125,6 +2132,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(addr != address(0xDDc10602782af652bB913f7bdE1fD82981Db7dd9));
         vm.assume(addr != address(_cPort));
         vm.assume(addr != address(_cPortEncoder));
+        vm.assume(addr != address(nativeWrapper));
         vm.assume(addr.code.length == 0);
 
         for (uint256 i = 0; i < exclusionList.length; ++i) {
@@ -2145,7 +2153,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.cosignerKey);
         vm.assume(fuzzedOrderInputs.buyerKey != fuzzedOrderInputs.cosignerKey);
 
-        address[] memory exclusionList = new address[](7);
+        address[] memory exclusionList = new address[](8);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2153,6 +2161,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[4] = benchmarkBeneficiary;
         exclusionList[5] = cosigner;
         exclusionList[6] = benchmarkFeeRecipient;
+        exclusionList[7] = address(nativeWrapper);
 
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), exclusionList);
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), exclusionList);
@@ -2179,7 +2188,7 @@ contract cPortModuleTest is Test, cPortEvents {
     ) internal view {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
-        address[] memory exclusionList = new address[](13);
+        address[] memory exclusionList = new address[](14);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2193,6 +2202,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[10] = fuzzedOrderInputs.beneficiary;
         exclusionList[11] = fuzzedOrderInputs.marketplace;
         exclusionList[12] = fuzzedOrderInputs.royaltyReceiver;
+        exclusionList[13] = address(nativeWrapper);
 
         _sanitizeAddress(fuzzedFeeOnTop.receiver, exclusionList);
         vm.assume(fuzzedFeeOnTop.receiver.balance == 0);
@@ -2558,6 +2568,10 @@ contract cPortModuleTest is Test, cPortEvents {
             amount: totalSalePrice * fuzzedFeeOnTop.rate / 100_00,
             recipient: fuzzedFeeOnTop.receiver
         });
+
+        if (feeOnTop.recipient == address(0)) {
+            feeOnTop.amount = 0;
+        }
 
         if (feeOnTop.amount == 0) {
             feeOnTop.recipient = address(0);
