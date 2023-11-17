@@ -34,7 +34,7 @@ contract ModuleTrades is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
-        uint256 remainingMsgValue = 
+        uint256 remainingNativeProceeds = 
             _executeOrderBuySide(
                 domainSeparator, 
                 true,
@@ -45,8 +45,9 @@ contract ModuleTrades is cPortModule {
                 feeOnTop
             );
 
-        if (remainingMsgValue > 0) {
-            revert cPort__OverpaidNativeFunds();
+        if (remainingNativeProceeds > 0) {
+            _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
+            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
         }
     }
 
@@ -62,7 +63,6 @@ contract ModuleTrades is cPortModule {
         _executeOrderSellSide(
             domainSeparator, 
             true,
-            0,
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
@@ -119,7 +119,8 @@ contract ModuleTrades is cPortModule {
         }
 
         if (remainingNativeProceeds > 0) {
-            revert cPort__OverpaidNativeFunds();
+            _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
+            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
         }
     }
 
@@ -155,7 +156,6 @@ contract ModuleTrades is cPortModule {
             _executeOrderSellSide(
                 domainSeparator, 
                 false,
-                0, 
                 params.isCollectionLevelOfferArray[i], 
                 params.saleDetailsArray[i], 
                 params.buyerSignaturesArray[i],
@@ -177,7 +177,7 @@ contract ModuleTrades is cPortModule {
         SignatureECDSA[] calldata signedSellOrders,
         Cosignature[] memory cosignatures
     ) public payable {
-        _executeSweepOrder(
+        uint256 remainingNativeProceeds =_executeSweepOrder(
             domainSeparator,
             msg.value,
             feeOnTop,
@@ -186,5 +186,10 @@ contract ModuleTrades is cPortModule {
             signedSellOrders,
             cosignatures
         );
+
+        if (remainingNativeProceeds > 0) {
+            _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
+            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
+        }
     }
 }

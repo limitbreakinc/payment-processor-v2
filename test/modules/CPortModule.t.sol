@@ -2132,6 +2132,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(addr != address(0xDDc10602782af652bB913f7bdE1fD82981Db7dd9));
         vm.assume(addr != address(_cPort));
         vm.assume(addr != address(_cPortEncoder));
+        vm.assume(addr != address(nativeWrapper));
         vm.assume(addr.code.length == 0);
 
         for (uint256 i = 0; i < exclusionList.length; ++i) {
@@ -2565,6 +2566,10 @@ contract cPortModuleTest is Test, cPortEvents {
             amount: totalSalePrice * fuzzedFeeOnTop.rate / 100_00,
             recipient: fuzzedFeeOnTop.receiver
         });
+
+        if (feeOnTop.recipient == address(0)) {
+            feeOnTop.amount = 0;
+        }
 
         if (feeOnTop.amount == 0) {
             feeOnTop.recipient = address(0);
