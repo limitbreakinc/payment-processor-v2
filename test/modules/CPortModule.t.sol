@@ -2153,7 +2153,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.cosignerKey);
         vm.assume(fuzzedOrderInputs.buyerKey != fuzzedOrderInputs.cosignerKey);
 
-        address[] memory exclusionList = new address[](7);
+        address[] memory exclusionList = new address[](8);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2161,6 +2161,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[4] = benchmarkBeneficiary;
         exclusionList[5] = cosigner;
         exclusionList[6] = benchmarkFeeRecipient;
+        exclusionList[7] = address(nativeWrapper);
 
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), exclusionList);
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), exclusionList);
@@ -2187,7 +2188,7 @@ contract cPortModuleTest is Test, cPortEvents {
     ) internal view {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
-        address[] memory exclusionList = new address[](13);
+        address[] memory exclusionList = new address[](14);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2201,6 +2202,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[10] = fuzzedOrderInputs.beneficiary;
         exclusionList[11] = fuzzedOrderInputs.marketplace;
         exclusionList[12] = fuzzedOrderInputs.royaltyReceiver;
+        exclusionList[13] = address(nativeWrapper);
 
         _sanitizeAddress(fuzzedFeeOnTop.receiver, exclusionList);
         vm.assume(fuzzedFeeOnTop.receiver.balance == 0);

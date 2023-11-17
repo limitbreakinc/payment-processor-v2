@@ -173,7 +173,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
 
         if (params.paymentMethod == address(0)) {
             vm.assume(msgValue < paymentAmount + feeOnTop.amount);
-            vm.deal(buyer, msgValue);
+            vm.deal(buyer, msgValue + feeOnTop.amount);
         } else {
             _allocateTokensAndApprovals(buyer, saleDetails.itemPrice + feeOnTop.amount);
         }
