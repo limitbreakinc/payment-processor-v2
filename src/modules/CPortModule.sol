@@ -678,12 +678,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         } catch (bytes memory) {
             // If the token doesn't implement the royaltyInfo function, then check if there are backfilled royalties.
             if (royaltyBackfillAndBounty.backfillReceiver != address(0)) {
-                proceeds.royaltyRecipient = royaltyBackfillAndBounty.backfillReceiver;
-                proceeds.royaltyProceeds = (salePrice * royaltyBackfillAndBounty.backfillNumerator) / FEE_DENOMINATOR;
-
-                if (proceeds.royaltyProceeds > (salePrice * maxRoyaltyFeeNumerator) / FEE_DENOMINATOR) {
+                if (royaltyBackfillAndBounty.backfillNumerator > maxRoyaltyFeeNumerator) {
                     revert cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
                 }
+
+                proceeds.royaltyRecipient = royaltyBackfillAndBounty.backfillReceiver;
+                proceeds.royaltyProceeds = (salePrice * royaltyBackfillAndBounty.backfillNumerator) / FEE_DENOMINATOR;
 
                 unchecked {
                     proceeds.sellerProceeds -= proceeds.royaltyProceeds;
