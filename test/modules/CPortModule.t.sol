@@ -14,6 +14,7 @@ import "src/modules/ModuleTrades.sol";
 import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
+import "../mocks/SeaportTestERC721Without2981.sol";
 import "../mocks/SeaportTestERC1155.sol";
 import "../mocks/WNative.sol";
 
@@ -82,6 +83,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
     SeaportTestERC721 public test721;
     SeaportTestERC1155 public test1155;
+    SeaportTestERC721Without2981 public test721Without2981;
 
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
@@ -107,6 +109,7 @@ contract cPortModuleTest is Test, cPortEvents {
         erc20s = [weth, usdc, usdt, dai, memecoin];
 
         test721 = new SeaportTestERC721();
+        test721Without2981 = new SeaportTestERC721Without2981();
 
         erc721s = [test721];
 
@@ -195,6 +198,7 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < erc1155s.length; ++i) {
             erc1155s[i].setApprovalForAll(address(_cPort), true);
         }
+        test721Without2981.setApprovalForAll(address(_cPort), true);
         vm.stopPrank();
     }
 
