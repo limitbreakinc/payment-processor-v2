@@ -29,11 +29,7 @@ contract DeployCPortModules is Script {
             defaultPaymentMethod1: weth,
             defaultPaymentMethod2: usdc,
             defaultPaymentMethod3: address(0),
-            defaultPaymentMethod4: address(0),
-            defaultPaymentMethod5: address(0),
-            defaultPaymentMethod6: address(0),
-            defaultPaymentMethod7: address(0),
-            defaultPaymentMethod8: address(0)
+            defaultPaymentMethod4: address(0)
         });
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");

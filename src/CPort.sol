@@ -129,6 +129,12 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _moduleOnChainCancellation = moduleOnChainCancellation_;
         _moduleTrades = moduleTrades_;
 
+        unchecked {
+            uint32 paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
+            appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = defaultContractOwner_;
+            emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, defaultContractOwner_, "Default Payment Methods");
+        }
+
         _transferOwnership(defaultContractOwner_);
     }
 

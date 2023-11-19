@@ -126,11 +126,7 @@ contract cPortModuleTest is Test, cPortEvents {
             defaultPaymentMethod1: address(weth),
             defaultPaymentMethod2: address(usdc),
             defaultPaymentMethod3: address(usdt),
-            defaultPaymentMethod4: address(dai),
-            defaultPaymentMethod5: address(0),
-            defaultPaymentMethod6: address(0),
-            defaultPaymentMethod7: address(0),
-            defaultPaymentMethod8: address(0)
+            defaultPaymentMethod4: address(dai)
         });
 
         modulePaymentSettings = new ModulePaymentSettings(
@@ -171,6 +167,8 @@ contract cPortModuleTest is Test, cPortEvents {
 
         bytes memory createWhitelistData = _cPortEncoder.encodeCreatePaymentMethodWhitelistCalldata(address(_cPort), "Test Whitelist");
         customPaymentMethodWhitelistId = _cPort.createPaymentMethodWhitelist(createWhitelistData);
+
+        console.log(customPaymentMethodWhitelistId);
 
         _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(0)));
         _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), customPaymentMethodWhitelistId, address(weth)));

@@ -20,6 +20,9 @@ bytes32 constant SALE_APPROVAL_HASH = 0x359a367d4f3e2b0c6e033a96f44fe38de8c901eb
 // 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
 uint256 constant FEE_DENOMINATOR = 100_00;
 
+// Default Payment Method Whitelist Id
+uint32 constant DEFAULT_PAYMENT_METHOD_WHITELIST_ID = 0;
+
 // Convenience to avoid magic number in bitmask get/set logic.
 uint256 constant ZERO = uint256(0);
 uint256 constant ONE = uint256(1);
