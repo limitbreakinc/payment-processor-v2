@@ -4615,4 +4615,132 @@ contract BenchmarkTradesBuyListing is BenchmarkTradesBaseTest {
     function testBenchmarkBuyListingEmptyCosignedForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WETH_EmptyFeeOnTop_WithRoyaltyBounty_PartialFill() public {
         _runBenchmarkCosignedTokenLevelPricingConstraints(CosignedBenchmarkParams(1, 500, 1000, 0, 300, address(weth), uint160(bobPk), bob, true), _runBenchmarkBuyListingCosignedPartialFill);
     }
+
+    /**********************************/
+    /*  BUY LISTING FOR SELF WITH ETH Backfilled Royalties */
+    /**********************************/
+
+    function testBenchmarkBuyListingForSelfNoFeesDefaultPaymentMethods_ETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesDefaultPaymentMethods_ETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_ETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesAllowAnyPaymentMethod_ETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesAllowAnyPaymentMethod_ETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_ETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesCustomPaymentMethodWhitelist_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesCustomPaymentMethodWhitelist_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesCollectionLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesCollectionLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesTokenLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesTokenLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_ETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(0), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    /**********************************/
+    /*  BUY LISTING FOR SELF WITH WETH Backfilled Royalties */
+    /**********************************/
+
+    function testBenchmarkBuyListingForSelfNoFeesDefaultPaymentMethods_WETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesDefaultPaymentMethods_WETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesDefaultPaymentMethods_WETH_BackfilledRoyalties() public {
+        _runBenchmarkBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesAllowAnyPaymentMethod_WETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesAllowAnyPaymentMethod_WETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesAllowAnyPaymentMethod_WETH_BackfilledRoyalties() public {
+        _runBenchmarkAllowAnyPaymentMethodBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesCustomPaymentMethodWhitelist_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesCustomPaymentMethodWhitelist_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesCustomPaymentMethodWhitelist_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCustomPaymentMethodWhitelistBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesCollectionLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesCollectionLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesCollectionLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkCollectionLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfNoFeesTokenLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 0, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceFeesTokenLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 0, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
+
+    function testBenchmarkBuyListingForSelfMarketplaceAndRoyaltyFeesTokenLevelPricingConstraints_WETH_BackfilledRoyalties() public {
+        _runBenchmarkTokenLevelPricingConstraintsBackfilledRoyalties(BenchmarkParams(1, 500, 1000, type(uint96).max, 0, address(weth), uint160(bobPk), bob), _runBenchmarkBuyListingRoyaltyBackfill);
+    }
 }

@@ -14,7 +14,9 @@ import "src/modules/ModuleTrades.sol";
 import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
+import "../mocks/SeaportTestERC721Without2981.sol";
 import "../mocks/SeaportTestERC1155.sol";
+import "../mocks/SeaportTestERC1155Without2981.sol";
 import "../mocks/WNative.sol";
 
 contract cPortModuleTest is Test, cPortEvents {
@@ -82,6 +84,8 @@ contract cPortModuleTest is Test, cPortEvents {
 
     SeaportTestERC721 public test721;
     SeaportTestERC1155 public test1155;
+    SeaportTestERC721Without2981 public test721Without2981;
+    SeaportTestERC1155Without2981 public test1155Without2981;
 
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
@@ -107,10 +111,12 @@ contract cPortModuleTest is Test, cPortEvents {
         erc20s = [weth, usdc, usdt, dai, memecoin];
 
         test721 = new SeaportTestERC721();
+        test721Without2981 = new SeaportTestERC721Without2981();
 
         erc721s = [test721];
 
         test1155 = new SeaportTestERC1155();
+        test1155Without2981 = new SeaportTestERC1155Without2981();
 
         erc1155s = [test1155];
 
@@ -195,6 +201,8 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < erc1155s.length; ++i) {
             erc1155s[i].setApprovalForAll(address(_cPort), true);
         }
+        test721Without2981.setApprovalForAll(address(_cPort), true);
+        test1155Without2981.setApprovalForAll(address(_cPort), true);
         vm.stopPrank();
     }
 
@@ -2173,6 +2181,12 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.marketplace);
         vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.royaltyReceiver);
         vm.assume(fuzzedOrderInputs.marketplace != fuzzedOrderInputs.royaltyReceiver);
+        vm.assume(fuzzedOrderInputs.royaltyReceiver != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.royaltyReceiver != vm.addr(fuzzedOrderInputs.buyerKey));
+        vm.assume(fuzzedOrderInputs.marketplace != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.marketplace != vm.addr(fuzzedOrderInputs.buyerKey));
+        vm.assume(fuzzedOrderInputs.beneficiary != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.beneficiary != vm.addr(fuzzedOrderInputs.buyerKey));
         
         vm.assume(0 < fuzzedOrderInputs.expirationSeconds);
 
@@ -2222,11 +2236,11 @@ contract cPortModuleTest is Test, cPortEvents {
         uint256 expectedBuyerBalance = 0;
 
         if (order.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
-            assertEq(test721.ownerOf(fuzzedOrderInputs.tokenId), fuzzedOrderInputs.beneficiary);
+            assertEq(IERC721(order.tokenAddress).ownerOf(fuzzedOrderInputs.tokenId), fuzzedOrderInputs.beneficiary);
         } else if (order.protocol == OrderProtocols.ERC1155_FILL_OR_KILL) {
-            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.amount);
+            assertEq(IERC1155(order.tokenAddress).balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.amount);
         } else if (order.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.requestedFillAmount);
+            assertEq(IERC1155(order.tokenAddress).balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.requestedFillAmount);
 
             uint256 unitPrice = order.itemPrice / order.amount;
             uint256 adjustedPrice = unitPrice * order.requestedFillAmount;
@@ -2591,7 +2605,20 @@ contract cPortModuleTest is Test, cPortEvents {
         paymentSettings = paymentSettings % 4;
         PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
 
-        if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
+        if (paymentSettingsEnum == PaymentSettings.DefaultPaymentMethodWhitelist) {
+            bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort), 
+                token, 
+                PaymentSettings.DefaultPaymentMethodWhitelist, 
+                0, 
+                paymentMethod, 
+                royaltyBackfillNumerator, 
+                royaltyBackfillReceiver, 
+                royaltyBountyNumerator, 
+                exclusiveBountyReceiver);
+
+            _cPort.setCollectionPaymentSettings(data);
+        } else if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
             bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
                 address(_cPort), 
                 token, 
