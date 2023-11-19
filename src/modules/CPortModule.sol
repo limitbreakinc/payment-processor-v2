@@ -36,16 +36,18 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
+    // Recommendations For Default Immutable Payment Methods Per Chain
+    // Default Payment Method 1: Wrapped Native Coin
+    // Default Payment Method 2: Wrapped ETH
+    // Default Payment Method 3: USDC (Native)
+    // Default Payment Method 4: USDC (Bridged)
+
     uint256 private immutable pushPaymentGasLimit;
     address public immutable wrappedNativeCoinAddress;
     address private immutable defaultPaymentMethod1;
     address private immutable defaultPaymentMethod2;
     address private immutable defaultPaymentMethod3;
     address private immutable defaultPaymentMethod4;
-    address private immutable defaultPaymentMethod5;
-    address private immutable defaultPaymentMethod6;
-    address private immutable defaultPaymentMethod7;
-    address private immutable defaultPaymentMethod8;
 
     constructor(
         uint32 defaultPushPaymentGasLimit_,
@@ -57,10 +59,6 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         defaultPaymentMethod2 = defaultPaymentMethods.defaultPaymentMethod2;
         defaultPaymentMethod3 = defaultPaymentMethods.defaultPaymentMethod3;
         defaultPaymentMethod4 = defaultPaymentMethods.defaultPaymentMethod4;
-        defaultPaymentMethod5 = defaultPaymentMethods.defaultPaymentMethod5;
-        defaultPaymentMethod6 = defaultPaymentMethods.defaultPaymentMethod6;
-        defaultPaymentMethod7 = defaultPaymentMethods.defaultPaymentMethod7;
-        defaultPaymentMethod8 = defaultPaymentMethods.defaultPaymentMethod8;
     }
 
     /*************************************************************************/
@@ -78,30 +76,21 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             return true;
         } else if (paymentMethod == defaultPaymentMethod4) {
             return true;
-        } else if (paymentMethod == defaultPaymentMethod5) {
-            return true;
-        } else if (paymentMethod == defaultPaymentMethod6) {
-            return true;
-        } else if (paymentMethod == defaultPaymentMethod7) {
-            return true;
-        } else if (paymentMethod == defaultPaymentMethod8) {
-            return true;
         } else {
-            return false;
+            // If it isn't one of the gas efficient immutable default payment methods,
+            // it may have bee added to the fallback default payment method whitelist,
+            // but there are SLOAD costs.
+            return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
         }
     }
 
     function getDefaultPaymentMethods() external view returns (address[] memory) {
-        address[] memory defaultPaymentMethods = new address[](9);
+        address[] memory defaultPaymentMethods = new address[](5);
         defaultPaymentMethods[0] = address(0);
         defaultPaymentMethods[1] = defaultPaymentMethod1;
         defaultPaymentMethods[2] = defaultPaymentMethod2;
         defaultPaymentMethods[3] = defaultPaymentMethod3;
         defaultPaymentMethods[4] = defaultPaymentMethod4;
-        defaultPaymentMethods[5] = defaultPaymentMethod5;
-        defaultPaymentMethods[6] = defaultPaymentMethod6;
-        defaultPaymentMethods[7] = defaultPaymentMethod7;
-        defaultPaymentMethods[8] = defaultPaymentMethod8;
         return defaultPaymentMethods;
     }
 

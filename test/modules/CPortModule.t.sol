@@ -126,11 +126,7 @@ contract cPortModuleTest is Test, cPortEvents {
             defaultPaymentMethod1: address(weth),
             defaultPaymentMethod2: address(usdc),
             defaultPaymentMethod3: address(usdt),
-            defaultPaymentMethod4: address(dai),
-            defaultPaymentMethod5: address(0),
-            defaultPaymentMethod6: address(0),
-            defaultPaymentMethod7: address(0),
-            defaultPaymentMethod8: address(0)
+            defaultPaymentMethod4: address(dai)
         });
 
         modulePaymentSettings = new ModulePaymentSettings(

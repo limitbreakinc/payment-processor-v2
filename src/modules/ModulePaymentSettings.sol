@@ -42,7 +42,7 @@ contract ModulePaymentSettings is cPortModule {
         string calldata whitelistName
     ) external returns (uint32 paymentMethodWhitelistId) {
         unchecked {
-            paymentMethodWhitelistId = ++appStorage().lastPaymentMethodWhitelistId;
+            paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
         }
 
         appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = msg.sender;

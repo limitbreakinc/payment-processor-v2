@@ -1024,4 +1024,65 @@ contract ModuleBuyListingTest is cPortModuleTest {
                 fuzzedOrderInputs: fuzzedOrderInputs
             }));
     }
+
+    /***************************************************/
+    /*      Fallback Default Payment Method Whitelist  */
+    /***************************************************/
+
+    function testBuyListing721FillOrKillStandardNoFeeOnTop_PostDeploymentDefaultPaymentMethod(
+        FuzzedOrder721 memory fuzzedOrderInputs
+    ) public {
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+
+        _runTestBuyListing(
+            TestTradeSingleItemParams({
+                paymentSettings: 0,
+                orderProtocol: OrderProtocols.ERC721_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(memecoin),
+                amount: 1, 
+                fillAmount: 1, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillOrKillStandardNoFeeOnTop_PostDeploymentDefaultPaymentMethod(
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount
+    ) public {
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+
+        _runTestBuyListing(
+            TestTradeSingleItemParams({
+                paymentSettings: 0,
+                orderProtocol: OrderProtocols.ERC1155_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(memecoin),
+                amount: amount, 
+                fillAmount: amount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillPartialStandardNoFeeOnTop_PostDeploymentDefaultPaymentMethod(
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount, 
+        uint248 fillAmount
+    ) public {
+        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+
+        _runTestBuyListing(
+            TestTradeSingleItemParams({
+                paymentSettings: 0,
+                orderProtocol: OrderProtocols.ERC1155_FILL_PARTIAL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(memecoin),
+                amount: amount, 
+                fillAmount: fillAmount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
 }
