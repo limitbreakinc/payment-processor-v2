@@ -651,7 +651,8 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         address marketplaceFeeRecipient,
         uint256 marketplaceFeeNumerator,
         uint256 maxRoyaltyFeeNumerator,
-        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) private view returns (SplitProceeds memory proceeds) {
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty
+    ) private view returns (SplitProceeds memory proceeds) {
 
         proceeds.sellerProceeds = salePrice;
 
