@@ -347,6 +347,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     maker: items[i].maker,
                     beneficiary: sweepOrder.beneficiary,
                     marketplace: items[i].marketplace,
+                    fallbackRoyaltyRecipient: items[i].fallbackRoyaltyRecipient,
                     paymentMethod: sweepOrder.paymentMethod,
                     tokenAddress: sweepOrder.tokenAddress,
                     tokenId: items[i].tokenId,
@@ -474,6 +475,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.marketplace,
                     saleDetails.marketplaceFeeNumerator,
                     saleDetails.maxRoyaltyFeeNumerator,
+                    saleDetails.fallbackRoyaltyRecipient,
                     royaltyBackfillAndBounty
                 );
 
@@ -550,6 +552,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                         saleDetails.marketplace,
                         saleDetails.marketplaceFeeNumerator,
                         saleDetails.maxRoyaltyFeeNumerator,
+                        saleDetails.fallbackRoyaltyRecipient,
                         params.royaltyBackfillAndBounty
                     );
 
@@ -640,6 +643,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         address marketplaceFeeRecipient,
         uint256 marketplaceFeeNumerator,
         uint256 maxRoyaltyFeeNumerator,
+        address fallbackRoyaltyRecipient,
         RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty
     ) private view returns (SplitProceeds memory proceeds) {
 
@@ -674,6 +678,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
                 proceeds.royaltyRecipient = royaltyBackfillAndBounty.backfillReceiver;
                 proceeds.royaltyProceeds = (salePrice * royaltyBackfillAndBounty.backfillNumerator) / FEE_DENOMINATOR;
+
+                unchecked {
+                    proceeds.sellerProceeds -= proceeds.royaltyProceeds;
+                }
+            } else if (fallbackRoyaltyRecipient != address(0)) {
+                proceeds.royaltyRecipient = fallbackRoyaltyRecipient;
+                proceeds.royaltyProceeds = (salePrice * maxRoyaltyFeeNumerator) / FEE_DENOMINATOR;
 
                 unchecked {
                     proceeds.sellerProceeds -= proceeds.royaltyProceeds;
@@ -925,6 +936,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.maker,
                     saleDetails.beneficiary,
                     saleDetails.marketplace,
+                    saleDetails.fallbackRoyaltyRecipient,
                     saleDetails.paymentMethod,
                     saleDetails.tokenAddress
                 ),
@@ -973,6 +985,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.maker,
                     saleDetails.beneficiary,
                     saleDetails.marketplace,
+                    saleDetails.fallbackRoyaltyRecipient,
                     saleDetails.paymentMethod,
                     saleDetails.tokenAddress
                 ),
@@ -1021,6 +1034,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     saleDetails.maker,
                     saleDetails.beneficiary,
                     saleDetails.marketplace,
+                    saleDetails.fallbackRoyaltyRecipient,
                     saleDetails.paymentMethod,
                     saleDetails.tokenAddress
                 ),
@@ -1068,6 +1082,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     cosignature.signer,
                     saleDetails.maker,
                     saleDetails.marketplace,
+                    saleDetails.fallbackRoyaltyRecipient,
                     saleDetails.paymentMethod,
                     saleDetails.tokenAddress,
                     saleDetails.tokenId

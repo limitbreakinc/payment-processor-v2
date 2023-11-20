@@ -21,6 +21,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
             paymentMethod: params.paymentMethod,
             tokenAddress: token,
             tokenId: fuzzedOrderInputs.tokenId,
@@ -122,6 +123,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
             paymentMethod: params.paymentMethod,
             tokenAddress: token,
             tokenId: fuzzedOrderInputs.tokenId,
@@ -230,6 +232,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
             maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
             paymentMethod: params.paymentMethod,
             tokenAddress: token,
             tokenId: fuzzedOrderInputs.tokenId,
@@ -284,6 +287,107 @@ contract ModuleBuyListingTest is cPortModuleTest {
             params.paymentMethod,
             uint16(fuzzedOrderInputs.royaltyFeeRate),
             fuzzedOrderInputs.royaltyReceiver,
+            0,
+            address(0));
+
+        if (params.cosigned) {
+            if (params.isCosignatureEmpty) {
+                _buyEmptyCosignedListing(
+                    buyer,
+                    uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            } else {
+                _buyCosignedListing(
+                    buyer,
+                    uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    EMPTY_SELECTOR);
+            }
+            
+        } else {
+            _buySignedListing(
+                buyer,
+                uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
+                fuzzedOrderInputs,
+                saleDetails, 
+                EMPTY_SELECTOR);
+        }
+
+        _verifyExpectedTradeStateChanges(buyer, saleDetails, fuzzedOrderInputs);
+    }
+
+    function _runTestBuyListingOffchainFallbackRoyalties(TestTradeSingleItemParams memory params) internal {
+        FuzzedOrder721 memory fuzzedOrderInputs = params.fuzzedOrderInputs;
+
+        _scrubFuzzedOrderInputs(fuzzedOrderInputs);
+        vm.assume(params.amount > 0);
+
+        address token = params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? address(test721Without2981) : address(test1155Without2981);
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
+        Order memory saleDetails = Order({
+            protocol: params.orderProtocol,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
+            beneficiary: fuzzedOrderInputs.beneficiary,
+            marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: fuzzedOrderInputs.royaltyReceiver,
+            paymentMethod: params.paymentMethod,
+            tokenAddress: token,
+            tokenId: fuzzedOrderInputs.tokenId,
+            amount: params.amount,
+            itemPrice: fuzzedOrderInputs.itemPrice,
+            nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.sellerKey)),
+            expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
+            marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: params.fillAmount,
+            minimumFillAmount: params.fillAmount
+        });
+
+        uint256 paymentAmount = saleDetails.itemPrice;
+
+        uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(unitPrice >= 1 ether && unitPrice <= 500 ether);
+        }
+
+        if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            test721Without2981.mint(saleDetails.maker, saleDetails.tokenId);
+
+            vm.prank(saleDetails.maker);
+            test721Without2981.setApprovalForAll(address(_cPort), true);
+        } else {
+            test1155Without2981.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
+
+            vm.prank(saleDetails.maker);
+            test1155Without2981.setApprovalForAll(address(_cPort), true);
+
+            if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+                vm.assume(params.amount > 0);
+                vm.assume(params.fillAmount > 0);
+                vm.assume(params.fillAmount < params.amount);
+                vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+
+                paymentAmount = unitPrice * saleDetails.requestedFillAmount;
+            }
+        }
+
+        if (params.paymentMethod == address(0)) {
+            vm.deal(buyer, uint128(saleDetails.itemPrice));
+        } else {
+            _allocateTokensAndApprovals(buyer, uint128(saleDetails.itemPrice));
+        }
+
+        _setPaymentSettings(
+            params.paymentSettings,
+            saleDetails.itemPrice,
+            token,
+            params.paymentMethod,
+            0,
+            address(0),
             0,
             address(0));
 
@@ -428,6 +532,60 @@ contract ModuleBuyListingTest is cPortModuleTest {
             }));
     }
 
+    function testBuyListing721FillOrKillStandardNoFeeOnTop_ETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC721_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(0),
+                amount: 1, 
+                fillAmount: 1, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillOrKillStandardNoFeeOnTop_ETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC1155_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(0),
+                amount: amount, 
+                fillAmount: amount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillPartialStandardNoFeeOnTop_ETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount, 
+        uint248 fillAmount
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC1155_FILL_PARTIAL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(0),
+                amount: amount, 
+                fillAmount: fillAmount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
     /***************************/
     /*      Standard WETH      */
     /***************************/
@@ -528,6 +686,60 @@ contract ModuleBuyListingTest is cPortModuleTest {
         uint248 fillAmount
     ) public {
         _runTestBuyListingBackfilledRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC1155_FILL_PARTIAL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(weth),
+                amount: amount, 
+                fillAmount: fillAmount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing721FillOrKillStandardNoFeeOnTop_WETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC721_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(weth),
+                amount: 1, 
+                fillAmount: 1, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillOrKillStandardNoFeeOnTop_WETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols.ERC1155_FILL_OR_KILL, 
+                cosigned: false,
+                isCosignatureEmpty: false,
+                paymentMethod: address(weth),
+                amount: amount, 
+                fillAmount: amount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testBuyListing1155FillPartialStandardNoFeeOnTop_WETH_OffchainFallbackRoyalties(
+        uint8 paymentSettings, 
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount, 
+        uint248 fillAmount
+    ) public {
+        _runTestBuyListingOffchainFallbackRoyalties(
             TestTradeSingleItemParams({
                 paymentSettings: paymentSettings,
                 orderProtocol: OrderProtocols.ERC1155_FILL_PARTIAL, 
