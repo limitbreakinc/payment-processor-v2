@@ -52,12 +52,8 @@ contract ModulePaymentSettings is cPortModule {
     function createPaymentMethodWhitelist(
         string calldata whitelistName
     ) external returns (uint32 paymentMethodWhitelistId) {
-        unchecked {
-            paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
-        }
-
+        paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
         appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = msg.sender;
-
         emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
     }
 
