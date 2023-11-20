@@ -53,6 +53,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) {
+        
+        if (defaultPushPaymentGasLimit_ == 0 ||
+            wrappedNativeCoinAddress_ == address(0)) {
+            revert cPort__InvalidConstructorArguments();
+        }
+
         pushPaymentGasLimit = defaultPushPaymentGasLimit_;        
         wrappedNativeCoinAddress = wrappedNativeCoinAddress_;
         defaultPaymentMethod1 = defaultPaymentMethods.defaultPaymentMethod1;
