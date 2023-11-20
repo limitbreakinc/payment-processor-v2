@@ -16,6 +16,7 @@ error cPort__FeeOnTopCannotBeGreaterThanItemPrice();
 error cPort__IncorrectTokenSetMerkleProof();
 error cPort__InputArrayLengthCannotBeZero();
 error cPort__InputArrayLengthMismatch();
+error cPort__InvalidConstructorArguments();
 error cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
 error cPort__NotAuthorizedByCoSigner();
 error cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();

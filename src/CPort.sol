@@ -18,6 +18,7 @@ pragma solidity 0.8.19;
 */ 
 
 import "./Constants.sol";
+import "./Errors.sol";
 import "./interfaces/CPortEvents.sol";
 import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/CPortStorageAccess.sol";
@@ -126,6 +127,14 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleOnChainCancellation_,
         address moduleTrades_) 
         EIP712("cPort", "1") {
+        
+        if (defaultContractOwner_ == address(0) ||
+            modulePaymentSettings_ == address(0) ||
+            moduleOnChainCancellation_ == address(0) ||
+            moduleTrades_ == address(0)) {
+            revert cPort__InvalidConstructorArguments();
+        }
+
         _modulePaymentSettings = modulePaymentSettings_;
         _moduleOnChainCancellation = moduleOnChainCancellation_;
         _moduleTrades = moduleTrades_;
