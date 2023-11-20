@@ -231,6 +231,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             address(0),
                             saleDetails.maker,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress,
                             saleDetails.tokenId
@@ -297,6 +298,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress,
                             saleDetails.tokenId
@@ -335,6 +337,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -372,6 +375,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -408,6 +412,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -445,6 +450,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -480,6 +486,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -514,6 +521,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -827,6 +835,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -869,6 +878,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -908,6 +918,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -948,6 +959,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -989,6 +1001,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -1032,6 +1045,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,

@@ -4,17 +4,17 @@ pragma solidity 0.8.19;
 // keccack256("Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)")
 bytes32 constant COSIGNATURE_HASH = 0x347b7818601b168f6faadc037723496e9130b057c1ffef2ec4128311e19142f2;
 
-// keccack256("CollectionOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)")
-bytes32 constant COLLECTION_OFFER_APPROVAL_HASH = 0x0ddc544147fe09af63f3e8e730de0e964958d294e593acdd574ab7dd0d1a92b3;
+// keccack256("CollectionOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address fallbackRoyaltyRecipient,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)")
+bytes32 constant COLLECTION_OFFER_APPROVAL_HASH = 0x8fe9498e93fe26b30ebf76fac07bd4705201c8609227362697082288e3b4af9c;
 
-// keccack256("ItemOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)")
-bytes32 constant ITEM_OFFER_APPROVAL_HASH = 0x4880b829c8775ea5a85b73aa0c53a7e0d0b8b69931a17170ec6734182530302c;
+// keccack256("ItemOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address fallbackRoyaltyRecipient,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce)")
+bytes32 constant ITEM_OFFER_APPROVAL_HASH = 0xce2e9706d63e89ddf7ee16ce0508a1c3c9bd1904c582db2e647e6f4690a0bf6b;
 
-//   keccack256("TokenSetOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce,bytes32 tokenSetMerkleRoot)")
-bytes32 constant TOKEN_SET_OFFER_APPROVAL_HASH = 0xb3e692849cea2e94d188eace607dc564be5e22896779c9132abe34f9d8790f20;
+//   keccack256("TokenSetOfferApproval(uint8 protocol,address cosigner,address buyer,address beneficiary,address marketplace,address fallbackRoyaltyRecipient,address paymentMethod,address tokenAddress,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 nonce,uint256 masterNonce,bytes32 tokenSetMerkleRoot)")
+bytes32 constant TOKEN_SET_OFFER_APPROVAL_HASH = 0x244905ade6b0e455d12fb539a4b17d7f675db14797d514168d09814a09c70e70;
 
-// keccack256("SaleApproval(uint8 protocol,address cosigner,address seller,address marketplace,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
-bytes32 constant SALE_APPROVAL_HASH = 0x359a367d4f3e2b0c6e033a96f44fe38de8c901ebfcc258f5adbc20a3ae52061f;
+// keccack256("SaleApproval(uint8 protocol,address cosigner,address seller,address marketplace,address fallbackRoyaltyRecipient,address paymentMethod,address tokenAddress,uint256 tokenId,uint256 amount,uint256 itemPrice,uint256 expiration,uint256 marketplaceFeeNumerator,uint256 maxRoyaltyFeeNumerator,uint256 nonce,uint256 masterNonce)")
+bytes32 constant SALE_APPROVAL_HASH = 0x938786a8256d04dc45d6d5b997005aa07c0c9e3e4925d0d6c33128d240096ebc;
 
 // The denominator used when calculating the marketplace fee.
 // 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
@@ -44,8 +44,8 @@ bytes4 constant SELECTOR_REVOKE_MASTER_NONCE = hex"226d4adb";
 bytes4 constant SELECTOR_REVOKE_SINGLE_NONCE = hex"b6d7dc33";
 bytes4 constant SELECTOR_REVOKE_ORDER_DIGEST = hex"96ae0380";
 
-bytes4 constant SELECTOR_BUY_LISTING = hex"afeef2fe";
-bytes4 constant SELECTOR_ACCEPT_OFFER = hex"1a8cfb6a";
-bytes4 constant SELECTOR_BULK_BUY_LISTINGS = hex"6c273b13";
-bytes4 constant SELECTOR_BULK_ACCEPT_OFFERS = hex"fffa9147";
-bytes4 constant SELECTOR_SWEEP_COLLECTION = hex"32103b1f";
+bytes4 constant SELECTOR_BUY_LISTING = hex"a9272951";
+bytes4 constant SELECTOR_ACCEPT_OFFER = hex"e35bb9b7";
+bytes4 constant SELECTOR_BULK_BUY_LISTINGS = hex"27add047";
+bytes4 constant SELECTOR_BULK_ACCEPT_OFFERS = hex"b3cdebdb";
+bytes4 constant SELECTOR_SWEEP_COLLECTION = hex"206576f6";

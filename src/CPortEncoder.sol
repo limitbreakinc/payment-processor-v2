@@ -130,7 +130,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "buyListing(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                "buyListing(bytes32,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetails,
                 signature,
@@ -149,7 +149,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
+                "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
                 saleDetails,
@@ -168,7 +168,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[])",
+                "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 saleDetailsArray,
                 signatures,
@@ -196,7 +196,7 @@ contract cPortEncoder {
 
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "bulkAcceptOffers(bytes32,(bool[],(uint8,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
+                "bulkAcceptOffers(bytes32,(bool[],(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
                 IcPort(cPortAddress).getDomainSeparator(),
                 params));
     }
@@ -211,7 +211,7 @@ contract cPortEncoder {
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "sweepCollection(bytes32,(address,uint256),(uint8,address,address,address),(address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
+                "sweepCollection(bytes32,(address,uint256),(uint8,address,address,address),(address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
                 IcPort(cPortAddress).getDomainSeparator(),
                 feeOnTop,
                 sweepOrder,

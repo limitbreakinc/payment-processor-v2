@@ -52,6 +52,7 @@ struct Order {
     address maker;
     address beneficiary;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     address paymentMethod;
     address tokenAddress;
     uint256 tokenId;
@@ -112,6 +113,7 @@ struct SweepOrder {
 struct SweepItem {
     address maker;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     uint256 tokenId;
     uint248 amount;
     uint256 itemPrice;

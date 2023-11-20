@@ -52,6 +52,7 @@ contract ModuleOnChainCancellationTest is cPortModuleTest {
             maker: vm.addr(fuzzedOrderInputs.sellerKey),
             beneficiary: fuzzedOrderInputs.beneficiary,
             marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
             paymentMethod: amount % 2 == 0 ? address(0) : address(weth),
             tokenAddress: address(test1155),
             tokenId: fuzzedOrderInputs.tokenId,
