@@ -28,6 +28,17 @@ contract ModulePaymentSettings is cPortModule {
     cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     /**
+     * @notice Returns an array of the immutable default payment methods specified at deploy time.  
+     *         However, if any post-deployment default payment methods have been added, they are
+     *         not returned here because using an enumerable payment method whitelist would make trades
+     *         less gas efficient.  For post-deployment default payment methods, exchanges should index
+     *         the `PaymentMethodAddedToWhitelist` and `PaymentMethodRemovedFromWhitelist` events.
+     */
+    function getDefaultPaymentMethods() external view returns (address[] memory) {
+        return _getDefaultPaymentMethods();
+    }
+
+    /**
      * @notice Allows any user to create a new custom payment method whitelist.
      *
      * @dev    <h4>Postconditions:</h4>

@@ -65,7 +65,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     /*                        Default Payment Methods                        */
     /*************************************************************************/
 
-    function isDefaultPaymentMethod(address paymentMethod) public view returns (bool) {
+    function _isDefaultPaymentMethod(address paymentMethod) internal view returns (bool) {
         if (paymentMethod == address(0)) {
             return true;
         } else if (paymentMethod == defaultPaymentMethod1) {
@@ -84,7 +84,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
-    function getDefaultPaymentMethods() external view returns (address[] memory) {
+    function _getDefaultPaymentMethods() internal view returns (address[] memory) {
         address[] memory defaultPaymentMethods = new address[](5);
         defaultPaymentMethods[0] = address(0);
         defaultPaymentMethods[1] = defaultPaymentMethod1;
@@ -271,7 +271,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
         
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
-            if (!isDefaultPaymentMethod(saleDetails.paymentMethod)) {
+            if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
@@ -313,7 +313,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
 
         if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
-            if (!isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
+            if (!_isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {

@@ -19,6 +19,7 @@ pragma solidity 0.8.19;
 
 import "./Constants.sol";
 import "./interfaces/CPortEvents.sol";
+import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/CPortStorageAccess.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -366,6 +367,38 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /**************************************************************/
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
+
+    /**
+     * @notice Returns true if the specified payment method is on the deploy-time default payment method whitelist
+     *         or post-deploy default payment method whitelist (id 0).
+     */
+    function isDefaultPaymentMethod(address paymentMethod) external view returns (bool) {
+        address[] memory defaultPaymentMethods = 
+            IModuleDefaultPaymentMethods(_modulePaymentSettings).getDefaultPaymentMethods();
+
+        for (uint256 i = 0; i < defaultPaymentMethods.length;) {
+            if (paymentMethod == defaultPaymentMethods[i]) {
+                return true;
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+    }
+
+    /**
+     * @notice Returns an array of the immutable default payment methods specified at deploy time.  
+     *         However, if any post-deployment default payment methods have been added, they are
+     *         not returned here because using an enumerable payment method whitelist would make trades
+     *         less gas efficient.  For post-deployment default payment methods, exchanges should index
+     *         the `PaymentMethodAddedToWhitelist` and `PaymentMethodRemovedFromWhitelist` events.
+     */
+    function getDefaultPaymentMethods() external view returns (address[] memory) {
+        return IModuleDefaultPaymentMethods(_modulePaymentSettings).getDefaultPaymentMethods();
+    }
 
     /**
      * @notice Allows any user to create a new custom payment method whitelist.
