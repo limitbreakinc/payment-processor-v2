@@ -60,6 +60,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
             }
@@ -163,6 +164,7 @@ contract ModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
 

@@ -120,6 +120,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             cosignature);
 
         if (quantityToFill != saleDetails.amount) {
+            if (saleDetails.itemPrice % saleDetails.amount != 0) {
+                revert cPort__PartialFillsNotSupportedForNonDivisibleItems();
+            }
+
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
             saleDetails.amount = quantityToFill;
         }
@@ -183,6 +187,10 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if (quantityToFill != saleDetails.amount) {
+            if (saleDetails.itemPrice % saleDetails.amount != 0) {
+                revert cPort__PartialFillsNotSupportedForNonDivisibleItems();
+            }
+            
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
             saleDetails.amount = quantityToFill;
         }

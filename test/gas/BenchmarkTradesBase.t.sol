@@ -639,6 +639,9 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 minimumFillAmount: 500
             });
 
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
+            
+
             if (params.feeOnTopRate == type(uint96).max) {
                 _buySignedListing(
                     vm.addr(params.buyerKey), 
@@ -716,6 +719,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 requestedFillAmount: 500,
                 minimumFillAmount: 500
             });
+
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
@@ -1355,6 +1360,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 minimumFillAmount: 500
             });
 
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
+
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedItemOffer(
                     alice, 
@@ -1430,6 +1437,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 requestedFillAmount: 500,
                 minimumFillAmount: 500
             });
+
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
@@ -1523,6 +1532,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 minimumFillAmount: 500
             });
 
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
+
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedCollectionOffer(
                     alice, 
@@ -1597,6 +1608,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 requestedFillAmount: 500,
                 minimumFillAmount: 500
             });
+
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
@@ -1697,6 +1710,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 minimumFillAmount: 500
             });
 
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
+
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedTokenSetOffer(
                     alice,
@@ -1786,6 +1801,8 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                 requestedFillAmount: 500,
                 minimumFillAmount: 500
             });
+
+            saleDetails.itemPrice = saleDetails.itemPrice - (saleDetails.itemPrice % saleDetails.amount);
 
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
