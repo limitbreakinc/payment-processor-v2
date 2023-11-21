@@ -55,6 +55,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -163,6 +164,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -283,6 +285,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
             }
@@ -389,6 +392,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
 
@@ -505,6 +509,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -606,6 +611,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -709,6 +715,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -810,6 +817,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
                 vm.assume(params.fillAmount > 0);
                 vm.assume(params.fillAmount < params.amount);
                 vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
 
                 uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
                 paymentAmount = unitPrice * saleDetails.requestedFillAmount;
@@ -885,6 +893,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingWithUnderpayment(
@@ -919,6 +936,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingWithFeeOnTopWithUnderpayment(
@@ -953,6 +979,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingWithOverpayment(
@@ -987,6 +1022,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingWithFeeOnTopWithOverpayment(
@@ -1021,6 +1065,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyExpiredListing(
@@ -1084,6 +1137,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingBadPaymentMethod(
@@ -1115,6 +1177,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingBadPaymentMethod(
@@ -1146,6 +1217,15 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             fillAmount = 1;
         } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
             fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
         }
 
         _runTestBuyListingBadPaymentMethod(
@@ -1190,6 +1270,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             vm.assume(fillAmount > 0);
             vm.assume(fillAmount < amount);
             vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
 
             uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
             vm.assume(unitPrice < 1 ether);
@@ -1237,6 +1318,7 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             vm.assume(fillAmount > 0);
             vm.assume(fillAmount < amount);
             vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
 
             uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
             vm.assume(unitPrice > 500 ether);

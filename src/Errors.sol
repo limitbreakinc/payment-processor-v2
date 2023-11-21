@@ -23,6 +23,7 @@ error cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
 error cPort__OrderHasExpired();
 error cPort__OrderIsEitherCancelledOrFilled();
 error cPort__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
+error cPort__PartialFillsNotSupportedForNonDivisibleItems();
 error cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
 error cPort__PaymentMethodIsAlreadyApproved();
 error cPort__PaymentMethodWhitelistDoesNotExist();
