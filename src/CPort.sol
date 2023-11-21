@@ -18,7 +18,9 @@ pragma solidity 0.8.19;
 */ 
 
 import "./Constants.sol";
+import "./Errors.sol";
 import "./interfaces/CPortEvents.sol";
+import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/CPortStorageAccess.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -125,9 +127,23 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleOnChainCancellation_,
         address moduleTrades_) 
         EIP712("cPort", "1") {
+        
+        if (defaultContractOwner_ == address(0) ||
+            modulePaymentSettings_ == address(0) ||
+            moduleOnChainCancellation_ == address(0) ||
+            moduleTrades_ == address(0)) {
+            revert cPort__InvalidConstructorArguments();
+        }
+
         _modulePaymentSettings = modulePaymentSettings_;
         _moduleOnChainCancellation = moduleOnChainCancellation_;
         _moduleTrades = moduleTrades_;
+
+        unchecked {
+            uint32 paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
+            appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = defaultContractOwner_;
+            emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, defaultContractOwner_, "Default Payment Methods");
+        }
 
         _transferOwnership(defaultContractOwner_);
     }
@@ -166,6 +182,26 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
                 revert(0, size)
             }
         }        
+        _;
+    }
+
+    modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
+        bytes32 domainSeparator = _domainSeparatorV4();
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            calldatacopy(add(ptr,0x04), data.offset, data.length)
+            mstore(0x40, add(ptr,add(0x04, data.length)))
+            mstore(add(ptr, 0x04), domainSeparator)
+        
+            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
         _;
     }
 
@@ -362,6 +398,38 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /**************************************************************/
 
     /**
+     * @notice Returns true if the specified payment method is on the deploy-time default payment method whitelist
+     *         or post-deploy default payment method whitelist (id 0).
+     */
+    function isDefaultPaymentMethod(address paymentMethod) external view returns (bool) {
+        address[] memory defaultPaymentMethods = 
+            IModuleDefaultPaymentMethods(_modulePaymentSettings).getDefaultPaymentMethods();
+
+        for (uint256 i = 0; i < defaultPaymentMethods.length;) {
+            if (paymentMethod == defaultPaymentMethods[i]) {
+                return true;
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+    }
+
+    /**
+     * @notice Returns an array of the immutable default payment methods specified at deploy time.  
+     *         However, if any post-deployment default payment methods have been added, they are
+     *         not returned here because using an enumerable payment method whitelist would make trades
+     *         less gas efficient.  For post-deployment default payment methods, exchanges should index
+     *         the `PaymentMethodAddedToWhitelist` and `PaymentMethodRemovedFromWhitelist` events.
+     */
+    function getDefaultPaymentMethods() external view returns (address[] memory) {
+        return IModuleDefaultPaymentMethods(_modulePaymentSettings).getDefaultPaymentMethods();
+    }
+
+    /**
      * @notice Allows any user to create a new custom payment method whitelist.
      *
      * @dev    <h4>Postconditions:</h4>
@@ -542,21 +610,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     function buyListing(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
 
     function acceptOffer(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
     function bulkBuyListings(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
     function bulkAcceptOffers(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
     function sweepCollection(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
 }

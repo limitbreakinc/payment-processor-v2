@@ -26,10 +26,6 @@ struct DefaultPaymentMethods {
     address defaultPaymentMethod2;
     address defaultPaymentMethod3;
     address defaultPaymentMethod4;
-    address defaultPaymentMethod5;
-    address defaultPaymentMethod6;
-    address defaultPaymentMethod7;
-    address defaultPaymentMethod8;
 }
 
 struct CollectionPaymentSettings {
@@ -56,6 +52,7 @@ struct Order {
     address maker;
     address beneficiary;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     address paymentMethod;
     address tokenAddress;
     uint256 tokenId;
@@ -116,6 +113,7 @@ struct SweepOrder {
 struct SweepItem {
     address maker;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     uint256 tokenId;
     uint248 amount;
     uint256 itemPrice;

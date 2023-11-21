@@ -14,7 +14,10 @@ import "src/modules/ModuleTrades.sol";
 import "../mocks/ContractMock.sol";
 import "../mocks/SeaportTestERC20.sol";
 import "../mocks/SeaportTestERC721.sol";
+import "../mocks/SeaportTestERC721Without2981.sol";
 import "../mocks/SeaportTestERC1155.sol";
+import "../mocks/SeaportTestERC1155Without2981.sol";
+import "../mocks/WNative.sol";
 
 contract cPortModuleTest is Test, cPortEvents {
 
@@ -71,6 +74,8 @@ contract cPortModuleTest is Test, cPortEvents {
     cPort public _cPort;
     cPortEncoder public _cPortEncoder;
 
+    WNative public nativeWrapper;
+
     SeaportTestERC20 public weth;
     SeaportTestERC20 public usdc;
     SeaportTestERC20 public usdt;
@@ -79,6 +84,8 @@ contract cPortModuleTest is Test, cPortEvents {
 
     SeaportTestERC721 public test721;
     SeaportTestERC1155 public test1155;
+    SeaportTestERC721Without2981 public test721Without2981;
+    SeaportTestERC1155Without2981 public test1155Without2981;
 
     SeaportTestERC20[] erc20s;
     SeaportTestERC721[] erc721s;
@@ -94,6 +101,7 @@ contract cPortModuleTest is Test, cPortEvents {
     mapping (address => uint256) internal _nonces;
 
     function setUp() public virtual {
+        nativeWrapper = new WNative();
         weth = new SeaportTestERC20();
         usdc = new SeaportTestERC20();
         usdt = new SeaportTestERC20();
@@ -103,10 +111,12 @@ contract cPortModuleTest is Test, cPortEvents {
         erc20s = [weth, usdc, usdt, dai, memecoin];
 
         test721 = new SeaportTestERC721();
+        test721Without2981 = new SeaportTestERC721Without2981();
 
         erc721s = [test721];
 
         test1155 = new SeaportTestERC1155();
+        test1155Without2981 = new SeaportTestERC1155Without2981();
 
         erc1155s = [test1155];
 
@@ -116,23 +126,22 @@ contract cPortModuleTest is Test, cPortEvents {
             defaultPaymentMethod1: address(weth),
             defaultPaymentMethod2: address(usdc),
             defaultPaymentMethod3: address(usdt),
-            defaultPaymentMethod4: address(dai),
-            defaultPaymentMethod5: address(0),
-            defaultPaymentMethod6: address(0),
-            defaultPaymentMethod7: address(0),
-            defaultPaymentMethod8: address(0)
+            defaultPaymentMethod4: address(dai)
         });
 
         modulePaymentSettings = new ModulePaymentSettings(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleTrades = new ModuleTrades(
             2300, 
+            address(nativeWrapper),
             defaultPaymentMethods);
 
         _cPort = 
@@ -188,6 +197,8 @@ contract cPortModuleTest is Test, cPortEvents {
         for (uint256 i = 0; i < erc1155s.length; ++i) {
             erc1155s[i].setApprovalForAll(address(_cPort), true);
         }
+        test721Without2981.setApprovalForAll(address(_cPort), true);
+        test1155Without2981.setApprovalForAll(address(_cPort), true);
         vm.stopPrank();
     }
 
@@ -220,6 +231,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             address(0),
                             saleDetails.maker,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress,
                             saleDetails.tokenId
@@ -286,6 +298,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             vm.addr(cosignerKey_),
                             saleDetails.maker,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress,
                             saleDetails.tokenId
@@ -324,6 +337,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -361,6 +375,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -397,6 +412,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -434,6 +450,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -469,6 +486,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -503,6 +521,7 @@ contract cPortModuleTest is Test, cPortEvents {
                             saleDetails.maker,
                             saleDetails.beneficiary,
                             saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
                             saleDetails.paymentMethod,
                             saleDetails.tokenAddress
                         ),
@@ -816,6 +835,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -858,6 +878,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -897,6 +918,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -937,6 +959,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -978,6 +1001,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -1021,6 +1045,7 @@ contract cPortModuleTest is Test, cPortEvents {
             sweepItems[i] = SweepItem({
                 maker: saleDetailsArray[i].maker,
                 marketplace: saleDetailsArray[i].marketplace,
+                fallbackRoyaltyRecipient: saleDetailsArray[i].fallbackRoyaltyRecipient,
                 tokenId: saleDetailsArray[i].tokenId,
                 amount: saleDetailsArray[i].amount,
                 itemPrice: saleDetailsArray[i].itemPrice,
@@ -2125,6 +2150,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(addr != address(0xDDc10602782af652bB913f7bdE1fD82981Db7dd9));
         vm.assume(addr != address(_cPort));
         vm.assume(addr != address(_cPortEncoder));
+        vm.assume(addr != address(nativeWrapper));
         vm.assume(addr.code.length == 0);
 
         for (uint256 i = 0; i < exclusionList.length; ++i) {
@@ -2145,7 +2171,7 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.sellerKey != fuzzedOrderInputs.cosignerKey);
         vm.assume(fuzzedOrderInputs.buyerKey != fuzzedOrderInputs.cosignerKey);
 
-        address[] memory exclusionList = new address[](7);
+        address[] memory exclusionList = new address[](8);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2153,6 +2179,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[4] = benchmarkBeneficiary;
         exclusionList[5] = cosigner;
         exclusionList[6] = benchmarkFeeRecipient;
+        exclusionList[7] = address(nativeWrapper);
 
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.sellerKey), exclusionList);
         _sanitizeAddress(vm.addr(fuzzedOrderInputs.buyerKey), exclusionList);
@@ -2164,6 +2191,12 @@ contract cPortModuleTest is Test, cPortEvents {
         vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.marketplace);
         vm.assume(fuzzedOrderInputs.beneficiary != fuzzedOrderInputs.royaltyReceiver);
         vm.assume(fuzzedOrderInputs.marketplace != fuzzedOrderInputs.royaltyReceiver);
+        vm.assume(fuzzedOrderInputs.royaltyReceiver != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.royaltyReceiver != vm.addr(fuzzedOrderInputs.buyerKey));
+        vm.assume(fuzzedOrderInputs.marketplace != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.marketplace != vm.addr(fuzzedOrderInputs.buyerKey));
+        vm.assume(fuzzedOrderInputs.beneficiary != vm.addr(fuzzedOrderInputs.sellerKey));
+        vm.assume(fuzzedOrderInputs.beneficiary != vm.addr(fuzzedOrderInputs.buyerKey));
         
         vm.assume(0 < fuzzedOrderInputs.expirationSeconds);
 
@@ -2179,7 +2212,7 @@ contract cPortModuleTest is Test, cPortEvents {
     ) internal view {
         _scrubFuzzedOrderInputs(fuzzedOrderInputs);
 
-        address[] memory exclusionList = new address[](13);
+        address[] memory exclusionList = new address[](14);
         exclusionList[0] = alice;
         exclusionList[1] = bob;
         exclusionList[2] = cal;
@@ -2193,6 +2226,7 @@ contract cPortModuleTest is Test, cPortEvents {
         exclusionList[10] = fuzzedOrderInputs.beneficiary;
         exclusionList[11] = fuzzedOrderInputs.marketplace;
         exclusionList[12] = fuzzedOrderInputs.royaltyReceiver;
+        exclusionList[13] = address(nativeWrapper);
 
         _sanitizeAddress(fuzzedFeeOnTop.receiver, exclusionList);
         vm.assume(fuzzedFeeOnTop.receiver.balance == 0);
@@ -2212,11 +2246,11 @@ contract cPortModuleTest is Test, cPortEvents {
         uint256 expectedBuyerBalance = 0;
 
         if (order.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
-            assertEq(test721.ownerOf(fuzzedOrderInputs.tokenId), fuzzedOrderInputs.beneficiary);
+            assertEq(IERC721(order.tokenAddress).ownerOf(fuzzedOrderInputs.tokenId), fuzzedOrderInputs.beneficiary);
         } else if (order.protocol == OrderProtocols.ERC1155_FILL_OR_KILL) {
-            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.amount);
+            assertEq(IERC1155(order.tokenAddress).balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.amount);
         } else if (order.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            assertEq(test1155.balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.requestedFillAmount);
+            assertEq(IERC1155(order.tokenAddress).balanceOf(fuzzedOrderInputs.beneficiary, fuzzedOrderInputs.tokenId), order.requestedFillAmount);
 
             uint256 unitPrice = order.itemPrice / order.amount;
             uint256 adjustedPrice = unitPrice * order.requestedFillAmount;
@@ -2559,6 +2593,10 @@ contract cPortModuleTest is Test, cPortEvents {
             recipient: fuzzedFeeOnTop.receiver
         });
 
+        if (feeOnTop.recipient == address(0)) {
+            feeOnTop.amount = 0;
+        }
+
         if (feeOnTop.amount == 0) {
             feeOnTop.recipient = address(0);
         }
@@ -2577,7 +2615,20 @@ contract cPortModuleTest is Test, cPortEvents {
         paymentSettings = paymentSettings % 4;
         PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
 
-        if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
+        if (paymentSettingsEnum == PaymentSettings.DefaultPaymentMethodWhitelist) {
+            bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
+                address(_cPort), 
+                token, 
+                PaymentSettings.DefaultPaymentMethodWhitelist, 
+                0, 
+                paymentMethod, 
+                royaltyBackfillNumerator, 
+                royaltyBackfillReceiver, 
+                royaltyBountyNumerator, 
+                exclusiveBountyReceiver);
+
+            _cPort.setCollectionPaymentSettings(data);
+        } else if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
             bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(
                 address(_cPort), 
                 token, 
