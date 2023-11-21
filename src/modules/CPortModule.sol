@@ -34,6 +34,8 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
+import "@limitbreak/trusted-forwarder/TrustedForwarderERC2771Context.sol";
+
 abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     // Recommendations For Default Immutable Payment Methods Per Chain
