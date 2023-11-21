@@ -185,6 +185,26 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         _;
     }
 
+    modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
+        bytes32 domainSeparator = _domainSeparatorV4();
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, selector)
+            calldatacopy(add(ptr,0x04), data.offset, data.length)
+            mstore(0x40, add(ptr,add(0x04, data.length)))
+            mstore(add(ptr, 0x04), domainSeparator)
+        
+            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            if iszero(result) {
+                // Call has failed, retrieve the error message and revert
+                let size := returndatasize()
+                returndatacopy(0, 0, size)
+                revert(0, size)
+            }
+        }
+        _;
+    }
+
     /**************************************************************/
     /*                  CONTRACT OWNER FUNCTIONS                  */
     /**************************************************************/
@@ -590,21 +610,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     function buyListing(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
 
     function acceptOffer(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
     function bulkBuyListings(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
     function bulkAcceptOffers(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
     function sweepCollection(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCall(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
 }
