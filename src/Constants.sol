@@ -49,3 +49,32 @@ bytes4 constant SELECTOR_ACCEPT_OFFER = hex"e35bb9b7";
 bytes4 constant SELECTOR_BULK_BUY_LISTINGS = hex"27add047";
 bytes4 constant SELECTOR_BULK_ACCEPT_OFFERS = hex"b3cdebdb";
 bytes4 constant SELECTOR_SWEEP_COLLECTION = hex"206576f6";
+
+/**************************************************************/
+/*                   EXPECTED BASE msg.data LENGTHS           */
+/**************************************************************/
+
+uint256 constant PROOF_ELEMENT_SIZE = 32;
+
+// | 4        | 32              | 512         | 96              | 192         | 64       | = 900 bytes
+// | selector | domainSeparator | saleDetails | sellerSignature | cosignature | feeOnTop |
+uint256 constant BASE_MSG_LENGTH_BUY_LISTING = 900;
+
+// | 4        | 32              | 32                     | 512         |  96             | 32 + (96 + (32 * proof.length)) | 192         | 64       | = 1060 bytes + (32 * proof.length)
+// | selector | domainSeparator | isCollectionLevelOffer | saleDetails |  buyerSignature | tokenSetProof                   | cosignature | feeOnTop |
+uint256 constant BASE_MSG_LENGTH_ACCEPT_OFFER = 1060;
+
+// | 4        | 32              | 64              | 512 * length      | 64              | 96 * length      | 64              | 192 * length | 64              | 64 * length | = 292 bytes + (864 * saleDetailsArray.length)
+// | selector | domainSeparator | length + offset | saleDetailsArray  | length + offset | sellerSignatures | length + offset | cosignatures | length + offset | feesOnTop   |
+uint256 constant BASE_MSG_LENGTH_BULK_BUY_LISTINGS = 292;
+uint256 constant BASE_MSG_LENGTH_BULK_BUY_LISTINGS_PER_ITEM = 864;
+
+// | 4        | 32              | 32           | 64              | 32 * length                 | 64              | 512 * length      | 64              | 96 * length          | 64              | 32 + (96 + (32 * proof.length)) | 64              | 192 * length | 64              | 64 * length | = 452 bytes + (1024 * saleDetailsArray.length) + (32 * proof.length [for each element])
+// | selector | domainSeparator | struct info? | length + offset | isCollectionLevelOfferArray | length + offset | saleDetailsArray  | length + offset | buyerSignaturesArray | length + offset | tokenSetProof                   | length + offset | cosignatures | length + offset | feesOnTop   |
+uint256 constant BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS = 452;
+uint256 constant BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS_PER_ITEM = 1024;
+
+// | 4        | 32              | 64       | 128        | 64              | 320 * length | 64              | 96 * length      | 64              | 192 * length | = 420 bytes + (608 * items.length)
+// | selector | domainSeparator | feeOnTop | sweepOrder | length + offset | items        | length + offset | signedSellOrders | length + offset | cosignatures |
+uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION = 420;
+uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM = 608;

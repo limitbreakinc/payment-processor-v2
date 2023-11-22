@@ -35,9 +35,14 @@ contract ModuleTrades is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = msg.data.length - BASE_MSG_LENGTH_BUY_LISTING;
+        }
+
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
-            taker: _msgSender(),
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: true
         });
 
@@ -67,10 +72,18 @@ contract ModuleTrades is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_ACCEPT_OFFER - 
+                (PROOF_ELEMENT_SIZE * tokenSetProof.proof.length);
+        }
+
         _executeOrderSellSide(
             TradeContext({
                 domainSeparator: domainSeparator,
-                taker: _msgSender(),
+                taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
                 disablePartialFill: true
             }),
             isCollectionLevelOffer, 
@@ -106,9 +119,17 @@ contract ModuleTrades is cPortModule {
 
         uint256 remainingNativeProceeds = msg.value;
 
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_BULK_BUY_LISTINGS - 
+                (BASE_MSG_LENGTH_BULK_BUY_LISTINGS_PER_ITEM * saleDetailsArray.length);
+        }
+
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
-            taker: _msgSender(),
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });
 
@@ -169,9 +190,22 @@ contract ModuleTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS - 
+                (BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS_PER_ITEM * params.saleDetailsArray.length);
+
+            for (uint256 i = 0; i < params.tokenSetProofsArray.length;) {
+                appendedDataLength -= PROOF_ELEMENT_SIZE * params.tokenSetProofsArray[i].proof.length;
+                ++i;
+            }
+        }
+
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
-            taker: _msgSender(),
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });
 
@@ -199,9 +233,17 @@ contract ModuleTrades is cPortModule {
         SignatureECDSA[] calldata signedSellOrders,
         Cosignature[] memory cosignatures
     ) public payable {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_SWEEP_COLLECTION - 
+                (BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM * items.length);
+        }
+
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
-            taker: _msgSender(),
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });
 
