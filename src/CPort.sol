@@ -596,6 +596,43 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function setTokenPricingBounds(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_SET_TOKEN_PRICING_BOUNDS, data) {}
 
+    /**
+     * @notice Allows trusted channels to be added to a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified address is not a trusted forwarder.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelAddedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `addTrustedChannelForCollection(
+     *                  address tokenAddress, 
+     *                  address channel)`
+     */
+    function addTrustedChannelForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_ADD_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
+
+    /**
+     * @notice Allows trusted channels to be removed from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been dis-approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `addTrustedChannelForCollection(
+     *                  address tokenAddress, 
+     *                  address channel)`
+     */
+    function removeTrustedChannelForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
+
     /**************************************************************/
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/

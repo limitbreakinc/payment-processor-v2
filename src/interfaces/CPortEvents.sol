@@ -73,6 +73,16 @@ interface cPortEvents {
         uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
 
+    /// @notice Emitted when a trusted channel is added for a collection
+    event TrustedChannelAddedForCollection(
+        address indexed tokenAddress, 
+        address indexed channel);
+
+    /// @notice Emitted when a trusted channel is removed for a collection
+    event TrustedChannelRemovedForCollection(
+        address indexed tokenAddress, 
+        address indexed channel);
+
     /// @notice Emitted whenever pricing bounds change at a collection level for price-constrained collections.
     event UpdatedCollectionLevelPricingBoundaries(
         address indexed tokenAddress, 
@@ -88,7 +98,8 @@ interface cPortEvents {
         uint16 royaltyBackfillNumerator,
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
-        address exclusiveBountyReceiver);
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels);
 
     /// @notice Emitted whenever pricing bounds change at a token level for price-constrained collections.
     event UpdatedTokenLevelPricingBoundaries(

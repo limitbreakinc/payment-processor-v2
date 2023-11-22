@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 enum Sides { 
     Buy, 
@@ -35,6 +36,7 @@ struct CollectionPaymentSettings {
     uint16 royaltyBackfillNumerator;
     uint16 royaltyBountyNumerator;
     bool isRoyaltyBountyExclusive;
+    bool blockTradesFromUntrustedChannels;
 }
 
 /**
@@ -194,6 +196,7 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
  */
  struct TradeContext {
     bytes32 domainSeparator;
+    address channel;
     address taker;
     bool disablePartialFill;
  }
@@ -249,4 +252,5 @@ struct cPortStorage {
     mapping (address => address) collectionExclusiveBountyReceivers;
 
     mapping (address => mapping(bytes32 => PartiallyFillableOrderStatus)) partiallyFillableOrderStatuses;
+    mapping (address => EnumerableSet.AddressSet) collectionTrustedChannels;
 }

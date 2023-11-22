@@ -3930,7 +3930,8 @@ contract cPortModuleTest is Test, cPortEvents {
         uint16 royaltyBackfillNumerator,
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
-        address exclusiveBountyReceiver
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels
     ) internal {
         paymentSettings = paymentSettings % 4;
         PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
@@ -3945,7 +3946,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 royaltyBackfillNumerator, 
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
 
             _cPort.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
@@ -3958,7 +3960,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 royaltyBackfillNumerator, 
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
 
             _cPort.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.CustomPaymentMethodWhitelist) {
@@ -3971,7 +3974,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 royaltyBackfillNumerator, 
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
 
             _cPort.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.PricingConstraints) {
@@ -3984,7 +3988,8 @@ contract cPortModuleTest is Test, cPortEvents {
                 royaltyBackfillNumerator, 
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
 
             bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(
                 address(_cPort), 

@@ -42,6 +42,7 @@ contract ModuleTrades is cPortModule {
 
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
+            channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: true
         });
@@ -83,6 +84,7 @@ contract ModuleTrades is cPortModule {
         _executeOrderSellSide(
             TradeContext({
                 domainSeparator: domainSeparator,
+                channel: msg.sender,
                 taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
                 disablePartialFill: true
             }),
@@ -129,6 +131,7 @@ contract ModuleTrades is cPortModule {
 
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
+            channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });
@@ -205,6 +208,7 @@ contract ModuleTrades is cPortModule {
 
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
+            channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });
@@ -243,6 +247,7 @@ contract ModuleTrades is cPortModule {
 
         TradeContext memory context = TradeContext({
             domainSeparator: domainSeparator,
+            channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false
         });

@@ -77,7 +77,8 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -178,7 +179,8 @@ contract ModuleAcceptItemOfferTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {

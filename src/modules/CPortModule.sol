@@ -37,6 +37,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {TrustedForwarderERC2771Context} from "@limitbreak/trusted-forwarder/TrustedForwarderERC2771Context.sol";
 
 abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAccess, cPortEvents {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     // Recommendations For Default Immutable Payment Methods Per Chain
     // Default Payment Method 1: Wrapped Native Coin
@@ -131,6 +132,8 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             saleDetails.amount = quantityToFill;
         }
 
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(context, saleDetails);
+
         endingNativeFunds = _fulfillSingleOrderWithFeeOnTop(
             startingNativeFunds,
             context,
@@ -139,7 +142,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             IERC20(saleDetails.paymentMethod),
             _getOrderFulfillmentFunctionPointers(Sides.Buy, saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
-            _validateBasicOrderDetails(saleDetails),
+            royaltyBackfillAndBounty,
             feeOnTop);
     }
 
@@ -197,7 +200,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             saleDetails.amount = quantityToFill;
         }
 
-        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(saleDetails);
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(context, saleDetails);
 
         _fulfillSingleOrderWithFeeOnTop(
             0,
@@ -265,6 +268,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
     /*************************************************************************/
 
     function _validateBasicOrderDetails(
+        TradeContext memory context,
         Order memory saleDetails
     ) private view returns (RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) {
         if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
@@ -285,17 +289,43 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+        CollectionPaymentSettings storage paymentSettingsForCollection = 
+            appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+
+        PaymentSettings paymentSettings = paymentSettingsForCollection.paymentSettings;
+        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
+        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
+
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+            EnumerableSet.AddressSet storage trustedChannels = 
+                appStorage().collectionTrustedChannels[saleDetails.tokenAddress];
+
+            if (trustedChannels.length() > 0) {
+                if (!trustedChannels.contains(context.channel)) {
+                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                }
+            }
+        }
+
+        if (paymentSettingsForCollection.royaltyBackfillNumerator > 0) {
+            royaltyBackfillAndBounty.backfillReceiver = 
+                appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress];
+        }
+
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+            royaltyBackfillAndBounty.exclusiveMarketplace = 
+                appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress];
+        }
         
-        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+        if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+        } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+        } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
@@ -306,17 +336,6 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                 saleDetails.amount, 
                 saleDetails.itemPrice);
         }
-
-        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
-        royaltyBackfillAndBounty.backfillReceiver = 
-            paymentSettingsForCollection.royaltyBackfillNumerator > 0 ?
-                appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress] :
-                address(0);
-        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
-        royaltyBackfillAndBounty.exclusiveMarketplace = 
-            paymentSettingsForCollection.isRoyaltyBountyExclusive ? 
-                appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress] : 
-                address(0);
     }
 
     function _validateSweepOrder(
@@ -327,32 +346,47 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         SignatureECDSA[] memory signedSellOrders,
         Cosignature[] memory cosignatures
     ) private returns (Order[] memory saleDetailsBatch, RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) {
-        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
+        CollectionPaymentSettings storage paymentSettingsForCollection = 
+            appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
 
-        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+        PaymentSettings paymentSettings = paymentSettingsForCollection.paymentSettings;
+        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
+        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
+
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+            EnumerableSet.AddressSet storage trustedChannels = 
+                appStorage().collectionTrustedChannels[sweepOrder.tokenAddress];
+
+            if (trustedChannels.length() > 0) {
+                if (!trustedChannels.contains(context.channel)) {
+                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                }
+            }
+        }
+
+        if (paymentSettingsForCollection.royaltyBackfillNumerator > 0) {
+            royaltyBackfillAndBounty.backfillReceiver = 
+                appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress];
+        }
+
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+            royaltyBackfillAndBounty.exclusiveMarketplace = 
+                appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress];
+        }
+
+        if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+        } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+        } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         }
-
-        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
-        royaltyBackfillAndBounty.backfillReceiver = 
-            paymentSettingsForCollection.royaltyBackfillNumerator > 0 ?
-                appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress] :
-                address(0);
-        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
-        royaltyBackfillAndBounty.exclusiveMarketplace = 
-            paymentSettingsForCollection.isRoyaltyBountyExclusive ? 
-                appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress] : 
-                address(0);
 
         uint256 itemsLength = items.length;
 
@@ -397,7 +431,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                 revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
             }
 
-            if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+            if (paymentSettings == PaymentSettings.PricingConstraints) {
                 _validateSalePriceInRange(
                     saleDetails.tokenAddress, 
                     saleDetails.tokenId, 
