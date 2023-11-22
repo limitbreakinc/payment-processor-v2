@@ -154,9 +154,13 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     modifier delegateCallNoData(address module, bytes4 selector) {
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            let result := delegatecall(gas(), module, ptr, 4, 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(sub(calldatasize(), 4), 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -169,12 +173,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     modifier delegateCall(address module, bytes4 selector, bytes calldata data) {
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            calldatacopy(add(ptr,0x04), data.offset, data.length)
-            mstore(0x40, add(ptr,add(0x04, data.length)))
+            calldatacopy(add(ptr,0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr,add(0x04, lengthWithAppendedCalldata)))
 
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -188,13 +200,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
         bytes32 domainSeparator = _domainSeparatorV4();
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            calldatacopy(add(ptr,0x04), data.offset, data.length)
-            mstore(0x40, add(ptr,add(0x04, data.length)))
+            calldatacopy(add(ptr,0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr,add(0x04, lengthWithAppendedCalldata)))
             mstore(add(ptr, 0x04), domainSeparator)
         
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -444,12 +464,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function createPaymentMethodWhitelist(bytes calldata data) external returns (uint32 paymentMethodWhitelistId) {
         address module = _modulePaymentSettings;
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, hex"f83116c9")
-            calldatacopy(add(ptr, 0x04), data.offset, data.length)
-            mstore(0x40, add(ptr, add(0x04, data.length)))
+            calldatacopy(add(ptr, 0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr, add(0x04, lengthWithAppendedCalldata)))
 
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0x00, 0x20)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0x00, 0x20)
 
             switch result case 0 {
                 let size := returndatasize()
