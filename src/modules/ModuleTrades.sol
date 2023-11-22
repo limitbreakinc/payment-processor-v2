@@ -22,10 +22,11 @@ import "./CPortModule.sol";
 contract ModuleTrades is cPortModule {
 
     constructor(
+        address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     function buyListing(
         bytes32 domainSeparator, 
@@ -34,10 +35,21 @@ contract ModuleTrades is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public payable {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = msg.data.length - BASE_MSG_LENGTH_BUY_LISTING;
+        }
+
+        TradeContext memory context = TradeContext({
+            domainSeparator: domainSeparator,
+            channel: msg.sender,
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+            disablePartialFill: true
+        });
+
         uint256 remainingNativeProceeds = 
             _executeOrderBuySide(
-                domainSeparator, 
-                true,
+                context,
                 msg.value,
                 saleDetails, 
                 sellerSignature,
@@ -47,7 +59,8 @@ contract ModuleTrades is cPortModule {
 
         if (remainingNativeProceeds > 0) {
             _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
-            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
+            IERC20(wrappedNativeCoinAddress).
+                transferFrom(address(this), context.taker, remainingNativeProceeds);
         }
     }
 
@@ -60,9 +73,21 @@ contract ModuleTrades is cPortModule {
         Cosignature memory cosignature,
         FeeOnTop memory feeOnTop
     ) public {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_ACCEPT_OFFER - 
+                (PROOF_ELEMENT_SIZE * tokenSetProof.proof.length);
+        }
+
         _executeOrderSellSide(
-            domainSeparator, 
-            true,
+            TradeContext({
+                domainSeparator: domainSeparator,
+                channel: msg.sender,
+                taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+                disablePartialFill: true
+            }),
             isCollectionLevelOffer, 
             saleDetails, 
             buyerSignature,
@@ -96,6 +121,21 @@ contract ModuleTrades is cPortModule {
 
         uint256 remainingNativeProceeds = msg.value;
 
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_BULK_BUY_LISTINGS - 
+                (BASE_MSG_LENGTH_BULK_BUY_LISTINGS_PER_ITEM * saleDetailsArray.length);
+        }
+
+        TradeContext memory context = TradeContext({
+            domainSeparator: domainSeparator,
+            channel: msg.sender,
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+            disablePartialFill: false
+        });
+
         Order memory saleDetails;
         SignatureECDSA memory sellerSignature;
         Cosignature memory cosignature;
@@ -108,9 +148,9 @@ contract ModuleTrades is cPortModule {
             feeOnTop = feesOnTop[i];
 
             if(saleDetails.paymentMethod == address(0)) {
-                remainingNativeProceeds = _executeOrderBuySide(domainSeparator, false, remainingNativeProceeds, saleDetails, sellerSignature, cosignature, feeOnTop);
+                remainingNativeProceeds = _executeOrderBuySide(context, remainingNativeProceeds, saleDetails, sellerSignature, cosignature, feeOnTop);
             } else {
-                _executeOrderBuySide(domainSeparator, false, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
+                _executeOrderBuySide(context, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
             }
 
             unchecked {
@@ -120,7 +160,8 @@ contract ModuleTrades is cPortModule {
 
         if (remainingNativeProceeds > 0) {
             _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
-            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
+            IERC20(wrappedNativeCoinAddress).
+                transferFrom(address(this), context.taker, remainingNativeProceeds);
         }
     }
 
@@ -152,10 +193,29 @@ contract ModuleTrades is cPortModule {
             revert cPort__InputArrayLengthCannotBeZero();
         }
 
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS - 
+                (BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS_PER_ITEM * params.saleDetailsArray.length);
+
+            for (uint256 i = 0; i < params.tokenSetProofsArray.length;) {
+                appendedDataLength -= PROOF_ELEMENT_SIZE * params.tokenSetProofsArray[i].proof.length;
+                ++i;
+            }
+        }
+
+        TradeContext memory context = TradeContext({
+            domainSeparator: domainSeparator,
+            channel: msg.sender,
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+            disablePartialFill: false
+        });
+
         for (uint256 i = 0; i < params.saleDetailsArray.length;) {
             _executeOrderSellSide(
-                domainSeparator, 
-                false,
+                context,
                 params.isCollectionLevelOfferArray[i], 
                 params.saleDetailsArray[i], 
                 params.buyerSignaturesArray[i],
@@ -177,8 +237,23 @@ contract ModuleTrades is cPortModule {
         SignatureECDSA[] calldata signedSellOrders,
         Cosignature[] memory cosignatures
     ) public payable {
+        uint256 appendedDataLength;
+        unchecked {
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_SWEEP_COLLECTION - 
+                (BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM * items.length);
+        }
+
+        TradeContext memory context = TradeContext({
+            domainSeparator: domainSeparator,
+            channel: msg.sender,
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+            disablePartialFill: false
+        });
+
         uint256 remainingNativeProceeds =_executeSweepOrder(
-            domainSeparator,
+            context,
             msg.value,
             feeOnTop,
             sweepOrder,
@@ -189,7 +264,8 @@ contract ModuleTrades is cPortModule {
 
         if (remainingNativeProceeds > 0) {
             _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
-            IERC20(wrappedNativeCoinAddress).transferFrom(address(this), msg.sender, remainingNativeProceeds);
+            IERC20(wrappedNativeCoinAddress).
+                transferFrom(address(this), context.taker, remainingNativeProceeds);
         }
     }
 }

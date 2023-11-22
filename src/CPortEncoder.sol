@@ -58,11 +58,12 @@ contract cPortEncoder {
         uint16 royaltyBackfillNumerator,
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
-        address exclusiveBountyReceiver
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setCollectionPaymentSettings(address,uint8,uint32,address,uint16,address,uint16,address)",
+                "setCollectionPaymentSettings(address,uint8,uint32,address,uint16,address,uint16,address,bool)",
                 tokenAddress,
                 paymentSettings,
                 paymentMethodWhitelistId,
@@ -70,7 +71,8 @@ contract cPortEncoder {
                 royaltyBackfillNumerator,
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
-                exclusiveBountyReceiver));
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels));
     }
 
     function encodeSetCollectionPricingBoundsCalldata(
@@ -97,6 +99,22 @@ contract cPortEncoder {
                 tokenAddress,
                 tokenIds,
                 pricingBounds));
+    }
+
+    function encodeAddTrustedChannelForCollectionCalldata(address /*cPortAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "addTrustedChannelForCollection(address,address)",
+                tokenAddress,
+                channel));
+    }
+
+    function encodeRemoveTrustedChannelForCollectionCalldata(address /*cPortAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "removeTrustedChannelForCollection(address,address)",
+                tokenAddress,
+                channel));
     }
 
     /**************************************************************/

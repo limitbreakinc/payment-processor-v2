@@ -78,7 +78,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             if (params.orderProtocol != OrderProtocols.ERC721_FILL_OR_KILL) {
@@ -190,7 +191,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             if (params.orderProtocol != OrderProtocols.ERC721_FILL_OR_KILL) {
@@ -307,7 +309,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -417,7 +420,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
@@ -530,7 +534,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
@@ -632,7 +637,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
@@ -736,7 +742,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
             vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
@@ -838,7 +845,8 @@ contract SadPathsModuleBuyListingTest is cPortModuleTest {
             0,
             address(0),
             0,
-            address(0));
+            address(0),
+            false);
 
         bytes4 errorSelector;
         if (saleDetails.itemPrice < 1 ether) {

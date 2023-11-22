@@ -14,6 +14,7 @@ contract DeployCPortModules is Script {
         address moduleTrades;
     }
 
+    address private immutable forwarderFactory = address(0x982369EB4c671Fee7800B1381Ac419AB5e77cAb7);
     address private immutable weth = address(0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9);
     address private immutable usdc = address(0x8267cF9254734C6Eb452a7bb9AAF97B392258b21);
     uint32 private immutable pushPaymentGasLimit = 8_000;
@@ -35,9 +36,9 @@ contract DeployCPortModules is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(pushPaymentGasLimit, address(0), defaultPaymentMethods));
-        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(pushPaymentGasLimit, address(0), defaultPaymentMethods));
-        moduleAddresses.moduleTrades = address(new ModuleTrades(pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.moduleTrades = address(new ModuleTrades(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
 
         vm.stopBroadcast();
 

@@ -154,9 +154,13 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     modifier delegateCallNoData(address module, bytes4 selector) {
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            let result := delegatecall(gas(), module, ptr, 4, 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(sub(calldatasize(), 4), 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -169,12 +173,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     modifier delegateCall(address module, bytes4 selector, bytes calldata data) {
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            calldatacopy(add(ptr,0x04), data.offset, data.length)
-            mstore(0x40, add(ptr,add(0x04, data.length)))
+            calldatacopy(add(ptr,0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr,add(0x04, lengthWithAppendedCalldata)))
 
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -188,13 +200,21 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
         bytes32 domainSeparator = _domainSeparatorV4();
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, selector)
-            calldatacopy(add(ptr,0x04), data.offset, data.length)
-            mstore(0x40, add(ptr,add(0x04, data.length)))
+            calldatacopy(add(ptr,0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr,add(0x04, lengthWithAppendedCalldata)))
             mstore(add(ptr, 0x04), domainSeparator)
         
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0, 0)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
                 let size := returndatasize()
@@ -444,12 +464,20 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function createPaymentMethodWhitelist(bytes calldata data) external returns (uint32 paymentMethodWhitelistId) {
         address module = _modulePaymentSettings;
         assembly {
+            // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
+            // preserves the original msg.sender by appending an extra 20 bytes to the calldata.  
+            // The following code supports both cases.  The magic number of 68 is:
+            // 4 bytes for the selector
+            // 32 bytes calldata offset to the data parameter
+            // 32 bytes for the length of the data parameter
+            let lengthWithAppendedCalldata := sub(calldatasize(), 68)
+
             let ptr := mload(0x40)
             mstore(ptr, hex"f83116c9")
-            calldatacopy(add(ptr, 0x04), data.offset, data.length)
-            mstore(0x40, add(ptr, add(0x04, data.length)))
+            calldatacopy(add(ptr, 0x04), data.offset, lengthWithAppendedCalldata)
+            mstore(0x40, add(ptr, add(0x04, lengthWithAppendedCalldata)))
 
-            let result := delegatecall(gas(), module, ptr, add(data.length, 4), 0x00, 0x20)
+            let result := delegatecall(gas(), module, ptr, add(lengthWithAppendedCalldata, 4), 0x00, 0x20)
 
             switch result case 0 {
                 let size := returndatasize()
@@ -568,6 +596,43 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     function setTokenPricingBounds(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_SET_TOKEN_PRICING_BOUNDS, data) {}
 
+    /**
+     * @notice Allows trusted channels to be added to a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified address is not a trusted forwarder.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelAddedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `addTrustedChannelForCollection(
+     *                  address tokenAddress, 
+     *                  address channel)`
+     */
+    function addTrustedChannelForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_ADD_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
+
+    /**
+     * @notice Allows trusted channels to be removed from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been dis-approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     *              `addTrustedChannelForCollection(
+     *                  address tokenAddress, 
+     *                  address channel)`
+     */
+    function removeTrustedChannelForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
+
     /**************************************************************/
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
@@ -591,7 +656,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    Throws when the nonce was already used by the maker to successfully buy or sell an NFT.
      *
      * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The specified `nonce` for the `msg.sender` has been revoked and can
+     * @dev    1. The specified `nonce` for the `_msgSender()` has been revoked and can
      *            no longer be used to execute a sale or purchase.
      * @dev    2. A `NonceInvalidated` event has been emitted.
      *

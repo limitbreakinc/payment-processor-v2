@@ -34,7 +34,10 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-abstract contract cPortModule is cPortStorageAccess, cPortEvents {
+import {TrustedForwarderERC2771Context} from "@limitbreak/trusted-forwarder/TrustedForwarderERC2771Context.sol";
+
+abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAccess, cPortEvents {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     // Recommendations For Default Immutable Payment Methods Per Chain
     // Default Payment Method 1: Wrapped Native Coin
@@ -50,9 +53,11 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     address private immutable defaultPaymentMethod4;
 
     constructor(
+        address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) {
+        DefaultPaymentMethods memory defaultPaymentMethods)
+    TrustedForwarderERC2771Context(trustedForwarderFactory_) {
         
         if (defaultPushPaymentGasLimit_ == 0 ||
             wrappedNativeCoinAddress_ == address(0)) {
@@ -105,8 +110,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     /*************************************************************************/
 
     function _executeOrderBuySide(
-        bytes32 domainSeparator,
-        bool disablePartialFill,
+        TradeContext memory context,
         uint256 startingNativeFunds,
         Order memory saleDetails,
         SignatureECDSA memory signedSellOrder,
@@ -114,7 +118,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         FeeOnTop memory feeOnTop
     ) internal returns (uint256 endingNativeFunds) {
         uint248 quantityToFill = _verifySaleApproval(
-            domainSeparator, 
+            context, 
             saleDetails, 
             signedSellOrder, 
             cosignature);
@@ -128,21 +132,22 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.amount = quantityToFill;
         }
 
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(context, saleDetails);
+
         endingNativeFunds = _fulfillSingleOrderWithFeeOnTop(
             startingNativeFunds,
-            disablePartialFill,
-            msg.sender,
+            context,
+            context.taker,
             saleDetails.maker,
             IERC20(saleDetails.paymentMethod),
             _getOrderFulfillmentFunctionPointers(Sides.Buy, saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
-            _validateBasicOrderDetails(saleDetails),
+            royaltyBackfillAndBounty,
             feeOnTop);
     }
 
     function _executeOrderSellSide(
-        bytes32 domainSeparator,
-        bool disablePartialFill,
+        TradeContext memory context,
         bool isCollectionLevelOrder, 
         Order memory saleDetails,
         SignatureECDSA memory buyerSignature,
@@ -159,7 +164,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         if (isCollectionLevelOrder) {
             if (tokenSetProof.rootHash == bytes32(0)) {
                 quantityToFill = _verifyCollectionOffer(
-                    domainSeparator, 
+                    context, 
                     saleDetails, 
                     buyerSignature, 
                     cosignature);
@@ -172,7 +177,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 }
 
                 quantityToFill = _verifyTokenSetOffer(
-                    domainSeparator, 
+                    context, 
                     saleDetails, 
                     buyerSignature, 
                     tokenSetProof, 
@@ -180,7 +185,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             }
         } else {
             quantityToFill = _verifyItemOffer(
-                domainSeparator, 
+                context,
                 saleDetails, 
                 buyerSignature, 
                 cosignature);
@@ -195,13 +200,13 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             saleDetails.amount = quantityToFill;
         }
 
-        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(saleDetails);
+        RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty = _validateBasicOrderDetails(context, saleDetails);
 
         _fulfillSingleOrderWithFeeOnTop(
             0,
-            disablePartialFill,
+            context,
             saleDetails.maker,
-            msg.sender,
+            context.taker,
             IERC20(saleDetails.paymentMethod),
             _getOrderFulfillmentFunctionPointers(Sides.Sell, saleDetails.paymentMethod, saleDetails.protocol),
             saleDetails,
@@ -210,12 +215,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _executeSweepOrder(
-        bytes32 domainSeparator,
+        TradeContext memory context,
         uint256 startingNativeFunds,
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
-        SweepItem[] calldata items,
-        SignatureECDSA[] calldata signedSellOrders,
+        SweepItem[] memory items,
+        SignatureECDSA[] memory signedSellOrders,
         Cosignature[] memory cosignatures
     ) internal returns (uint256 endingNativeFunds) {
 
@@ -237,7 +242,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
         (Order[] memory saleDetailsBatch, RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) = 
             _validateSweepOrder(
-                domainSeparator,
+                context,
                 feeOnTop,
                 sweepOrder,
                 items,
@@ -246,6 +251,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             );
 
         endingNativeFunds = _fulfillSweepOrderWithFeeOnTop(
+            context,
             startingNativeFunds,
             SweepCollectionComputeAndDistributeProceedsParams({
                 paymentCoin: IERC20(sweepOrder.paymentMethod),
@@ -262,6 +268,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     /*************************************************************************/
 
     function _validateBasicOrderDetails(
+        TradeContext memory context,
         Order memory saleDetails
     ) private view returns (RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) {
         if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
@@ -282,17 +289,43 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
-        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+        CollectionPaymentSettings storage paymentSettingsForCollection = 
+            appStorage().collectionPaymentSettings[saleDetails.tokenAddress];
+
+        PaymentSettings paymentSettings = paymentSettingsForCollection.paymentSettings;
+        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
+        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
+
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+            EnumerableSet.AddressSet storage trustedChannels = 
+                appStorage().collectionTrustedChannels[saleDetails.tokenAddress];
+
+            if (trustedChannels.length() > 0) {
+                if (!trustedChannels.contains(context.channel)) {
+                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                }
+            }
+        }
+
+        if (paymentSettingsForCollection.royaltyBackfillNumerator > 0) {
+            royaltyBackfillAndBounty.backfillReceiver = 
+                appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress];
+        }
+
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+            royaltyBackfillAndBounty.exclusiveMarketplace = 
+                appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress];
+        }
         
-        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+        if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+        } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+        } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
@@ -303,58 +336,64 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.amount, 
                 saleDetails.itemPrice);
         }
-
-        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
-        royaltyBackfillAndBounty.backfillReceiver = 
-            paymentSettingsForCollection.royaltyBackfillNumerator > 0 ?
-                appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress] :
-                address(0);
-        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
-        royaltyBackfillAndBounty.exclusiveMarketplace = 
-            paymentSettingsForCollection.isRoyaltyBountyExclusive ? 
-                appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress] : 
-                address(0);
     }
 
     function _validateSweepOrder(
-        bytes32 domainSeparator,
+        TradeContext memory context,
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
-        SweepItem[] calldata items,
-        SignatureECDSA[] calldata signedSellOrders,
+        SweepItem[] memory items,
+        SignatureECDSA[] memory signedSellOrders,
         Cosignature[] memory cosignatures
     ) private returns (Order[] memory saleDetailsBatch, RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) {
-        CollectionPaymentSettings memory paymentSettingsForCollection = appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
+        CollectionPaymentSettings storage paymentSettingsForCollection = 
+            appStorage().collectionPaymentSettings[sweepOrder.tokenAddress];
 
-        if (paymentSettingsForCollection.paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
+        PaymentSettings paymentSettings = paymentSettingsForCollection.paymentSettings;
+        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
+        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
+
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+            EnumerableSet.AddressSet storage trustedChannels = 
+                appStorage().collectionTrustedChannels[sweepOrder.tokenAddress];
+
+            if (trustedChannels.length() > 0) {
+                if (!trustedChannels.contains(context.channel)) {
+                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                }
+            }
+        }
+
+        if (paymentSettingsForCollection.royaltyBackfillNumerator > 0) {
+            royaltyBackfillAndBounty.backfillReceiver = 
+                appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress];
+        }
+
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+            royaltyBackfillAndBounty.exclusiveMarketplace = 
+                appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress];
+        }
+
+        if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
+        } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
-        } else if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+        } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
                 revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         }
 
-        royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
-        royaltyBackfillAndBounty.backfillReceiver = 
-            paymentSettingsForCollection.royaltyBackfillNumerator > 0 ?
-                appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress] :
-                address(0);
-        royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
-        royaltyBackfillAndBounty.exclusiveMarketplace = 
-            paymentSettingsForCollection.isRoyaltyBountyExclusive ? 
-                appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress] : 
-                address(0);
+        uint256 itemsLength = items.length;
 
-        saleDetailsBatch = new Order[](items.length);
+        saleDetailsBatch = new Order[](itemsLength);
         uint256 sumListingPrices;
 
-        for (uint256 i = 0; i < items.length;) {
+        for (uint256 i = 0; i < itemsLength;) {
             Order memory saleDetails = 
                 Order({
                     protocol: sweepOrder.protocol,
@@ -392,7 +431,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
             }
 
-            if (paymentSettingsForCollection.paymentSettings == PaymentSettings.PricingConstraints) {
+            if (paymentSettings == PaymentSettings.PricingConstraints) {
                 _validateSalePriceInRange(
                     saleDetails.tokenAddress, 
                     saleDetails.tokenId, 
@@ -404,7 +443,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     revert cPort__OrderHasExpired();
             }
 
-            _verifySaleApproval(domainSeparator, saleDetails, signedSellOrders[i], cosignatures[i]);
+            _verifySaleApproval(context, saleDetails, signedSellOrders[i], cosignatures[i]);
 
             unchecked {
                 ++i;
@@ -460,7 +499,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
 
     function _fulfillSingleOrderWithFeeOnTop(
         uint256 startingNativeFunds,
-        bool disablePartialFill,
+        TradeContext memory context,
         address purchaser,
         address seller,
         IERC20 paymentCoin,
@@ -477,7 +516,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.tokenAddress, 
                 saleDetails.tokenId, 
                 saleDetails.amount)) {
-            if (disablePartialFill) {
+            if (context.disablePartialFill) {
                 revert cPort__DispensingTokenWasUnsuccessful();
             }
         } else {
@@ -526,14 +565,15 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
                 }
 
-                fnPointers.funcPayout(feeOnTop.recipient, msg.sender, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
+                fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
             }
 
-            fnPointers.funcEmitOrderExecutionEvent(saleDetails);
+            fnPointers.funcEmitOrderExecutionEvent(context, saleDetails);
         }
     }
 
     function _fulfillSweepOrderWithFeeOnTop(
+        TradeContext memory context,
         uint256 startingNativeFunds,
         SweepCollectionComputeAndDistributeProceedsParams memory params
     ) private returns (uint256 endingNativeFunds) {
@@ -582,7 +622,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
                     if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
@@ -591,7 +631,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (saleDetails.marketplace != accumulator.lastMarketplace) {
                     if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastMarketplace = saleDetails.marketplace;
@@ -600,7 +640,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     
                 if (saleDetails.maker != accumulator.lastSeller) {
                     if(accumulator.accumulatedSellerProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastSeller = saleDetails.maker;
@@ -613,7 +653,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     accumulator.accumulatedSellerProceeds += proceeds.sellerProceeds;
                 }
 
-                params.fnPointers.funcEmitOrderExecutionEvent(saleDetails);
+                params.fnPointers.funcEmitOrderExecutionEvent(context, saleDetails);
             }
 
             unchecked {
@@ -622,15 +662,15 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
 
         if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, msg.sender, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastMarketplace, msg.sender, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedSellerProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastSeller, msg.sender, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
         }
 
         if (params.feeOnTop.recipient != address(0)) {
@@ -645,7 +685,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                     }
                 }
 
-                params.fnPointers.funcPayout(params.feeOnTop.recipient, msg.sender, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
+                params.fnPointers.funcPayout(params.feeOnTop.recipient, context.taker, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
             }
         }
     }
@@ -783,9 +823,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
         }
     }
 
-    function _emitBuyListingERC721Event(Order memory saleDetails) internal {
+    function _emitBuyListingERC721Event(TradeContext memory context, Order memory saleDetails) internal {
         emit BuyListingERC721(
-                msg.sender,
+                context.taker,
                 saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
@@ -794,9 +834,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.itemPrice);
     }
 
-    function _emitBuyListingERC1155Event(Order memory saleDetails) internal {
+    function _emitBuyListingERC1155Event(TradeContext memory context, Order memory saleDetails) internal {
         emit BuyListingERC1155(
-                msg.sender,
+                context.taker,
                 saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
@@ -806,9 +846,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.itemPrice);
     }
 
-    function _emitAcceptOfferERC721Event(Order memory saleDetails) internal {
+    function _emitAcceptOfferERC721Event(TradeContext memory context, Order memory saleDetails) internal {
         emit AcceptOfferERC721(
-                msg.sender,
+                context.taker,
                 saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
@@ -817,9 +857,9 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
                 saleDetails.itemPrice);
     }
 
-    function _emitAcceptOfferERC1155Event(Order memory saleDetails) internal {
+    function _emitAcceptOfferERC1155Event(TradeContext memory context, Order memory saleDetails) internal {
         emit AcceptOfferERC1155(
-                msg.sender,
+                context.taker,
                 saleDetails.maker,
                 saleDetails.tokenAddress,
                 saleDetails.beneficiary,
@@ -932,16 +972,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _verifyItemOffer(
-        bytes32 domainSeparator,
+        TradeContext memory context, 
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
     ) private returns (uint248 quantityToFill) {
         if (cosignature.signer != address(0)) {
-            _verifyCosignature(domainSeparator, signature, cosignature);
+            _verifyCosignature(context, signature, cosignature);
         }
 
-        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+        bytes32 orderDigest = _hashTypedDataV4(context.domainSeparator, keccak256(
             bytes.concat(
                 abi.encode(
                     ITEM_OFFER_APPROVAL_HASH,
@@ -981,16 +1021,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _verifyCollectionOffer(
-        bytes32 domainSeparator,
+        TradeContext memory context, 
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
     ) private returns (uint248 quantityToFill) {
         if (cosignature.signer != address(0)) {
-            _verifyCosignature(domainSeparator, signature, cosignature);
+            _verifyCosignature(context, signature, cosignature);
         }
 
-        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+        bytes32 orderDigest = _hashTypedDataV4(context.domainSeparator, keccak256(
             bytes.concat(
                 abi.encode(
                     COLLECTION_OFFER_APPROVAL_HASH,
@@ -1029,17 +1069,17 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _verifyTokenSetOffer(
-        bytes32 domainSeparator,
+        TradeContext memory context, 
         Order memory saleDetails,
         SignatureECDSA memory signature,
         TokenSetProof memory tokenSetProof,
         Cosignature memory cosignature
     ) private returns (uint248 quantityToFill) {
         if (cosignature.signer != address(0)) {
-            _verifyCosignature(domainSeparator, signature, cosignature);
+            _verifyCosignature(context, signature, cosignature);
         }
 
-        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+        bytes32 orderDigest = _hashTypedDataV4(context.domainSeparator, keccak256(
             bytes.concat(
                 abi.encode(
                     TOKEN_SET_OFFER_APPROVAL_HASH,
@@ -1079,16 +1119,16 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _verifySaleApproval(
-        bytes32 domainSeparator,
+        TradeContext memory context, 
         Order memory saleDetails,
         SignatureECDSA memory signature,
         Cosignature memory cosignature
     ) private returns (uint248 quantityToFill) {
         if (cosignature.signer != address(0)) {
-            _verifyCosignature(domainSeparator, signature, cosignature);
+            _verifyCosignature(context, signature, cosignature);
         }
 
-        bytes32 orderDigest = _hashTypedDataV4(domainSeparator, keccak256(
+        bytes32 orderDigest = _hashTypedDataV4(context.domainSeparator, keccak256(
             bytes.concat(
                 abi.encode(
                     SALE_APPROVAL_HASH,
@@ -1138,7 +1178,7 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     }
 
     function _verifyCosignature(
-        bytes32 domainSeparator, 
+        TradeContext memory context, 
         SignatureECDSA memory signature, 
         Cosignature memory cosignature
     ) private view {
@@ -1146,12 +1186,12 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
             revert cPort__CosignatureHasExpired();
         }
 
-        if (msg.sender != cosignature.taker) {
+        if (context.taker != cosignature.taker) {
             revert cPort__UnauthorizedTaker();
         }
 
         if (cosignature.signer != _ecdsaRecover(
-            _hashTypedDataV4(domainSeparator, keccak256(
+            _hashTypedDataV4(context.domainSeparator, keccak256(
                 abi.encode(
                     COSIGNATURE_HASH,
                     signature.v,
@@ -1211,22 +1251,24 @@ abstract contract cPortModule is cPortStorageAccess, cPortEvents {
     /*************************************************************************/
 
     function _requireCallerOwnsPaymentMethodWhitelist(uint32 paymentMethodWhitelistId) internal view {
-        if(msg.sender != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
+        if(_msgSender() != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
             revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
         }
     }
 
     function _requireCallerIsNFTOrContractOwnerOrAdmin(address tokenAddress) internal view {
         bool callerHasPermissions = false;
+
+        address caller = _msgSender();
         
-        callerHasPermissions = msg.sender == tokenAddress;
+        callerHasPermissions = caller == tokenAddress;
         if(!callerHasPermissions) {
             try IOwnable(tokenAddress).owner() returns (address contractOwner) {
-                callerHasPermissions = msg.sender == contractOwner;
+                callerHasPermissions = caller == contractOwner;
             } catch {}
 
             if(!callerHasPermissions) {
-                try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, msg.sender) 
+                try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, caller) 
                     returns (bool callerIsContractAdmin) {
                     callerHasPermissions = callerIsContractAdmin;
                 } catch {}

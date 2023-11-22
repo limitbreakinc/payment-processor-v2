@@ -20,12 +20,14 @@ pragma solidity 0.8.19;
 import "./CPortModule.sol";
 
 contract ModulePaymentSettings is cPortModule {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     constructor(
+        address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  
@@ -52,9 +54,10 @@ contract ModulePaymentSettings is cPortModule {
     function createPaymentMethodWhitelist(
         string calldata whitelistName
     ) external returns (uint32 paymentMethodWhitelistId) {
+        address listCreator = _msgSender();
         paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
-        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = msg.sender;
-        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
+        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = listCreator;
+        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, listCreator, whitelistName);
     }
 
     /**
@@ -149,7 +152,8 @@ contract ModulePaymentSettings is cPortModule {
         uint16 royaltyBackfillNumerator,
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
-        address exclusiveBountyReceiver) external {
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (royaltyBackfillNumerator > FEE_DENOMINATOR) {
@@ -185,7 +189,8 @@ contract ModulePaymentSettings is cPortModule {
                 constrainedPricingPaymentMethod: constrainedPricingPaymentMethod,
                 royaltyBackfillNumerator: royaltyBackfillNumerator,
                 royaltyBountyNumerator: royaltyBountyNumerator,
-                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0)});
+                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
+                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -195,7 +200,8 @@ contract ModulePaymentSettings is cPortModule {
                 royaltyBackfillNumerator,
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
     }
 
     /**
@@ -283,6 +289,53 @@ contract ModulePaymentSettings is cPortModule {
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    /**
+     * @notice Allows trusted channels to be added to a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified address is not a trusted forwarder.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelAddedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to add.
+     */
+    function addTrustedChannelForCollection(address tokenAddress, address channel) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (!isTrustedForwarder(channel)) {
+            revert cPort__ChannelIsNotTrustedForwarder();
+        }
+
+        if (appStorage().collectionTrustedChannels[tokenAddress].add(channel)) {
+            emit TrustedChannelAddedForCollection(tokenAddress, channel);
+        }
+    }
+
+    /**
+     * @notice Allows trusted channels to be removed from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been dis-approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to remove.
+     */
+    function removeTrustedChannelForCollection(address tokenAddress, address channel) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionTrustedChannels[tokenAddress].remove(channel)) {
+            emit TrustedChannelRemovedForCollection(tokenAddress, channel);
         }
     }
 }
