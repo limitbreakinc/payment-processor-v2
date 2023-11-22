@@ -22,10 +22,11 @@ import "./CPortModule.sol";
 contract ModulePaymentSettings is cPortModule {
 
     constructor(
+        address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  
@@ -52,9 +53,10 @@ contract ModulePaymentSettings is cPortModule {
     function createPaymentMethodWhitelist(
         string calldata whitelistName
     ) external returns (uint32 paymentMethodWhitelistId) {
+        address listCreator = _msgSender();
         paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
-        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = msg.sender;
-        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
+        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = listCreator;
+        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, listCreator, whitelistName);
     }
 
     /**

@@ -19,6 +19,9 @@ import "../mocks/SeaportTestERC1155.sol";
 import "../mocks/SeaportTestERC1155Without2981.sol";
 import "../mocks/WNative.sol";
 
+import {TrustedForwarder} from "@limitbreak/trusted-forwarder/TrustedForwarder.sol";
+import {TrustedForwarderFactory} from "@limitbreak/trusted-forwarder/TrustedForwarderFactory.sol";
+
 contract cPortModuleTest is Test, cPortEvents {
 
     struct FuzzedOrder721 {
@@ -91,6 +94,10 @@ contract cPortModuleTest is Test, cPortEvents {
     SeaportTestERC721[] erc721s;
     SeaportTestERC1155[] erc1155s;
 
+    TrustedForwarderFactory public factory;
+    address public forwarderImplementation;
+    TrustedForwarder public forwarder;
+
     cPortModule public modulePaymentSettings;
     cPortModule public moduleOnChainCancellation;
     cPortModule public moduleTrades;
@@ -120,6 +127,11 @@ contract cPortModuleTest is Test, cPortEvents {
 
         erc1155s = [test1155];
 
+        forwarderImplementation = address(new TrustedForwarder());
+        TrustedForwarder(forwarderImplementation).__TrustedForwarder_init(address(this), address(this));
+
+        factory = new TrustedForwarderFactory(forwarderImplementation);
+
         _cPortEncoder = new cPortEncoder();
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
@@ -130,16 +142,19 @@ contract cPortModuleTest is Test, cPortEvents {
         });
 
         modulePaymentSettings = new ModulePaymentSettings(
+            address(factory),
             2300, 
             address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleOnChainCancellation = new ModuleOnChainCancellation(
+            address(factory),
             2300, 
             address(nativeWrapper),
             defaultPaymentMethods);
 
         moduleTrades = new ModuleTrades(
+            address(factory),
             2300, 
             address(nativeWrapper),
             defaultPaymentMethods);

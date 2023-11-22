@@ -591,7 +591,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    Throws when the nonce was already used by the maker to successfully buy or sell an NFT.
      *
      * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The specified `nonce` for the `msg.sender` has been revoked and can
+     * @dev    1. The specified `nonce` for the `_msgSender()` has been revoked and can
      *            no longer be used to execute a sale or purchase.
      * @dev    2. A `NonceInvalidated` event has been emitted.
      *

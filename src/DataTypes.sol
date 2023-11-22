@@ -186,7 +186,16 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
  struct FulfillOrderFunctionPointers {
     function(address,address,IERC20,uint256,uint256) funcPayout;
     function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
-    function(Order memory) funcEmitOrderExecutionEvent;
+    function(TradeContext memory context, Order memory) funcEmitOrderExecutionEvent;
+ }
+
+ /** 
+ * @dev Internal contract use only - this is not a public-facing struct
+ */
+ struct TradeContext {
+    bytes32 domainSeparator;
+    address taker;
+    bool disablePartialFill;
  }
 
 struct cPortStorage {
