@@ -1,9 +1,9 @@
 pragma solidity 0.8.19;
 
-import "../modules/CPortModule.t.sol";
+import "../../modules/CPortModule.t.sol";
 import {Merkle} from "murky/Merkle.sol";
 
-contract BenchmarkTradesBaseTest is cPortModuleTest {
+contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
 
     struct BenchmarkParams {
         uint256 numRuns;
@@ -52,6 +52,16 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
         address beneficiary;
         bool emptyCosignature;
     }
+
+    address channel;
+
+    function setUp() public virtual override {
+        super.setUp();
+
+        channel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0));
+    }
+
+    //function cloneTrustedForwarder(address admin, address appSigner, bytes32 salt) external returns (address trustedForwarder) {
 
     /************/
     /*  Signed  */
@@ -466,6 +476,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _buySignedListing(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
@@ -473,6 +484,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _buySignedListingWithFeeOnTop(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
@@ -545,6 +557,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListing(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -552,6 +565,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListing(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -561,6 +575,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListingWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -569,6 +584,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListingWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -644,6 +660,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _buySignedListing(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
@@ -651,6 +668,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _buySignedListingWithFeeOnTop(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
@@ -725,6 +743,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListing(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -732,6 +751,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListing(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -741,6 +761,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _buyEmptyCosignedListingWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -749,6 +770,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _buyCosignedListingWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                         fuzzedOrderInputs, 
@@ -821,12 +843,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedItemOffer(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedItemOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -898,12 +922,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedItemOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedItemOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -912,6 +938,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedItemOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -919,6 +946,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedItemOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -989,12 +1017,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedCollectionOffer(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedCollectionOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1065,12 +1095,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedCollectionOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedCollectionOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1079,6 +1111,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedCollectionOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1086,6 +1119,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedCollectionOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1163,6 +1197,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedTokenSetOffer(
+                    channel,
                     alice,
                     fuzzedOrderInputs,
                     saleDetails, 
@@ -1173,6 +1208,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedTokenSetOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1254,6 +1290,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedTokenSetOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1264,6 +1301,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedTokenSetOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1276,6 +1314,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedTokenSetOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1287,6 +1326,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedTokenSetOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1364,12 +1404,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedItemOffer(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedItemOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1443,12 +1485,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedItemOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedItemOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1457,6 +1501,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedItemOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1464,6 +1509,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedItemOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1536,12 +1582,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedCollectionOffer(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedCollectionOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1614,12 +1662,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedCollectionOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedCollectionOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1628,6 +1678,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedCollectionOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1635,6 +1686,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedCollectionOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1714,6 +1766,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _acceptSignedTokenSetOffer(
+                    channel,
                     alice,
                     fuzzedOrderInputs,
                     saleDetails, 
@@ -1724,6 +1777,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _acceptSignedTokenSetOfferWithFeeOnTop(
+                    channel,
                     alice, 
                     fuzzedOrderInputs, 
                     saleDetails, 
@@ -1807,6 +1861,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedTokenSetOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1817,6 +1872,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedTokenSetOffer(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1829,6 +1885,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _acceptEmptyCosignedTokenSetOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1840,6 +1897,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _acceptCosignedTokenSetOfferWithFeeOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputs, 
                         saleDetails, 
@@ -1924,6 +1982,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             if (params.feeOnTopRate == type(uint96).max) {
                 _bulkBuySignedListings(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                     fuzzedOrderInputsArray, 
@@ -1931,6 +1990,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _bulkBuySignedListingsWithFeeOnTop(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                     fuzzedOrderInputsArray, 
@@ -2012,6 +2072,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _bulkBuyEmptyCosignedListings(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         fuzzedOrderInputsArray, 
@@ -2019,6 +2080,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkBuyCosignedListings(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         fuzzedOrderInputsArray, 
@@ -2028,6 +2090,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _bulkBuyEmptyCosignedListingsWithFeesOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         fuzzedOrderInputsArray, 
@@ -2036,6 +2099,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkBuyCosignedListingsWithFeesOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         fuzzedOrderInputsArray, 
@@ -2117,12 +2181,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             if (params.feeOnTopRate == type(uint96).max) {
                 _bulkAcceptSignedItemOffers(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
                     EMPTY_SELECTOR);
             } else {
                 _bulkAcceptSignedItemOffersWithFeesOnTop(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
@@ -2203,12 +2269,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedItemOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedItemOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2217,6 +2285,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedItemOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2224,6 +2293,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedItemOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2304,12 +2374,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             if (params.feeOnTopRate == type(uint96).max) {
                 _bulkAcceptSignedCollectionOffers(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
                     EMPTY_SELECTOR);
             } else {
                 _bulkAcceptSignedCollectionOffersWithFeesOnTop(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
@@ -2390,12 +2462,14 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedCollectionOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedCollectionOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2404,6 +2478,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedCollectionOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2411,6 +2486,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedCollectionOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2502,6 +2578,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             if (params.feeOnTopRate == type(uint96).max) {
                 _bulkAcceptSignedTokenSetOffers(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
@@ -2509,6 +2586,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _bulkAcceptSignedTokenSetOffersWithFeesOnTop(
+                    channel,
                     alice,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
@@ -2601,6 +2679,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedTokenSetOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2608,6 +2687,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedTokenSetOffers(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2617,6 +2697,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _bulkAcceptEmptyCosignedTokenSetOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2625,6 +2706,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _bulkAcceptCosignedTokenSetOffersWithFeesOnTop(
+                        channel,
                         alice, 
                         fuzzedOrderInputsArray, 
                         saleDetailsArray, 
@@ -2710,6 +2792,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
     
             if (params.feeOnTopRate == type(uint96).max) {
                 _sweepSignedListings(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                     sweepOrder,
@@ -2718,6 +2801,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _sweepSignedListingsWithFeeOnTop(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                     sweepOrder,
@@ -2804,6 +2888,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             if (params.feeOnTopRate == type(uint96).max) {
                 if (params.emptyCosignature) {
                     _sweepEmptyCosignedListings(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         sweepOrder,
@@ -2812,6 +2897,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _sweepCosignedListings(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         sweepOrder,
@@ -2822,6 +2908,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
             } else {
                 if (params.emptyCosignature) {
                     _sweepEmptyCosignedListingsWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         sweepOrder,
@@ -2831,6 +2918,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                         EMPTY_SELECTOR);
                 } else {
                     _sweepCosignedListingsWithFeeOnTop(
+                        channel,
                         vm.addr(params.buyerKey), 
                         params.currency == address(0) ? uint128(paymentAmount * params.batchSize) : 0, 
                         sweepOrder,
@@ -2903,6 +2991,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
 
             if (params.feeOnTopRate == type(uint96).max) {
                 _buySignedListing(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
@@ -2910,6 +2999,7 @@ contract BenchmarkTradesBaseTest is cPortModuleTest {
                     EMPTY_SELECTOR);
             } else {
                 _buySignedListingWithFeeOnTop(
+                    channel,
                     vm.addr(params.buyerKey), 
                     params.currency == address(0) ? uint128(saleDetails.itemPrice) : 0, 
                     fuzzedOrderInputs, 
