@@ -137,7 +137,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
             moduleOnChainCancellation_ == address(0) ||
             moduleTrades_ == address(0) ||
             moduleTradesAdvanced_ == address(0)) {
-            revert cPort__InvalidConstructorArguments();
+            revert PaymentProcessor__InvalidConstructorArguments();
         }
 
         _modulePaymentSettings = modulePaymentSettings_;

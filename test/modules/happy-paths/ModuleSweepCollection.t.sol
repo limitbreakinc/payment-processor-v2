@@ -91,25 +91,25 @@ contract ModuleSweepCollectionTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetailsArray[0].tokenId, params1.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[0].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[0].maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
 
             test721.mint(saleDetailsArray[1].maker, saleDetailsArray[1].tokenId);
             test721.setTokenRoyalty(saleDetailsArray[1].tokenId, params2.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[1].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[1].maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetailsArray[0].maker, saleDetailsArray[0].tokenId, saleDetailsArray[0].amount);
             test1155.setTokenRoyalty(saleDetailsArray[0].tokenId, params1.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[0].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[0].maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             test1155.mint(saleDetailsArray[1].maker, saleDetailsArray[1].tokenId, saleDetailsArray[1].amount);
             test1155.setTokenRoyalty(saleDetailsArray[1].tokenId, params2.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[1].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[1].maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
         }
 
         if (sweepOrder.paymentMethod == address(0)) {
@@ -117,7 +117,7 @@ contract ModuleSweepCollectionTest is cPortModuleTest {
         } else {
             SeaportTestERC20(sweepOrder.paymentMethod).mint(buyer, saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
             vm.prank(buyer);
-            SeaportTestERC20(sweepOrder.paymentMethod).approve(address(_cPort), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
+            SeaportTestERC20(sweepOrder.paymentMethod).approve(address(_paymentProcessor), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
         }
 
         if (sweepOrder.paymentMethod == address(0)) {

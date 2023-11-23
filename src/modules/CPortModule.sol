@@ -61,7 +61,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         
         if (defaultPushPaymentGasLimit_ == 0 ||
             wrappedNativeCoinAddress_ == address(0)) {
-            revert cPort__InvalidConstructorArguments();
+            revert PaymentProcessor__InvalidConstructorArguments();
         }
 
         pushPaymentGasLimit = defaultPushPaymentGasLimit_;        
@@ -125,7 +125,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
         if (quantityToFill != saleDetails.amount) {
             if (saleDetails.itemPrice % saleDetails.amount != 0) {
-                revert cPort__PartialFillsNotSupportedForNonDivisibleItems();
+                revert PaymentProcessor__PartialFillsNotSupportedForNonDivisibleItems();
             }
 
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
@@ -156,7 +156,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         FeeOnTop memory feeOnTop
     ) internal {
         if (saleDetails.paymentMethod == address(0)) {
-            revert cPort__BadPaymentMethod();
+            revert PaymentProcessor__BadPaymentMethod();
         }
 
         uint248 quantityToFill;
@@ -173,7 +173,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                     tokenSetProof.proof, 
                     tokenSetProof.rootHash, 
                     keccak256(abi.encode(saleDetails.tokenAddress, saleDetails.tokenId)))) {
-                    revert cPort__IncorrectTokenSetMerkleProof();
+                    revert PaymentProcessor__IncorrectTokenSetMerkleProof();
                 }
 
                 quantityToFill = _verifyTokenSetOffer(
@@ -193,7 +193,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
         if (quantityToFill != saleDetails.amount) {
             if (saleDetails.itemPrice % saleDetails.amount != 0) {
-                revert cPort__PartialFillsNotSupportedForNonDivisibleItems();
+                revert PaymentProcessor__PartialFillsNotSupportedForNonDivisibleItems();
             }
             
             saleDetails.itemPrice = saleDetails.itemPrice / saleDetails.amount * quantityToFill;
@@ -225,19 +225,19 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
     ) internal returns (uint256 endingNativeFunds) {
 
         if (sweepOrder.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
-            revert cPort__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
+            revert PaymentProcessor__OrderProtocolERC1155FillPartialUnsupportedInSweeps();
         }
 
         if (items.length != signedSellOrders.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (items.length != cosignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (items.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         (Order[] memory saleDetailsBatch, RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) = 
@@ -273,20 +273,20 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
     ) private view returns (RoyaltyBackfillAndBounty memory royaltyBackfillAndBounty) {
         if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
             if (saleDetails.amount != ONE) {
-                revert cPort__AmountForERC721SalesMustEqualOne();
+                revert PaymentProcessor__AmountForERC721SalesMustEqualOne();
             }
         } else {
             if (saleDetails.amount == 0) {
-                revert cPort__AmountForERC1155SalesGreaterThanZero();
+                revert PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
             }
         }
 
         if (block.timestamp > saleDetails.expiration) {
-            revert cPort__OrderHasExpired();
+            revert PaymentProcessor__OrderHasExpired();
         }
 
         if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
-            revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+            revert PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
         }
 
         CollectionPaymentSettings storage paymentSettingsForCollection = 
@@ -302,7 +302,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (trustedChannels.length() > 0) {
                 if (!trustedChannels.contains(context.channel)) {
-                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                    revert PaymentProcessor__TradeOriginatedFromUntrustedChannel();
                 }
             }
         }
@@ -319,15 +319,15 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         
         if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != saleDetails.paymentMethod) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
 
             _validateSalePriceInRange(
@@ -359,7 +359,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (trustedChannels.length() > 0) {
                 if (!trustedChannels.contains(context.channel)) {
-                    revert cPort__TradeOriginatedFromUntrustedChannel();
+                    revert PaymentProcessor__TradeOriginatedFromUntrustedChannel();
                 }
             }
         }
@@ -376,15 +376,15 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
         if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(sweepOrder.paymentMethod)) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
             if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
-                revert cPort__PaymentCoinIsNotAnApprovedPaymentMethod();
+                revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         }
 
@@ -419,16 +419,16 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
                 if (saleDetails.amount != ONE) {
-                    revert cPort__AmountForERC721SalesMustEqualOne();
+                    revert PaymentProcessor__AmountForERC721SalesMustEqualOne();
                 }
             } else {
                 if (saleDetails.amount == 0) {
-                    revert cPort__AmountForERC1155SalesGreaterThanZero();
+                    revert PaymentProcessor__AmountForERC1155SalesGreaterThanZero();
                 }
             }
 
             if (saleDetails.marketplaceFeeNumerator + saleDetails.maxRoyaltyFeeNumerator > FEE_DENOMINATOR) {
-                revert cPort__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
+                revert PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
             }
 
             if (paymentSettings == PaymentSettings.PricingConstraints) {
@@ -440,7 +440,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             }
 
             if (block.timestamp > saleDetails.expiration) {
-                    revert cPort__OrderHasExpired();
+                    revert PaymentProcessor__OrderHasExpired();
             }
 
             _verifySaleApproval(context, saleDetails, signedSellOrders[i], cosignatures[i]);
@@ -451,7 +451,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         }
 
         if (feeOnTop.amount > sumListingPrices) {
-            revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+            revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
         }
     }
 
@@ -467,11 +467,11 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             uint256 unitPrice = salePrice / amount;
 
             if (unitPrice > ceilingPrice) {
-                revert cPort__SalePriceAboveMaximumCeiling();
+                revert PaymentProcessor__SalePriceAboveMaximumCeiling();
             }
 
             if (unitPrice < floorPrice) {
-                revert cPort__SalePriceBelowMinimumFloor();
+                revert PaymentProcessor__SalePriceBelowMinimumFloor();
             }
         }
     }
@@ -517,7 +517,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                 saleDetails.tokenId, 
                 saleDetails.amount)) {
             if (context.disablePartialFill) {
-                revert cPort__DispensingTokenWasUnsuccessful();
+                revert PaymentProcessor__DispensingTokenWasUnsuccessful();
             }
         } else {
             SplitProceeds memory proceeds =
@@ -540,7 +540,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             if (saleDetails.paymentMethod == address(0)) {
                 uint256 nativeProceedsToSpend = saleDetails.itemPrice + feeOnTopAmount;
                 if (endingNativeFunds < nativeProceedsToSpend) {
-                    revert cPort__RanOutOfNativeFunds();
+                    revert PaymentProcessor__RanOutOfNativeFunds();
                 }
 
                 unchecked {
@@ -562,7 +562,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (feeOnTopAmount > 0) {
                 if (feeOnTopAmount > saleDetails.itemPrice) {
-                    revert cPort__FeeOnTopCannotBeGreaterThanItemPrice();
+                    revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
                 }
 
                 fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
@@ -612,7 +612,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
                 if (saleDetails.paymentMethod == address(0)) {
                     if (endingNativeFunds < saleDetails.itemPrice) {
-                        revert cPort__RanOutOfNativeFunds();
+                        revert PaymentProcessor__RanOutOfNativeFunds();
                     }
     
                     unchecked {
@@ -677,7 +677,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             if (params.feeOnTop.amount > 0) {
                 if (address(params.paymentCoin) == address(0)) {
                     if (endingNativeFunds < params.feeOnTop.amount) {
-                        revert cPort__RanOutOfNativeFunds();
+                        revert PaymentProcessor__RanOutOfNativeFunds();
                     }
     
                     unchecked {
@@ -713,7 +713,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (royaltyAmount > 0) {
                 if (royaltyAmount > (salePrice * maxRoyaltyFeeNumerator) / FEE_DENOMINATOR) {
-                    revert cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
+                    revert PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
                 }
 
                 proceeds.royaltyRecipient = royaltyReceiver;
@@ -727,7 +727,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             // If the token doesn't implement the royaltyInfo function, then check if there are backfilled royalties.
             if (royaltyBackfillAndBounty.backfillReceiver != address(0)) {
                 if (royaltyBackfillAndBounty.backfillNumerator > maxRoyaltyFeeNumerator) {
-                    revert cPort__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
+                    revert PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
                 }
 
                 proceeds.royaltyRecipient = royaltyBackfillAndBounty.backfillReceiver;
@@ -775,7 +775,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         }
 
         if (!success) {
-            revert cPort__FailedToTransferProceeds();
+            revert PaymentProcessor__FailedToTransferProceeds();
         }
     }
 
@@ -908,7 +908,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             }
 
             if (quantityToFill < minimumFillAmount) {
-                revert cPort__UnableToFillMinimumRequestedQuantity();
+                revert PaymentProcessor__UnableToFillMinimumRequestedQuantity();
             }
 
             unchecked {
@@ -920,7 +920,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                 emit OrderDigestInvalidated(orderDigest, account, false);
             }
         } else {
-            revert cPort__OrderIsEitherCancelledOrFilled();
+            revert PaymentProcessor__OrderIsEitherCancelledOrFilled();
         }
     }
 
@@ -940,7 +940,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         //     uint256 slotValue = ptrInvalidatedSignatureBitmap[slot];
         // 
         //     if (((slotValue >> offset) & ONE) == ONE) {
-        //         revert cPort__SignatureAlreadyUsedOrRevoked();
+        //         revert PaymentProcessor__SignatureAlreadyUsedOrRevoked();
         //     }
         // 
         //     ptrInvalidatedSignatureBitmap[slot] = (slotValue | ONE << offset);
@@ -949,7 +949,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         unchecked {
             if (uint256(appStorage().invalidatedSignatures[account][uint248(nonce >> 8)] ^= (ONE << uint8(nonce))) & 
                 (ONE << uint8(nonce)) == ZERO) {
-                revert cPort__SignatureAlreadyUsedOrRevoked();
+                revert PaymentProcessor__SignatureAlreadyUsedOrRevoked();
             }
         }
 
@@ -967,7 +967,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             partialFillStatus.remainingFillableQuantity = 0;
             emit OrderDigestInvalidated(orderDigest, account, true);
         } else {
-            revert cPort__OrderIsEitherCancelledOrFilled();
+            revert PaymentProcessor__OrderIsEitherCancelledOrFilled();
         }
     }
 
@@ -1172,7 +1172,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             if (maker.code.length > 0) {
                 _verifyEIP1271Signature(maker, digest, signature);
             } else {
-                revert cPort__UnauthorizedOrder();
+                revert PaymentProcessor__UnauthorizedOrder();
             }
         }
     }
@@ -1183,11 +1183,11 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         Cosignature memory cosignature
     ) private view {
         if (block.timestamp > cosignature.expiration) {
-            revert cPort__CosignatureHasExpired();
+            revert PaymentProcessor__CosignatureHasExpired();
         }
 
         if (context.taker != cosignature.taker) {
-            revert cPort__UnauthorizedTaker();
+            revert PaymentProcessor__UnauthorizedTaker();
         }
 
         if (cosignature.signer != _ecdsaRecover(
@@ -1204,7 +1204,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             cosignature.v, 
             cosignature.r, 
             cosignature.s)) {
-            revert cPort__NotAuthorizedByCoSigner();
+            revert PaymentProcessor__NotAuthorizedByCoSigner();
         }
     }
 
@@ -1222,7 +1222,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         } catch {}
 
         if (!isValidSignatureNow) {
-            revert cPort__EIP1271SignatureInvalid();
+            revert PaymentProcessor__EIP1271SignatureInvalid();
         }
     }
 
@@ -1233,12 +1233,12 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         bytes32 s
     ) private pure returns (address signer) {
         if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            revert cPort__UnauthorizedOrder();
+            revert PaymentProcessor__UnauthorizedOrder();
         }
 
         signer = ecrecover(digest, v, r, s);
         if (signer == address(0)) {
-            revert cPort__UnauthorizedOrder();
+            revert PaymentProcessor__UnauthorizedOrder();
         }
     }
 
@@ -1252,7 +1252,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
     function _requireCallerOwnsPaymentMethodWhitelist(uint32 paymentMethodWhitelistId) internal view {
         if(_msgSender() != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
-            revert cPort__CallerDoesNotOwnPaymentMethodWhitelist();
+            revert PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
         }
     }
 
@@ -1276,7 +1276,7 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
         }
 
         if(!callerHasPermissions) {
-            revert cPort__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+            revert PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
         }
     }
 }

@@ -62,13 +62,13 @@ contract ModuleBulkAcceptTokenSetOffersTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -132,13 +132,13 @@ contract ModuleBulkAcceptTokenSetOffersTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -217,12 +217,12 @@ contract ModuleBulkAcceptTokenSetOffersTest is cPortModuleTest {
         if (saleDetailsArray[0].maker == saleDetailsArray[1].maker) {
             weth.mint(saleDetailsArray[0].maker, saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
             vm.prank(saleDetailsArray[0].maker);
-            weth.approve(address(_cPort), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
+            weth.approve(address(_paymentProcessor), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
         } else {
             for (uint256 i = 0; i < paymentAmountsArray.length; i++) {
                 weth.mint(saleDetailsArray[i].maker, saleDetailsArray[i].itemPrice);
                 vm.prank(saleDetailsArray[i].maker);
-                weth.approve(address(_cPort), saleDetailsArray[i].itemPrice);
+                weth.approve(address(_paymentProcessor), saleDetailsArray[i].itemPrice);
             }
         }
 
@@ -300,18 +300,18 @@ contract ModuleBulkAcceptTokenSetOffersTest is cPortModuleTest {
         if (saleDetailsArray[0].maker == saleDetailsArray[1].maker) {
             weth.mint(saleDetailsArray[0].maker, saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
             vm.prank(saleDetailsArray[0].maker);
-            weth.approve(address(_cPort), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
+            weth.approve(address(_paymentProcessor), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice);
         } else {
             for (uint256 i = 0; i < paymentAmountsArray.length; i++) {
                 weth.mint(saleDetailsArray[i].maker, saleDetailsArray[i].itemPrice);
                 vm.prank(saleDetailsArray[i].maker);
-                weth.approve(address(_cPort), saleDetailsArray[i].itemPrice);
+                weth.approve(address(_paymentProcessor), saleDetailsArray[i].itemPrice);
             }
         }
 
         weth.mint(seller, feesOnTop[0].amount + feesOnTop[1].amount);
         vm.prank(seller);
-        weth.approve(address(_cPort), feesOnTop[0].amount + feesOnTop[1].amount);
+        weth.approve(address(_paymentProcessor), feesOnTop[0].amount + feesOnTop[1].amount);
 
         uint256[] memory tokenSetIds = new uint256[](2);
         bytes32[] memory data = new bytes32[](2);

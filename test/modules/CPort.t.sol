@@ -7,7 +7,7 @@ import "./CPortModule.t.sol";
 
 contract cPortTest is cPortModuleTest {
     function testGetDefaultPaymentMethods() public {
-        address[] memory defaultPaymentMethods = _cPort.getDefaultPaymentMethods();
+        address[] memory defaultPaymentMethods = _paymentProcessor.getDefaultPaymentMethods();
         assertEq(defaultPaymentMethods.length, 5);
         assertEq(defaultPaymentMethods[0], address(0));
         assertEq(defaultPaymentMethods[1], address(weth));
@@ -27,28 +27,28 @@ contract cPortTest is cPortModuleTest {
         _sanitizeAddress(postDeployMethod2, exclusionList);
         _sanitizeAddress(nonDefault, exclusionList);
 
-        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod1)));
-        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod2)));
+        _paymentProcessor.whitelistPaymentMethod(_paymentProcessorEncoder.encodeWhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod1)));
+        _paymentProcessor.whitelistPaymentMethod(_paymentProcessorEncoder.encodeWhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod2)));
         
-        assertTrue(_cPort.isDefaultPaymentMethod(address(0)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(weth)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(usdc)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(usdt)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(dai)));
-        assertTrue(_cPort.isDefaultPaymentMethod(postDeployMethod1));
-        assertTrue(_cPort.isDefaultPaymentMethod(postDeployMethod2));
-        assertFalse(_cPort.isDefaultPaymentMethod(nonDefault));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(0)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(weth)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(usdc)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(usdt)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(dai)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(postDeployMethod1));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(postDeployMethod2));
+        assertFalse(_paymentProcessor.isDefaultPaymentMethod(nonDefault));
 
-        _cPort.unwhitelistPaymentMethod(_cPortEncoder.encodeUnwhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod1)));
-        _cPort.unwhitelistPaymentMethod(_cPortEncoder.encodeUnwhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod2)));
+        _paymentProcessor.unwhitelistPaymentMethod(_paymentProcessorEncoder.encodeUnwhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod1)));
+        _paymentProcessor.unwhitelistPaymentMethod(_paymentProcessorEncoder.encodeUnwhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(postDeployMethod2)));
 
-        assertTrue(_cPort.isDefaultPaymentMethod(address(0)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(weth)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(usdc)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(usdt)));
-        assertTrue(_cPort.isDefaultPaymentMethod(address(dai)));
-        assertFalse(_cPort.isDefaultPaymentMethod(postDeployMethod1));
-        assertFalse(_cPort.isDefaultPaymentMethod(postDeployMethod2));
-        assertFalse(_cPort.isDefaultPaymentMethod(nonDefault));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(0)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(weth)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(usdc)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(usdt)));
+        assertTrue(_paymentProcessor.isDefaultPaymentMethod(address(dai)));
+        assertFalse(_paymentProcessor.isDefaultPaymentMethod(postDeployMethod1));
+        assertFalse(_paymentProcessor.isDefaultPaymentMethod(postDeployMethod2));
+        assertFalse(_paymentProcessor.isDefaultPaymentMethod(nonDefault));
     }
 }

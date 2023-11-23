@@ -104,19 +104,19 @@ contract ModuleTrades is cPortModule {
         FeeOnTop[] calldata feesOnTop
     ) public payable {
         if (saleDetailsArray.length != sellerSignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length != cosignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length != feesOnTop.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         uint256 remainingNativeProceeds = msg.value;
@@ -170,27 +170,27 @@ contract ModuleTrades is cPortModule {
         BulkAcceptOffersParams memory params
     ) public {
         if (params.saleDetailsArray.length != params.isCollectionLevelOfferArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.buyerSignaturesArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.tokenSetProofsArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.cosignaturesArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.feesOnTopArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         uint256 appendedDataLength;

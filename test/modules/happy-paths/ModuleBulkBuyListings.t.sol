@@ -56,13 +56,13 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -125,13 +125,13 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -221,7 +221,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
         if (nonNativePaymentAmount > 0) {
             weth.mint(buyer, nonNativePaymentAmount);
             vm.prank(buyer);
-            weth.approve(address(_cPort), nonNativePaymentAmount);
+            weth.approve(address(_paymentProcessor), nonNativePaymentAmount);
         }
 
         vm.deal(buyer, nativePaymentAmount);
@@ -295,7 +295,7 @@ contract ModuleBulkBuyListingsTest is cPortModuleTest {
         if (nonNativePaymentAmount > 0) {
             weth.mint(buyer, nonNativePaymentAmount + nonNativeFeeOnTop);
             vm.prank(buyer);
-            weth.approve(address(_cPort), nonNativePaymentAmount + nonNativeFeeOnTop);
+            weth.approve(address(_paymentProcessor), nonNativePaymentAmount + nonNativeFeeOnTop);
         }
 
         vm.deal(buyer, nativePaymentAmount + nativeFeeOnTop);
