@@ -44,7 +44,7 @@ import "./PaymentProcessorModule.sol";
 * @author Limit Break, Inc.
 */ 
 
-contract ModuleOnChainCancellation is PaymentProcessorModule {
+contract ModuleTradesAdvanced is PaymentProcessorModule {
 
     constructor(
         address trustedForwarderFactory_,
@@ -57,53 +57,43 @@ contract ModuleOnChainCancellation is PaymentProcessorModule {
         wrappedNativeCoinAddress_, 
         defaultPaymentMethods) {}
 
-    /**
-     * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The maker's master nonce has been incremented by `1` in contract storage, rendering all signed
-     *            approvals using the prior nonce unusable.
-     * @dev    2. A `MasterNonceInvalidated` event has been emitted.
-     */
-    function revokeMasterNonce() external {
-        address caller = _msgSender();
+    function sweepCollection(
+        bytes32 domainSeparator, 
+        FeeOnTop memory feeOnTop,
+        SweepOrder memory sweepOrder,
+        SweepItem[] calldata items,
+        SignatureECDSA[] calldata signedSellOrders,
+        Cosignature[] memory cosignatures
+    ) public payable {
+        uint256 appendedDataLength;
         unchecked {
-            emit MasterNonceInvalidated(caller, appStorage().masterNonces[caller]++);
+            appendedDataLength = 
+                msg.data.length - 
+                BASE_MSG_LENGTH_SWEEP_COLLECTION - 
+                (BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM * items.length);
         }
-    }
 
-    /**
-     * @notice Allows a maker to revoke/cancel a single, previously signed listing or offer by specifying the
-     *         nonce of the listing or offer.
-     *
-     * @dev    Throws when the maker has already revoked the nonce.
-     * @dev    Throws when the nonce was already used by the maker to successfully buy or sell an NFT.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The specified `nonce` for the `_msgSender()` has been revoked and can
-     *            no longer be used to execute a sale or purchase.
-     * @dev    2. A `NonceInvalidated` event has been emitted.
-     *
-     * @param  nonce The nonce that was signed in the revoked listing or offer.
-     */
-    function revokeSingleNonce(uint256 nonce) external {
-        _checkAndInvalidateNonce(_msgSender(), nonce, true);
-    }
+        TradeContext memory context = TradeContext({
+            domainSeparator: domainSeparator,
+            channel: msg.sender,
+            taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
+            disablePartialFill: false
+        });
 
-    /**
-     * @notice Allows a maker to revoke/cancel a partially fillable order by specifying the order digest hash.
-     *
-     * @dev    Throws when the maker has already revoked the order digest.
-     * @dev    Throws when the order digest was already used by the maker and has been fully filled.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The specified `orderDigest` for the `_msgSender()` has been revoked and can
-     *            no longer be used to execute a sale or purchase.
-     * @dev    2. An `OrderDigestInvalidated` event has been emitted.
-     *
-     * @param  orderDigest The order digest that was signed in the revoked listing or offer.
-     */
-    function revokeOrderDigest(bytes32 orderDigest) external {
-        _revokeOrderDigest(_msgSender(), orderDigest);
+        uint256 remainingNativeProceeds =_executeSweepOrder(
+            context,
+            msg.value,
+            feeOnTop,
+            sweepOrder,
+            items,
+            signedSellOrders,
+            cosignatures
+        );
+
+        if (remainingNativeProceeds > 0) {
+            _pushProceeds(wrappedNativeCoinAddress, remainingNativeProceeds, gasleft());
+            IERC20(wrappedNativeCoinAddress).
+                transferFrom(address(this), context.taker, remainingNativeProceeds);
+        }
     }
 }

@@ -2,6 +2,12 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
+enum Sides { 
+    Buy, 
+    Sell 
+}
 
 enum OrderProtocols { 
     ERC721_FILL_OR_KILL, 
@@ -21,10 +27,6 @@ struct DefaultPaymentMethods {
     address defaultPaymentMethod2;
     address defaultPaymentMethod3;
     address defaultPaymentMethod4;
-    address defaultPaymentMethod5;
-    address defaultPaymentMethod6;
-    address defaultPaymentMethod7;
-    address defaultPaymentMethod8;
 }
 
 struct CollectionPaymentSettings {
@@ -34,6 +36,7 @@ struct CollectionPaymentSettings {
     uint16 royaltyBackfillNumerator;
     uint16 royaltyBountyNumerator;
     bool isRoyaltyBountyExclusive;
+    bool blockTradesFromUntrustedChannels;
 }
 
 /**
@@ -51,6 +54,7 @@ struct Order {
     address maker;
     address beneficiary;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     address paymentMethod;
     address tokenAddress;
     uint256 tokenId;
@@ -111,6 +115,7 @@ struct SweepOrder {
 struct SweepItem {
     address maker;
     address marketplace;
+    address fallbackRoyaltyRecipient;
     uint256 tokenId;
     uint248 amount;
     uint256 itemPrice;
@@ -135,14 +140,7 @@ struct PricingBounds {
     uint120 ceilingPrice;
 }
 
-struct BulkBuyListingsCosignedWithFeeOnTopParams {
-    Order[] saleDetailsArray;
-    SignatureECDSA[] sellerSignatures;
-    Cosignature[] cosignatures;
-    FeeOnTop[] feesOnTop;
-}
-
-struct BulkAcceptOffersCosignedWithFeeOnTopParams {
+struct BulkAcceptOffersParams {
     bool[] isCollectionLevelOfferArray;
     Order[] saleDetailsArray;
     SignatureECDSA[] buyerSignaturesArray;
@@ -190,10 +188,20 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
  struct FulfillOrderFunctionPointers {
     function(address,address,IERC20,uint256,uint256) funcPayout;
     function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
-    function(Order memory) funcEmitOrderExecutionEvent;
+    function(TradeContext memory context, Order memory) funcEmitOrderExecutionEvent;
  }
 
-struct cPortStorage {
+ /** 
+ * @dev Internal contract use only - this is not a public-facing struct
+ */
+ struct TradeContext {
+    bytes32 domainSeparator;
+    address channel;
+    address taker;
+    bool disablePartialFill;
+ }
+
+struct PaymentProcessorStorage {
     /// @dev Tracks the most recently created payment method whitelist id
     uint32 lastPaymentMethodWhitelistId;
 
@@ -244,4 +252,5 @@ struct cPortStorage {
     mapping (address => address) collectionExclusiveBountyReceivers;
 
     mapping (address => mapping(bytes32 => PartiallyFillableOrderStatus)) partiallyFillableOrderStatuses;
+    mapping (address => EnumerableSet.AddressSet) collectionTrustedChannels;
 }

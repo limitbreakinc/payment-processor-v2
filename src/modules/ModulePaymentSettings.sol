@@ -1,30 +1,73 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import "./PaymentProcessorModule.sol";
+
 /*
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |     ______   | || |              | || |   ______     | || |     ____     | || |  _______     | || |  _________   | |
-| |   .' ___  |  | || |              | || |  |_   __ \   | || |   .'    `.   | || | |_   __ \    | || | |  _   _  |  | |
-| |  / .'   \_|  | || |    ______    | || |    | |__) |  | || |  /  .--.  \  | || |   | |__) |   | || | |_/ | | \_|  | |
-| |  | |         | || |   |______|   | || |    |  ___/   | || |  | |    | |  | || |   |  __ /    | || |     | |      | |
-| |  \ `.___.'\  | || |              | || |   _| |_      | || |  \  `--'  /  | || |  _| |  \ \_  | || |    _| |_     | |
-| |   `._____.'  | || |              | || |  |_____|     | || |   `.____.'   | || | |____| |___| | || |   |_____|    | |
-| |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
+                                                     @@@@@@@@@@@@@@             
+                                                    @@@@@@@@@@@@@@@@@@(         
+                                                   @@@@@@@@@@@@@@@@@@@@@        
+                                                  @@@@@@@@@@@@@@@@@@@@@@@@      
+                                                           #@@@@@@@@@@@@@@      
+                                                               @@@@@@@@@@@@     
+                            @@@@@@@@@@@@@@*                    @@@@@@@@@@@@     
+                           @@@@@@@@@@@@@@@     @               @@@@@@@@@@@@     
+                          @@@@@@@@@@@@@@@     @                @@@@@@@@@@@      
+                         @@@@@@@@@@@@@@@     @@               @@@@@@@@@@@@      
+                        @@@@@@@@@@@@@@@     #@@             @@@@@@@@@@@@/       
+                        @@@@@@@@@@@@@@.     @@@@@@@@@@@@@@@@@@@@@@@@@@@         
+                       @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@            
+                      @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@             
+                     @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+                    @@@@@@@@@@@@@@@     @@@@@&%%%%%%%%&&@@@@@@@@@@@@@@          
+                    @@@@@@@@@@@@@@      @@@@@               @@@@@@@@@@@         
+                   @@@@@@@@@@@@@@@     @@@@@                 @@@@@@@@@@@        
+                  @@@@@@@@@@@@@@@     @@@@@@                 @@@@@@@@@@@        
+                 @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@        
+                @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@&        
+                @@@@@@@@@@@@@@     *@@@@@@@               (@@@@@@@@@@@@         
+               @@@@@@@@@@@@@@@     @@@@@@@@             @@@@@@@@@@@@@@          
+              @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+             @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@            
+            @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              
+           .@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 
+           @@@@@@@@@@@@@@%     @@@@@@@@@@@@@@@@@@@@@@@@(                        
+          @@@@@@@@@@@@@@@                                                       
+         @@@@@@@@@@@@@@@                                                        
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                         
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&                                          
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                           
  
- By Limit Break, Inc.
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
-
-contract ModulePaymentSettings is cPortModule {
+contract ModulePaymentSettings is PaymentProcessorModule {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     constructor(
+        address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
+        address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(defaultPushPaymentGasLimit_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
+
+    /**
+     * @notice Returns an array of the immutable default payment methods specified at deploy time.  
+     *         However, if any post-deployment default payment methods have been added, they are
+     *         not returned here because using an enumerable payment method whitelist would make trades
+     *         less gas efficient.  For post-deployment default payment methods, exchanges should index
+     *         the `PaymentMethodAddedToWhitelist` and `PaymentMethodRemovedFromWhitelist` events.
+     */
+    function getDefaultPaymentMethods() external view returns (address[] memory) {
+        return _getDefaultPaymentMethods();
+    }
 
     /**
      * @notice Allows any user to create a new custom payment method whitelist.
@@ -40,13 +83,10 @@ contract ModulePaymentSettings is cPortModule {
     function createPaymentMethodWhitelist(
         string calldata whitelistName
     ) external returns (uint32 paymentMethodWhitelistId) {
-        unchecked {
-            paymentMethodWhitelistId = ++appStorage().lastPaymentMethodWhitelistId;
-        }
-
-        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = msg.sender;
-
-        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, msg.sender, whitelistName);
+        address listCreator = _msgSender();
+        paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
+        appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = listCreator;
+        emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, listCreator, whitelistName);
     }
 
     /**
@@ -69,7 +109,7 @@ contract ModulePaymentSettings is cPortModule {
             appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__PaymentMethodIsAlreadyApproved();
+            revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
         }
 
         ptrPaymentMethodWhitelist[paymentMethod] = true;
@@ -97,7 +137,7 @@ contract ModulePaymentSettings is cPortModule {
             appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (!ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__CoinIsNotApproved();
+            revert PaymentProcessor__CoinIsNotApproved();
         }
 
         delete ptrPaymentMethodWhitelist[paymentMethod];
@@ -141,15 +181,16 @@ contract ModulePaymentSettings is cPortModule {
         uint16 royaltyBackfillNumerator,
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
-        address exclusiveBountyReceiver) external {
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (royaltyBackfillNumerator > FEE_DENOMINATOR) {
-                revert cPort__RoyaltyBackfillNumeratorCannotExceedFeeDenominator();
+                revert PaymentProcessor__RoyaltyBackfillNumeratorCannotExceedFeeDenominator();
             }
 
             if (royaltyBountyNumerator > FEE_DENOMINATOR) {
-                revert cPort__RoyaltyBountyNumeratorCannotExceedFeeDenominator();
+                revert PaymentProcessor__RoyaltyBountyNumeratorCannotExceedFeeDenominator();
             }
 
             if (
@@ -165,19 +206,20 @@ contract ModulePaymentSettings is cPortModule {
             }
 
             if (paymentMethodWhitelistId > appStorage().lastPaymentMethodWhitelistId) {
-                revert cPort__PaymentMethodWhitelistDoesNotExist();
+                revert PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
             }
 
             appStorage().collectionRoyaltyBackfillReceivers[tokenAddress] = royaltyBackfillReceiver;
             appStorage().collectionExclusiveBountyReceivers[tokenAddress] = exclusiveBountyReceiver;
 
-            appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings(
-                paymentSettings,
-                paymentMethodWhitelistId,
-                constrainedPricingPaymentMethod,
-                royaltyBackfillNumerator,
-                royaltyBountyNumerator,
-                exclusiveBountyReceiver != address(0));
+            appStorage().collectionPaymentSettings[tokenAddress] = CollectionPaymentSettings({
+                paymentSettings: paymentSettings,
+                paymentMethodWhitelistId: paymentMethodWhitelistId,
+                constrainedPricingPaymentMethod: constrainedPricingPaymentMethod,
+                royaltyBackfillNumerator: royaltyBackfillNumerator,
+                royaltyBountyNumerator: royaltyBountyNumerator,
+                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
+                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -187,7 +229,8 @@ contract ModulePaymentSettings is cPortModule {
                 royaltyBackfillNumerator,
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
-                exclusiveBountyReceiver);
+                exclusiveBountyReceiver,
+                blockTradesFromUntrustedChannels);
     }
 
     /**
@@ -209,7 +252,7 @@ contract ModulePaymentSettings is cPortModule {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(pricingBounds.floorPrice > pricingBounds.ceilingPrice) {
-            revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
+            revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
         }
         
         appStorage().collectionPricingBounds[tokenAddress] = pricingBounds;
@@ -245,11 +288,11 @@ contract ModulePaymentSettings is cPortModule {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(tokenIds.length != pricingBounds.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if(tokenIds.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = 
@@ -261,7 +304,7 @@ contract ModulePaymentSettings is cPortModule {
             PricingBounds memory pricingBounds_ = pricingBounds[i];
 
             if(pricingBounds_.floorPrice > pricingBounds_.ceilingPrice) {
-                revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
+                revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
             }
 
             ptrTokenPricingBounds[tokenId] = pricingBounds_;
@@ -275,6 +318,53 @@ contract ModulePaymentSettings is cPortModule {
             unchecked {
                 ++i;
             }
+        }
+    }
+
+    /**
+     * @notice Allows trusted channels to be added to a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the specified address is not a trusted forwarder.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelAddedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to add.
+     */
+    function addTrustedChannelForCollection(address tokenAddress, address channel) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (!isTrustedForwarder(channel)) {
+            revert PaymentProcessor__ChannelIsNotTrustedForwarder();
+        }
+
+        if (appStorage().collectionTrustedChannels[tokenAddress].add(channel)) {
+            emit TrustedChannelAddedForCollection(tokenAddress, channel);
+        }
+    }
+
+    /**
+     * @notice Allows trusted channels to be removed from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `channel` has been dis-approved for trusted forwarding of trades on a collection.
+     * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to remove.
+     */
+    function removeTrustedChannelForCollection(address tokenAddress, address channel) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionTrustedChannels[tokenAddress].remove(channel)) {
+            emit TrustedChannelRemovedForCollection(tokenAddress, channel);
         }
     }
 }
