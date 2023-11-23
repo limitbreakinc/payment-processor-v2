@@ -1,32 +1,61 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import "./PaymentProcessorModule.sol";
+
 /*
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |     ______   | || |              | || |   ______     | || |     ____     | || |  _______     | || |  _________   | |
-| |   .' ___  |  | || |              | || |  |_   __ \   | || |   .'    `.   | || | |_   __ \    | || | |  _   _  |  | |
-| |  / .'   \_|  | || |    ______    | || |    | |__) |  | || |  /  .--.  \  | || |   | |__) |   | || | |_/ | | \_|  | |
-| |  | |         | || |   |______|   | || |    |  ___/   | || |  | |    | |  | || |   |  __ /    | || |     | |      | |
-| |  \ `.___.'\  | || |              | || |   _| |_      | || |  \  `--'  /  | || |  _| |  \ \_  | || |    _| |_     | |
-| |   `._____.'  | || |              | || |  |_____|     | || |   `.____.'   | || | |____| |___| | || |   |_____|    | |
-| |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
+                                                     @@@@@@@@@@@@@@             
+                                                    @@@@@@@@@@@@@@@@@@(         
+                                                   @@@@@@@@@@@@@@@@@@@@@        
+                                                  @@@@@@@@@@@@@@@@@@@@@@@@      
+                                                           #@@@@@@@@@@@@@@      
+                                                               @@@@@@@@@@@@     
+                            @@@@@@@@@@@@@@*                    @@@@@@@@@@@@     
+                           @@@@@@@@@@@@@@@     @               @@@@@@@@@@@@     
+                          @@@@@@@@@@@@@@@     @                @@@@@@@@@@@      
+                         @@@@@@@@@@@@@@@     @@               @@@@@@@@@@@@      
+                        @@@@@@@@@@@@@@@     #@@             @@@@@@@@@@@@/       
+                        @@@@@@@@@@@@@@.     @@@@@@@@@@@@@@@@@@@@@@@@@@@         
+                       @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@            
+                      @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@             
+                     @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+                    @@@@@@@@@@@@@@@     @@@@@&%%%%%%%%&&@@@@@@@@@@@@@@          
+                    @@@@@@@@@@@@@@      @@@@@               @@@@@@@@@@@         
+                   @@@@@@@@@@@@@@@     @@@@@                 @@@@@@@@@@@        
+                  @@@@@@@@@@@@@@@     @@@@@@                 @@@@@@@@@@@        
+                 @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@        
+                @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@&        
+                @@@@@@@@@@@@@@     *@@@@@@@               (@@@@@@@@@@@@         
+               @@@@@@@@@@@@@@@     @@@@@@@@             @@@@@@@@@@@@@@          
+              @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+             @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@            
+            @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              
+           .@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 
+           @@@@@@@@@@@@@@%     @@@@@@@@@@@@@@@@@@@@@@@@(                        
+          @@@@@@@@@@@@@@@                                                       
+         @@@@@@@@@@@@@@@                                                        
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                         
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&                                          
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                           
  
- By Limit Break, Inc.
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
-
-contract ModuleTrades is cPortModule {
+contract ModuleTrades is PaymentProcessorModule {
 
     constructor(
         address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     function buyListing(
         bytes32 domainSeparator, 
@@ -104,19 +133,19 @@ contract ModuleTrades is cPortModule {
         FeeOnTop[] calldata feesOnTop
     ) public payable {
         if (saleDetailsArray.length != sellerSignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length != cosignatures.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length != feesOnTop.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (saleDetailsArray.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         uint256 remainingNativeProceeds = msg.value;
@@ -148,7 +177,14 @@ contract ModuleTrades is cPortModule {
             feeOnTop = feesOnTop[i];
 
             if(saleDetails.paymentMethod == address(0)) {
-                remainingNativeProceeds = _executeOrderBuySide(context, remainingNativeProceeds, saleDetails, sellerSignature, cosignature, feeOnTop);
+                remainingNativeProceeds = 
+                    _executeOrderBuySide(
+                        context, 
+                        remainingNativeProceeds, 
+                        saleDetails, 
+                        sellerSignature, 
+                        cosignature, 
+                        feeOnTop);
             } else {
                 _executeOrderBuySide(context, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
             }
@@ -170,27 +206,27 @@ contract ModuleTrades is cPortModule {
         BulkAcceptOffersParams memory params
     ) public {
         if (params.saleDetailsArray.length != params.isCollectionLevelOfferArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.buyerSignaturesArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.tokenSetProofsArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.cosignaturesArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length != params.feesOnTopArray.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if (params.saleDetailsArray.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         uint256 appendedDataLength;

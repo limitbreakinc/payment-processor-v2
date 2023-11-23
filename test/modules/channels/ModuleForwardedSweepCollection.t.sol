@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
+contract ModuleForwardedSweepCollectionTest is PaymentProcessorModuleTest {
 
     address channel;
 
@@ -99,25 +99,25 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetailsArray[0].tokenId, params1.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[0].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[0].maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
 
             test721.mint(saleDetailsArray[1].maker, saleDetailsArray[1].tokenId);
             test721.setTokenRoyalty(saleDetailsArray[1].tokenId, params2.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[1].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[1].maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetailsArray[0].maker, saleDetailsArray[0].tokenId, saleDetailsArray[0].amount);
             test1155.setTokenRoyalty(saleDetailsArray[0].tokenId, params1.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[0].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[0].maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             test1155.mint(saleDetailsArray[1].maker, saleDetailsArray[1].tokenId, saleDetailsArray[1].amount);
             test1155.setTokenRoyalty(saleDetailsArray[1].tokenId, params2.fuzzedOrderInputs.royaltyReceiver, uint96(saleDetailsArray[1].maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetailsArray[1].maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
         }
 
         if (sweepOrder.paymentMethod == address(0)) {
@@ -125,7 +125,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
         } else {
             SeaportTestERC20(sweepOrder.paymentMethod).mint(buyer, saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
             vm.prank(buyer);
-            SeaportTestERC20(sweepOrder.paymentMethod).approve(address(_cPort), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
+            SeaportTestERC20(sweepOrder.paymentMethod).approve(address(_paymentProcessor), saleDetailsArray[0].itemPrice + saleDetailsArray[1].itemPrice + feeOnTop.amount);
         }
 
         if (sweepOrder.paymentMethod == address(0)) {
@@ -163,7 +163,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), saleDetailsArray[0].tokenAddress, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), saleDetailsArray[0].tokenAddress, trustedChannel));
 
         if (cosigned) {
             if (isCosignatureEmpty) {
@@ -174,7 +174,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
                     sweepOrder,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             } else {
                 _sweepCosignedListings(
                     untrustedChannel,
@@ -183,7 +183,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
                     sweepOrder,
                     fuzzedOrderInputsArray, 
                     saleDetailsArray, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             }
         } else {
             _sweepSignedListings(
@@ -193,7 +193,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
                 sweepOrder,
                 fuzzedOrderInputsArray, 
                 saleDetailsArray, 
-                cPort__TradeOriginatedFromUntrustedChannel.selector);
+                PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
         }
     }
 
@@ -227,7 +227,7 @@ contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), saleDetailsArray[0].tokenAddress, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), saleDetailsArray[0].tokenAddress, trustedChannel));
 
         if (cosigned) {
             if (isCosignatureEmpty) {

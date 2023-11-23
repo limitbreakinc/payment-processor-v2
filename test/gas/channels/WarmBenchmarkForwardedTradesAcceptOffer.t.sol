@@ -8,11 +8,11 @@ contract BenchmarkForwardedTradesAcceptOffer is BenchmarkForwardedTradesBaseTest
         super.setUp();
 
         vm.startPrank(alice);
-        _cPort.revokeSingleNonce(_cPortEncoder.encodeRevokeSingleNonceCalldata(address(_cPort), _getNextNonce(alice)));
+        _paymentProcessor.revokeSingleNonce(_paymentProcessorEncoder.encodeRevokeSingleNonceCalldata(address(_paymentProcessor), _getNextNonce(alice)));
         vm.stopPrank();
 
         vm.startPrank(bob);
-        _cPort.revokeSingleNonce(_cPortEncoder.encodeRevokeSingleNonceCalldata(address(_cPort), _getNextNonce(bob)));
+        _paymentProcessor.revokeSingleNonce(_paymentProcessorEncoder.encodeRevokeSingleNonceCalldata(address(_paymentProcessor), _getNextNonce(bob)));
         vm.stopPrank();
 
         test721.mint(alice, 10000001);

@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleForwardedBuyListingTest is cPortModuleTest {
+contract ModuleForwardedBuyListingTest is PaymentProcessorModuleTest {
 
     address channel;
 
@@ -55,13 +55,13 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -94,7 +94,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), token, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), token, trustedChannel));
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -104,7 +104,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
                     uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
                     fuzzedOrderInputs,
                     saleDetails, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             } else {
                 _buyCosignedListing(
                     untrustedChannel,
@@ -112,7 +112,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
                     uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
                     fuzzedOrderInputs,
                     saleDetails, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             }
             
         } else {
@@ -122,7 +122,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
                 uint128(params.paymentMethod == address(0) ? paymentAmount: 0),
                 fuzzedOrderInputs,
                 saleDetails, 
-                cPort__TradeOriginatedFromUntrustedChannel.selector);
+                PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
         }
     }
 
@@ -166,13 +166,13 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -205,7 +205,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), token, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), token, trustedChannel));
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -277,13 +277,13 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -385,13 +385,13 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(saleDetails.maker);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -497,12 +497,12 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721Without2981.mint(saleDetails.maker, saleDetails.tokenId);
 
             vm.prank(saleDetails.maker);
-            test721Without2981.setApprovalForAll(address(_cPort), true);
+            test721Without2981.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155Without2981.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
 
             vm.prank(saleDetails.maker);
-            test1155Without2981.setApprovalForAll(address(_cPort), true);
+            test1155Without2981.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -602,12 +602,12 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
             test721Without2981.mint(saleDetails.maker, saleDetails.tokenId);
 
             vm.prank(saleDetails.maker);
-            test721Without2981.setApprovalForAll(address(_cPort), true);
+            test721Without2981.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155Without2981.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
 
             vm.prank(saleDetails.maker);
-            test1155Without2981.setApprovalForAll(address(_cPort), true);
+            test1155Without2981.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -1492,7 +1492,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
     function testForwardedBuyListing721FillOrKillStandardNoFeeOnTop_PostDeploymentDefaultPaymentMethod(
         FuzzedOrder721 memory fuzzedOrderInputs
     ) public {
-        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+        _paymentProcessor.whitelistPaymentMethod(_paymentProcessorEncoder.encodeWhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
 
         _runTestBuyListing(
             TestTradeSingleItemParams({
@@ -1511,7 +1511,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
         FuzzedOrder721 memory fuzzedOrderInputs, 
         uint248 amount
     ) public {
-        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+        _paymentProcessor.whitelistPaymentMethod(_paymentProcessorEncoder.encodeWhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
 
         _runTestBuyListing(
             TestTradeSingleItemParams({
@@ -1531,7 +1531,7 @@ contract ModuleForwardedBuyListingTest is cPortModuleTest {
         uint248 amount, 
         uint248 fillAmount
     ) public {
-        _cPort.whitelistPaymentMethod(_cPortEncoder.encodeWhitelistPaymentMethodCalldata(address(_cPort), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
+        _paymentProcessor.whitelistPaymentMethod(_paymentProcessorEncoder.encodeWhitelistPaymentMethodCalldata(address(_paymentProcessor), DEFAULT_PAYMENT_METHOD_WHITELIST_ID, address(memecoin)));
 
         _runTestBuyListing(
             TestTradeSingleItemParams({

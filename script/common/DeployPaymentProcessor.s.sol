@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
-import "src/CPort.sol";
+import "src/PaymentProcessor.sol";
 
-contract DeployCPort is Script {
+contract DeployPaymentProcessor is Script {
     struct ModuleAddresses {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
@@ -26,7 +26,7 @@ contract DeployCPort is Script {
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        address cPortAddress = address(new cPort(
+        address paymentProcessorAddress = address(new PaymentProcessor(
             vm.addr(deployerPrivateKey),
             moduleAddresses.modulePaymentSettings,
             moduleAddresses.moduleOnChainCancellation,
@@ -36,6 +36,6 @@ contract DeployCPort is Script {
 
         vm.stopBroadcast();
 
-        console.log("cPort: ", cPortAddress);
+        console.log("PaymentProcessor: ", paymentProcessorAddress);
     }
 }

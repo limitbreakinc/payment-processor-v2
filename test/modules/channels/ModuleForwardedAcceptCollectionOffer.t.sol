@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
+contract ModuleForwardedAcceptCollectionOfferTest is PaymentProcessorModuleTest {
 
     address channel;
 
@@ -56,13 +56,13 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -91,7 +91,7 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), token, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), token, trustedChannel));
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -100,14 +100,14 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
                     seller, 
                     fuzzedOrderInputs, 
                     saleDetails, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             } else {
                 _acceptCosignedCollectionOffer(
                     untrustedChannel,
                     seller, 
                     fuzzedOrderInputs, 
                     saleDetails, 
-                    cPort__TradeOriginatedFromUntrustedChannel.selector);
+                    PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
             }
             
         } else {
@@ -116,7 +116,7 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
                 seller, 
                 fuzzedOrderInputs, 
                 saleDetails, 
-                cPort__TradeOriginatedFromUntrustedChannel.selector);
+                PaymentProcessor__TradeOriginatedFromUntrustedChannel.selector);
         }
     }
 
@@ -161,13 +161,13 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -196,7 +196,7 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
 
-        _cPort.addTrustedChannelForCollection(_cPortEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_cPort), token, trustedChannel));
+        _paymentProcessor.addTrustedChannelForCollection(_paymentProcessorEncoder.encodeAddTrustedChannelForCollectionCalldata(address(_paymentProcessor), token, trustedChannel));
 
         if (params.cosigned) {
             if (params.isCosignatureEmpty) {
@@ -266,13 +266,13 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);
@@ -365,13 +365,13 @@ contract ModuleForwardedAcceptCollectionOfferTest is cPortModuleTest {
             test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test721.setApprovalForAll(address(_cPort), true);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
         } else {
             test1155.mint(seller, saleDetails.tokenId, saleDetails.amount);
             test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
 
             vm.prank(seller);
-            test1155.setApprovalForAll(address(_cPort), true);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
 
             if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
                 vm.assume(params.amount > 0);

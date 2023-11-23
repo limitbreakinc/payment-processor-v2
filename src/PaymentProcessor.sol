@@ -1,116 +1,57 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-/*
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |     ______   | || |              | || |   ______     | || |     ____     | || |  _______     | || |  _________   | |
-| |   .' ___  |  | || |              | || |  |_   __ \   | || |   .'    `.   | || | |_   __ \    | || | |  _   _  |  | |
-| |  / .'   \_|  | || |    ______    | || |    | |__) |  | || |  /  .--.  \  | || |   | |__) |   | || | |_/ | | \_|  | |
-| |  | |         | || |   |______|   | || |    |  ___/   | || |  | |    | |  | || |   |  __ /    | || |     | |      | |
-| |  \ `.___.'\  | || |              | || |   _| |_      | || |  \  `--'  /  | || |  _| |  \ \_  | || |    _| |_     | |
-| |   `._____.'  | || |              | || |  |_____|     | || |   `.____.'   | || | |____| |___| | || |   |_____|    | |
-| |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
- 
- By Limit Break, Inc.
-*/ 
-
 import "./Constants.sol";
 import "./Errors.sol";
-import "./interfaces/CPortEvents.sol";
+import "./interfaces/IPaymentProcessorEvents.sol";
 import "./interfaces/IModuleDefaultPaymentMethods.sol";
-import "./storage/CPortStorageAccess.sol";
+import "./storage/PaymentProcessorStorageAccess.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
+/*
+                                                     @@@@@@@@@@@@@@             
+                                                    @@@@@@@@@@@@@@@@@@(         
+                                                   @@@@@@@@@@@@@@@@@@@@@        
+                                                  @@@@@@@@@@@@@@@@@@@@@@@@      
+                                                           #@@@@@@@@@@@@@@      
+                                                               @@@@@@@@@@@@     
+                            @@@@@@@@@@@@@@*                    @@@@@@@@@@@@     
+                           @@@@@@@@@@@@@@@     @               @@@@@@@@@@@@     
+                          @@@@@@@@@@@@@@@     @                @@@@@@@@@@@      
+                         @@@@@@@@@@@@@@@     @@               @@@@@@@@@@@@      
+                        @@@@@@@@@@@@@@@     #@@             @@@@@@@@@@@@/       
+                        @@@@@@@@@@@@@@.     @@@@@@@@@@@@@@@@@@@@@@@@@@@         
+                       @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@            
+                      @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@             
+                     @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+                    @@@@@@@@@@@@@@@     @@@@@&%%%%%%%%&&@@@@@@@@@@@@@@          
+                    @@@@@@@@@@@@@@      @@@@@               @@@@@@@@@@@         
+                   @@@@@@@@@@@@@@@     @@@@@                 @@@@@@@@@@@        
+                  @@@@@@@@@@@@@@@     @@@@@@                 @@@@@@@@@@@        
+                 @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@        
+                @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@&        
+                @@@@@@@@@@@@@@     *@@@@@@@               (@@@@@@@@@@@@         
+               @@@@@@@@@@@@@@@     @@@@@@@@             @@@@@@@@@@@@@@          
+              @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+             @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@            
+            @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              
+           .@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 
+           @@@@@@@@@@@@@@%     @@@@@@@@@@@@@@@@@@@@@@@@(                        
+          @@@@@@@@@@@@@@@                                                       
+         @@@@@@@@@@@@@@@                                                        
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                         
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&                                          
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                           
+ 
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
+*/ 
 
-/**
- * @title  cPort
- * @author Limit Break, Inc.
- * @notice Short for Creator Port, cPort is the world's first creator-centric ERC721-C compatible marketplace protocol.
- *         Built by creators, for creators.
- * @notice Use ERC721-C to whitelist this contract or other marketplace contracts that process royalties entirely 
- *         on-chain manner to make them 100% enforceable and fully programmable! 
- *
- * @notice <h4>Features</h4>
- *
- * @notice <ul>
- *            <li>Payment Standards</li>
- *            <ul>
- *             <li>Native Currency (ETH or Equivalent)</li>
- *             <li>ERC-20</li>
- *            </ul>
- *            <li>Tradeable Item Support</li>
- *            <ul>
- *             <li>ERC721 (Non-Fungible Tokens)</li>
- *             <ul>
- *               <li>ERC721-C</li>
- *               <li>ERC721 + EIP-2981</li>
- *               <li>ERC721</li>
- *             </ul>
- *             <li>ERC1155 (Fungible Tokens)</li>
- *             <ul>
- *               <li>ERC1155-C</li>
- *               <li>ERC1155 + EIP-2981</li>
- *               <li>ERC1155</li>
- *             </ul>
- *            </ul>
- *           <li>Enforceable/Programmable Fees</li>
- *           <ul>
- *             <li>On-Chain Royalties</li>
- *             <ul>
- *               <li>EIP-2981</li>
- *               <li>Missing Royalty Backfill Per Collection</li>
- *             </ul>
- *             <li>Marketplace Fees</li>
- *             <ul>
- *               <li>Maker Fee</li>
- *               <li>Taker Fee (Fee On Top)</li>
- *               <li>Optional Creator Royalty Bounty for Maker MP</li>
- *             </ul>
- *           </ul>
- *           <li>Creator-Defined Payment Settings for Collections</li>
- *           <ul>
- *             <li>Default Payment Method Whitelist</li>
- *             <li>Allow Any Payment Method</li>
- *             <li>Custom Payment Method Whitelist</li>
- *             <li>Pricing Constraints (Min/Max Pricing)</li>
- *           </ul>
- *           <li>Order Cancellation</li>
- *           <ul>
- *             <li>On-Chain</li>
- *             <li>Gasless Cancellation Oracles (Co-Signing)</li>
- *           </ul>
- *           <li>A Multitude of Supported Trade Types</li>
- *           <ul>
- *             <li>Buy Listing</li>
- *             <li>Bulk Buy Listings</li>
- *             <li>Sweep Collection</li>
- *             <li>Accept Offer</li>
- *             <li>Bulk Accept Offers</li>
- *             <li>Offer Types</li>
- *             <ul>
- *               <li>Item</li>
- *               <li>Collection</li>
- *               <li>Token Set</li>
- *             </ul>
- *           </ul>
- *         </ul>
- *
- * @notice <h4>Security Considerations for Users</h4>
- *
- * @notice Virtually all on-chain marketplace contracts have the potential to be front-run.
- *         When purchasing high-value items, whether individually or in a batch/bundle it is highly
- *         recommended to execute transactions using Flashbots RPC Relay/private mempool to avoid
- *         sniper bots.  Partial fills are available for bulk and sweep trades when the method of payment is an 
- *         ERC-20 token, but not for purchases using native currency.  It is preferable to use wrapped ETH 
- *         (or equivalent) when buying multiple tokens and it is highly advisable to use a private mempool
- *         like Flashbots whenever possible.
- */
-contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
+contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
     address private immutable _modulePaymentSettings;
@@ -130,14 +71,14 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
         address moduleOnChainCancellation_,
         address moduleTrades_,
         address moduleTradesAdvanced_) 
-        EIP712("cPort", "1") {
+        EIP712("PaymentProcessor", "2") {
         
         if (defaultContractOwner_ == address(0) ||
             modulePaymentSettings_ == address(0) ||
             moduleOnChainCancellation_ == address(0) ||
             moduleTrades_ == address(0) ||
             moduleTradesAdvanced_ == address(0)) {
-            revert cPort__InvalidConstructorArguments();
+            revert PaymentProcessor__InvalidConstructorArguments();
         }
 
         _modulePaymentSettings = modulePaymentSettings_;
@@ -236,7 +177,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /**************************************************************/
 
     /**
-     * @notice Allows cPort contract owner to pause trading on this contract.  This is only to be used
+     * @notice Allows PaymentProcessor contract owner to pause trading on this contract.  This is only to be used
      *         in case a future vulnerability emerges to allow a migration to an updated contract.
      *
      * @dev    Throws when caller is not the contract owner.
@@ -251,7 +192,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     }
 
     /**
-     * @notice Allows cPort contract owner to resume trading on this contract.  This is only to be used
+     * @notice Allows PaymentProcessor contract owner to resume trading on this contract.  This is only to be used
      *         in case a pause was not necessary and trading can safely resume.
      *
      * @dev    Throws when caller is not the contract owner.
@@ -351,7 +292,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /**
      * @notice Returns the optional creator-defined royalty backfill settings for a given collection.
      *         This is useful for legacy collection lacking EIP-2981 support, as the collection owner can instruct
-     *         cPort to backfill missing on-chain royalties.
+     *         PaymentProcessor to backfill missing on-chain royalties.
      * 
      * @return royaltyBackfillNumerator  The creator royalty percentage for a given collection.  
      *         When set, this percentage is applied to the item sale price and paid to the creator if the attempt
@@ -463,7 +404,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    2. The caller has been assigned as the owner of the payment method whitelist.
      * @dev    3. A `CreatedPaymentMethodWhitelist` event has been emitted.
      *
-     * @param  data  Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data  Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *               `createPaymentMethodWhitelist(string calldata whitelistName)`
      * @return paymentMethodWhitelistId  The id of the newly created payment method whitelist.
      */
@@ -505,7 +446,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. `paymentMethod` has been approved in `paymentMethodWhitelist` mapping.
      * @dev    2. A `PaymentMethodAddedToWhitelist` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
      */
     function whitelistPaymentMethod(bytes calldata data) external 
@@ -521,7 +462,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
      * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod)`
      */
     function unwhitelistPaymentMethod(bytes calldata data) external 
@@ -547,7 +488,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
      * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `setCollectionPaymentSettings(
                         address tokenAddress, 
                         PaymentSettings paymentSettings,
@@ -573,7 +514,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. The collection-level pricing bounds for the specified tokenAddress has been set.
      * @dev    2. An `UpdatedCollectionLevelPricingBoundaries` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `setCollectionPricingBounds(address tokenAddress, PricingBounds calldata pricingBounds)`
      */
     function setCollectionPricingBounds(bytes calldata data) external 
@@ -593,7 +534,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. The token-level pricing bounds for the specified tokenAddress and token ids has been set.
      * @dev    2. An `UpdatedTokenLevelPricingBoundaries` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `setTokenPricingBounds(
                         address tokenAddress, 
                         uint256[] calldata tokenIds, 
@@ -613,7 +554,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. `channel` has been approved for trusted forwarding of trades on a collection.
      * @dev    2. A `TrustedChannelAddedForCollection` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `addTrustedChannelForCollection(
      *                  address tokenAddress, 
      *                  address channel)`
@@ -631,7 +572,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      * @dev    1. `channel` has been dis-approved for trusted forwarding of trades on a collection.
      * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `addTrustedChannelForCollection(
      *                  address tokenAddress, 
      *                  address channel)`
@@ -666,7 +607,7 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
      *            no longer be used to execute a sale or purchase.
      * @dev    2. A `NonceInvalidated` event has been emitted.
      *
-     * @param  data Calldata encoded with cPortEncoder.  Matches calldata for:
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `revokeSingleNonce(uint256 nonce)`
      */
     function revokeSingleNonce(bytes calldata data) external 

@@ -3,40 +3,40 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleOnChainCancellationTest is cPortModuleTest {
+contract ModuleOnChainCancellationTest is PaymentProcessorModuleTest {
 
     function testRevokeMasterNonce(address account) public {
         _sanitizeAddress(account, new address[](0));
         for (uint256 i = 0; i < 100; i++) {
-            uint256 previousMasterNonce = _cPort.masterNonces(account);
+            uint256 previousMasterNonce = _paymentProcessor.masterNonces(account);
             _revokeMasterNonce(account, previousMasterNonce, EMPTY_SELECTOR);
-            uint256 updatedMasterNonce = _cPort.masterNonces(account);
+            uint256 updatedMasterNonce = _paymentProcessor.masterNonces(account);
             assertEq(updatedMasterNonce - previousMasterNonce, 1);
         }
     }
 
     function testRevokeSingleNonce(address account, uint256 nonce) public {
-        vm.assume(!_cPort.isNonceUsed(account, nonce));
+        vm.assume(!_paymentProcessor.isNonceUsed(account, nonce));
         _sanitizeAddress(account, new address[](0));
         _revokeSingleNonce(account, nonce, EMPTY_SELECTOR);
-        assertTrue(_cPort.isNonceUsed(account, nonce));
+        assertTrue(_paymentProcessor.isNonceUsed(account, nonce));
     }
 
     function testRevokeConsecutiveNonces(address account) public {
         _sanitizeAddress(account, new address[](0));
 
         for (uint256 nonce = 0; nonce < 512; nonce++) {
-            vm.assume(!_cPort.isNonceUsed(account, nonce));
+            vm.assume(!_paymentProcessor.isNonceUsed(account, nonce));
             _revokeSingleNonce(account, nonce, EMPTY_SELECTOR);
-            assertTrue(_cPort.isNonceUsed(account, nonce));
+            assertTrue(_paymentProcessor.isNonceUsed(account, nonce));
         }
 
         for (uint256 nonce = type(uint256).max - 512; nonce < type(uint256).max; nonce++) {
-            vm.assume(!_cPort.isNonceUsed(account, nonce));
+            vm.assume(!_paymentProcessor.isNonceUsed(account, nonce));
             _revokeSingleNonce(account, nonce, EMPTY_SELECTOR);
-            assertTrue(_cPort.isNonceUsed(account, nonce));
+            assertTrue(_paymentProcessor.isNonceUsed(account, nonce));
         }
     }
 
@@ -69,13 +69,13 @@ contract ModuleOnChainCancellationTest is cPortModuleTest {
         (, bytes32 digest) = _getSignedSaleApprovalAndDigest(fuzzedOrderInputs.sellerKey, order);
 
         // Assume this hasn't been seen on chain yet
-        PartiallyFillableOrderStatus memory orderStatus = _cPort.remainingFillableQuantity(account, digest);
+        PartiallyFillableOrderStatus memory orderStatus = _paymentProcessor.remainingFillableQuantity(account, digest);
         vm.assume(orderStatus.state == PartiallyFillableOrderState.Open);
         vm.assume(orderStatus.remainingFillableQuantity == 0);
 
         _revokeOrderDigest(account, digest, EMPTY_SELECTOR);
 
-        orderStatus = _cPort.remainingFillableQuantity(account, digest);
+        orderStatus = _paymentProcessor.remainingFillableQuantity(account, digest);
         assertTrue(orderStatus.state == PartiallyFillableOrderState.Cancelled);
         assertEq(orderStatus.remainingFillableQuantity, 0);
     }

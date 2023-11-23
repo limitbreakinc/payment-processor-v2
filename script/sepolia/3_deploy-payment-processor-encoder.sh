@@ -32,7 +32,7 @@ case $yn in
 		exit 1;;
 esac
 
-forge script script/sepolia/DeployCPort.s.sol:DeployCPort \
+forge script script/common/DeployPaymentProcessorEncoder.s.sol:DeployPaymentProcessorEncoder \
   --with-gas-price $gasPrice \
   --rpc-url $RPC_URL \
   --optimize \

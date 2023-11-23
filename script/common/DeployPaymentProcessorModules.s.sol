@@ -6,12 +6,14 @@ import "forge-std/console2.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleTrades.sol";
+import "src/modules/ModuleTradesAdvanced.sol";
 
-contract DeployCPortModules is Script {
+contract DeployPaymentProcessorModules is Script {
     struct ModuleAddresses {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
         address moduleTrades;
+        address moduleTradesAdvanced;
     }
 
     address private immutable forwarderFactory = address(0x982369EB4c671Fee7800B1381Ac419AB5e77cAb7);
@@ -23,7 +25,8 @@ contract DeployCPortModules is Script {
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: address(0),
             modulePaymentSettings: address(0),
-            moduleTrades: address(0)
+            moduleTrades: address(0),
+            moduleTradesAdvanced: address(0)
         });
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
@@ -39,11 +42,13 @@ contract DeployCPortModules is Script {
         moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
         moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
         moduleAddresses.moduleTrades = address(new ModuleTrades(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.moduleTradesAdvanced = address(new ModuleTradesAdvanced(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
 
         vm.stopBroadcast();
 
         console.log("Module On Chain Cancellation: ", moduleAddresses.moduleOnChainCancellation);
         console.log("Module Payment Settings: ", moduleAddresses.modulePaymentSettings);
         console.log("Module Trades: ", moduleAddresses.moduleTrades);
+        console.log("Module Trades Advanced: ", moduleAddresses.moduleTradesAdvanced);
     }
 }

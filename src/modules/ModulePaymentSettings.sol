@@ -1,25 +1,50 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
+import "./PaymentProcessorModule.sol";
+
 /*
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |     ______   | || |              | || |   ______     | || |     ____     | || |  _______     | || |  _________   | |
-| |   .' ___  |  | || |              | || |  |_   __ \   | || |   .'    `.   | || | |_   __ \    | || | |  _   _  |  | |
-| |  / .'   \_|  | || |    ______    | || |    | |__) |  | || |  /  .--.  \  | || |   | |__) |   | || | |_/ | | \_|  | |
-| |  | |         | || |   |______|   | || |    |  ___/   | || |  | |    | |  | || |   |  __ /    | || |     | |      | |
-| |  \ `.___.'\  | || |              | || |   _| |_      | || |  \  `--'  /  | || |  _| |  \ \_  | || |    _| |_     | |
-| |   `._____.'  | || |              | || |  |_____|     | || |   `.____.'   | || | |____| |___| | || |   |_____|    | |
-| |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
+                                                     @@@@@@@@@@@@@@             
+                                                    @@@@@@@@@@@@@@@@@@(         
+                                                   @@@@@@@@@@@@@@@@@@@@@        
+                                                  @@@@@@@@@@@@@@@@@@@@@@@@      
+                                                           #@@@@@@@@@@@@@@      
+                                                               @@@@@@@@@@@@     
+                            @@@@@@@@@@@@@@*                    @@@@@@@@@@@@     
+                           @@@@@@@@@@@@@@@     @               @@@@@@@@@@@@     
+                          @@@@@@@@@@@@@@@     @                @@@@@@@@@@@      
+                         @@@@@@@@@@@@@@@     @@               @@@@@@@@@@@@      
+                        @@@@@@@@@@@@@@@     #@@             @@@@@@@@@@@@/       
+                        @@@@@@@@@@@@@@.     @@@@@@@@@@@@@@@@@@@@@@@@@@@         
+                       @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@            
+                      @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@             
+                     @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+                    @@@@@@@@@@@@@@@     @@@@@&%%%%%%%%&&@@@@@@@@@@@@@@          
+                    @@@@@@@@@@@@@@      @@@@@               @@@@@@@@@@@         
+                   @@@@@@@@@@@@@@@     @@@@@                 @@@@@@@@@@@        
+                  @@@@@@@@@@@@@@@     @@@@@@                 @@@@@@@@@@@        
+                 @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@        
+                @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@&        
+                @@@@@@@@@@@@@@     *@@@@@@@               (@@@@@@@@@@@@         
+               @@@@@@@@@@@@@@@     @@@@@@@@             @@@@@@@@@@@@@@          
+              @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+             @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@            
+            @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              
+           .@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 
+           @@@@@@@@@@@@@@%     @@@@@@@@@@@@@@@@@@@@@@@@(                        
+          @@@@@@@@@@@@@@@                                                       
+         @@@@@@@@@@@@@@@                                                        
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                         
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&                                          
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                           
  
- By Limit Break, Inc.
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
-
-contract ModulePaymentSettings is cPortModule {
+contract ModulePaymentSettings is PaymentProcessorModule {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     constructor(
@@ -27,7 +52,11 @@ contract ModulePaymentSettings is cPortModule {
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  
@@ -80,7 +109,7 @@ contract ModulePaymentSettings is cPortModule {
             appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__PaymentMethodIsAlreadyApproved();
+            revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
         }
 
         ptrPaymentMethodWhitelist[paymentMethod] = true;
@@ -108,7 +137,7 @@ contract ModulePaymentSettings is cPortModule {
             appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
 
         if (!ptrPaymentMethodWhitelist[paymentMethod]) {
-            revert cPort__CoinIsNotApproved();
+            revert PaymentProcessor__CoinIsNotApproved();
         }
 
         delete ptrPaymentMethodWhitelist[paymentMethod];
@@ -157,11 +186,11 @@ contract ModulePaymentSettings is cPortModule {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (royaltyBackfillNumerator > FEE_DENOMINATOR) {
-                revert cPort__RoyaltyBackfillNumeratorCannotExceedFeeDenominator();
+                revert PaymentProcessor__RoyaltyBackfillNumeratorCannotExceedFeeDenominator();
             }
 
             if (royaltyBountyNumerator > FEE_DENOMINATOR) {
-                revert cPort__RoyaltyBountyNumeratorCannotExceedFeeDenominator();
+                revert PaymentProcessor__RoyaltyBountyNumeratorCannotExceedFeeDenominator();
             }
 
             if (
@@ -177,7 +206,7 @@ contract ModulePaymentSettings is cPortModule {
             }
 
             if (paymentMethodWhitelistId > appStorage().lastPaymentMethodWhitelistId) {
-                revert cPort__PaymentMethodWhitelistDoesNotExist();
+                revert PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
             }
 
             appStorage().collectionRoyaltyBackfillReceivers[tokenAddress] = royaltyBackfillReceiver;
@@ -223,7 +252,7 @@ contract ModulePaymentSettings is cPortModule {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(pricingBounds.floorPrice > pricingBounds.ceilingPrice) {
-            revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
+            revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
         }
         
         appStorage().collectionPricingBounds[tokenAddress] = pricingBounds;
@@ -259,11 +288,11 @@ contract ModulePaymentSettings is cPortModule {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if(tokenIds.length != pricingBounds.length) {
-            revert cPort__InputArrayLengthMismatch();
+            revert PaymentProcessor__InputArrayLengthMismatch();
         }
 
         if(tokenIds.length == 0) {
-            revert cPort__InputArrayLengthCannotBeZero();
+            revert PaymentProcessor__InputArrayLengthCannotBeZero();
         }
 
         mapping (uint256 => PricingBounds) storage ptrTokenPricingBounds = 
@@ -275,7 +304,7 @@ contract ModulePaymentSettings is cPortModule {
             PricingBounds memory pricingBounds_ = pricingBounds[i];
 
             if(pricingBounds_.floorPrice > pricingBounds_.ceilingPrice) {
-                revert cPort__CeilingPriceMustBeGreaterThanFloorPrice();
+                revert PaymentProcessor__CeilingPriceMustBeGreaterThanFloorPrice();
             }
 
             ptrTokenPricingBounds[tokenId] = pricingBounds_;
@@ -310,7 +339,7 @@ contract ModulePaymentSettings is cPortModule {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
         if (!isTrustedForwarder(channel)) {
-            revert cPort__ChannelIsNotTrustedForwarder();
+            revert PaymentProcessor__ChannelIsNotTrustedForwarder();
         }
 
         if (appStorage().collectionTrustedChannels[tokenAddress].add(channel)) {

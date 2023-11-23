@@ -1,9 +1,9 @@
 pragma solidity 0.8.19;
 
-import "../../modules/CPortModule.t.sol";
+import "../../modules/PaymentProcessorModule.t.sol";
 import {Merkle} from "murky/Merkle.sol";
 
-contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
+contract BenchmarkForwardedTradesBaseTest is PaymentProcessorModuleTest {
 
     struct BenchmarkParams {
         uint256 numRuns;
@@ -78,8 +78,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params, 
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -87,8 +87,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -96,15 +96,15 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+        bytes memory data1 = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(address(_paymentProcessor), address(test721), PricingBounds({
             isSet: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
 
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
+        _paymentProcessor.setCollectionPaymentSettings(data1);
+        _paymentProcessor.setCollectionPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -112,8 +112,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](params.numRuns);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
@@ -127,9 +127,9 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
             });
         }
 
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetTokenPricingBoundsCalldata(address(_paymentProcessor), address(test721), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(data2);
+        _paymentProcessor.setTokenPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -141,8 +141,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params, 
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721Without2981), PaymentSettings.DefaultPaymentMethodWhitelist, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721Without2981), PaymentSettings.DefaultPaymentMethodWhitelist, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -150,8 +150,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params, 
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721Without2981), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721Without2981), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -159,8 +159,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721Without2981), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721Without2981), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -168,15 +168,15 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721Without2981), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721Without2981), PricingBounds({
+        bytes memory data1 = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721Without2981), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(address(_paymentProcessor), address(test721Without2981), PricingBounds({
             isSet: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
 
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
+        _paymentProcessor.setCollectionPaymentSettings(data1);
+        _paymentProcessor.setCollectionPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -184,8 +184,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BenchmarkParams memory params,
         function(BenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721Without2981), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721Without2981), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](params.numRuns);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
@@ -199,9 +199,9 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
             });
         }
 
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721Without2981), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetTokenPricingBoundsCalldata(address(_paymentProcessor), address(test721Without2981), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(data2);
+        _paymentProcessor.setTokenPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -220,8 +220,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         CosignedBenchmarkParams memory params, 
         function(CosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -229,8 +229,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         CosignedBenchmarkParams memory params,
         function(CosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -238,15 +238,15 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         CosignedBenchmarkParams memory params,
         function(CosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+        bytes memory data1 = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(address(_paymentProcessor), address(test721), PricingBounds({
             isSet: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
 
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
+        _paymentProcessor.setCollectionPaymentSettings(data1);
+        _paymentProcessor.setCollectionPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -254,8 +254,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         CosignedBenchmarkParams memory params,
         function(CosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](params.numRuns);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](params.numRuns);
@@ -269,9 +269,9 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
             });
         }
 
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetTokenPricingBoundsCalldata(address(_paymentProcessor), address(test721), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(data2);
+        _paymentProcessor.setTokenPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -290,8 +290,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkBenchmarkParams memory params,
         function(BulkBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -299,8 +299,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkBenchmarkParams memory params,
         function(BulkBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -308,15 +308,15 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkBenchmarkParams memory params,
         function(BulkBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+        bytes memory data1 = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(address(_paymentProcessor), address(test721), PricingBounds({
             isSet: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
 
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
+        _paymentProcessor.setCollectionPaymentSettings(data1);
+        _paymentProcessor.setCollectionPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -324,8 +324,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkBenchmarkParams memory params,
         function(BulkBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
@@ -339,9 +339,9 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
             });
         }
 
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetTokenPricingBoundsCalldata(address(_paymentProcessor), address(test721), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(data2);
+        _paymentProcessor.setTokenPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -360,8 +360,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkCosignedBenchmarkParams memory params,
         function(BulkCosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.AllowAnyPaymentMethod, 0, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -369,8 +369,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkCosignedBenchmarkParams memory params,
         function(BulkCosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.CustomPaymentMethodWhitelist, customPaymentMethodWhitelistId, address(0), uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
         funcBenchmark(params);
     }
 
@@ -378,15 +378,15 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkCosignedBenchmarkParams memory params,
         function(BulkCosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data1 = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        bytes memory data2 = _cPortEncoder.encodeSetCollectionPricingBoundsCalldata(address(_cPort), address(test721), PricingBounds({
+        bytes memory data1 = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(address(_paymentProcessor), address(test721), PricingBounds({
             isSet: true,
             floorPrice: 1 ether,
             ceilingPrice: 500 ether
         }));
 
-        _cPort.setCollectionPaymentSettings(data1);
-        _cPort.setCollectionPricingBounds(data2);
+        _paymentProcessor.setCollectionPaymentSettings(data1);
+        _paymentProcessor.setCollectionPricingBounds(data2);
         funcBenchmark(params);
     }
 
@@ -394,8 +394,8 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
         BulkCosignedBenchmarkParams memory params,
         function(BulkCosignedBenchmarkParams memory) funcBenchmark
     ) internal {
-        bytes memory data = _cPortEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_cPort), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
-        _cPort.setCollectionPaymentSettings(data);
+        bytes memory data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(address(_paymentProcessor), address(test721), PaymentSettings.PricingConstraints, 0, params.currency, uint16(params.royaltyFeeRate), abe, params.royaltyBountyRate, address(0), false);
+        _paymentProcessor.setCollectionPaymentSettings(data);
 
         uint256[] memory tokenIds = new uint256[](2 * params.numRuns * params.batchSize);
         PricingBounds[] memory pricingBoundsArray = new PricingBounds[](2 * params.numRuns * params.batchSize);
@@ -409,9 +409,9 @@ contract BenchmarkForwardedTradesBaseTest is cPortModuleTest {
             });
         }
 
-        bytes memory data2 = _cPortEncoder.encodeSetTokenPricingBoundsCalldata(address(_cPort), address(test721), tokenIds, pricingBoundsArray);
+        bytes memory data2 = _paymentProcessorEncoder.encodeSetTokenPricingBoundsCalldata(address(_paymentProcessor), address(test721), tokenIds, pricingBoundsArray);
         
-        _cPort.setTokenPricingBounds(data2);
+        _paymentProcessor.setTokenPricingBounds(data2);
         funcBenchmark(params);
     }
 

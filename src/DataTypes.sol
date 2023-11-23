@@ -201,7 +201,7 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
     bool disablePartialFill;
  }
 
-struct cPortStorage {
+struct PaymentProcessorStorage {
     /// @dev Tracks the most recently created payment method whitelist id
     uint32 lastPaymentMethodWhitelistId;
 
