@@ -10,6 +10,7 @@ contract DeployCPort is Script {
         address moduleOnChainCancellation;
         address modulePaymentSettings;
         address moduleTrades;
+        address moduleTradesAdvanced;
     }
 
     
@@ -18,7 +19,8 @@ contract DeployCPort is Script {
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: vm.envAddress("MODULE_ADDRESS_ON_CHAIN_CANCELLATION"),
             modulePaymentSettings: vm.envAddress("MODULE_ADDRESS_PAYMENT_SETTINGS"),
-            moduleTrades: vm.envAddress("MODULE_ADDRESS_TRADES")
+            moduleTrades: vm.envAddress("MODULE_ADDRESS_TRADES"),
+            moduleTradesAdvanced: vm.envAddress("MODULE_ADDRESS_TRADES_ADVANCED")
         });
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
@@ -28,7 +30,8 @@ contract DeployCPort is Script {
             vm.addr(deployerPrivateKey),
             moduleAddresses.modulePaymentSettings,
             moduleAddresses.moduleOnChainCancellation,
-            moduleAddresses.moduleTrades
+            moduleAddresses.moduleTrades,
+            moduleAddresses.moduleTradesAdvanced
         ));
 
         vm.stopBroadcast();

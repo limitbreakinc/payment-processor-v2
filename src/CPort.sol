@@ -121,23 +121,29 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
     /// @dev The Trades module implements all trade-related functionality.
     address private immutable _moduleTrades;
 
+    /// @dev The Trades module implements all advanced trade-related functionality.
+    address private immutable _moduleTradesAdvanced;
+
     constructor(
         address defaultContractOwner_,
         address modulePaymentSettings_,
         address moduleOnChainCancellation_,
-        address moduleTrades_) 
+        address moduleTrades_,
+        address moduleTradesAdvanced_) 
         EIP712("cPort", "1") {
         
         if (defaultContractOwner_ == address(0) ||
             modulePaymentSettings_ == address(0) ||
             moduleOnChainCancellation_ == address(0) ||
-            moduleTrades_ == address(0)) {
+            moduleTrades_ == address(0) ||
+            moduleTradesAdvanced_ == address(0)) {
             revert cPort__InvalidConstructorArguments();
         }
 
         _modulePaymentSettings = modulePaymentSettings_;
         _moduleOnChainCancellation = moduleOnChainCancellation_;
         _moduleTrades = moduleTrades_;
+        _moduleTradesAdvanced = moduleTradesAdvanced_;
 
         unchecked {
             uint32 paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
