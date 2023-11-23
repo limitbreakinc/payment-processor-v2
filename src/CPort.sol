@@ -697,5 +697,5 @@ contract cPort is EIP712, Ownable, Pausable, cPortStorageAccess, cPortEvents {
 
     function sweepCollection(bytes calldata data) external payable 
     whenNotPaused 
-    delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_SWEEP_COLLECTION, data) {}
+    delegateCallReplaceDomainSeparator(_moduleTradesAdvanced, SELECTOR_SWEEP_COLLECTION, data) {}
 }
