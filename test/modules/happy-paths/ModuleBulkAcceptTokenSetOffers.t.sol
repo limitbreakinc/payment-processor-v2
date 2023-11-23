@@ -3,10 +3,10 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 import {Merkle} from "murky/Merkle.sol";
 
-contract ModuleBulkAcceptTokenSetOffersTest is cPortModuleTest {
+contract ModuleBulkAcceptTokenSetOffersTest is PaymentProcessorModuleTest {
     struct FuzzedOrderAndFee {
         FuzzedOrder721 fuzzedOrderInputs;
         FuzzedFeeOnTop fuzzedFeeOnTop;

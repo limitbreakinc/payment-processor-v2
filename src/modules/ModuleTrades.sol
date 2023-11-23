@@ -17,16 +17,20 @@ pragma solidity 0.8.19;
  By Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
+import "./PaymentProcessorModule.sol";
 
-contract ModuleTrades is cPortModule {
+contract ModuleTrades is PaymentProcessorModule {
 
     constructor(
         address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     function buyListing(
         bytes32 domainSeparator, 
@@ -148,7 +152,14 @@ contract ModuleTrades is cPortModule {
             feeOnTop = feesOnTop[i];
 
             if(saleDetails.paymentMethod == address(0)) {
-                remainingNativeProceeds = _executeOrderBuySide(context, remainingNativeProceeds, saleDetails, sellerSignature, cosignature, feeOnTop);
+                remainingNativeProceeds = 
+                    _executeOrderBuySide(
+                        context, 
+                        remainingNativeProceeds, 
+                        saleDetails, 
+                        sellerSignature, 
+                        cosignature, 
+                        feeOnTop);
             } else {
                 _executeOrderBuySide(context, 0, saleDetails, sellerSignature, cosignature, feeOnTop);
             }

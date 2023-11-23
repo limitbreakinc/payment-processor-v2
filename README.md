@@ -1,10 +1,10 @@
-# Creator Port Exchange Integration Guide
+# Payment Processor Exchange Integration Guide
 
 ## Glossary
 
-- **Creator Port**: An NFT exchange protocol built by creators, for creators.  Built for trading of ERC721-C and ERC1155-C tokens, but backwards compatible to support trading of any ERC721 or ERC1155 token as well. Analagous to Blur Marketplace and Seaport exchange protocols, but built entirely around honoring fully on-chain programmable royalties. Also known as `cPort`.
-- **cPort**: Shorthand for `Creator Port`.
-- **cPort Encoder**: A helper contract deployed alongside cPort that integrated marketplaces use to format cPort function calldata.
+- **Payment Processor**: An NFT exchange protocol built by creators, for creators.  Built for trading of ERC721-C and ERC1155-C tokens, but backwards compatible to support trading of any ERC721 or ERC1155 token as well. Analagous to Blur Marketplace and Seaport exchange protocols, but built entirely around honoring fully on-chain programmable royalties. Also known as `PaymentProcessor`.
+- **PaymentProcessor**: Shorthand for `Payment Processor`.
+- **PaymentProcessor Encoder**: A helper contract deployed alongside PaymentProcessor that integrated marketplaces use to format PaymentProcessor function calldata.
 - **Maker(s)**: Create buying or selling orders that are not carried out immediately.  For example, "sell NFT `A` at a price of $100" or "buy NFT `B` for $100".  This creates liquidity, meaning that it is easier for others to instantly buy or sell NFTs when the conditions are met.  When Bob lists an NFT he owns for sale, Bob is considered maker of the order.  Similarly, when Bob offers to buy an NFT, Bob is considered the maker of the order.
 - **Taker(s)**: The entities that buy or sell instantly are called takers. In other words, the takers fill the orders created by the makers.  When Alice executes and order to buy Bob's listing, Alice is considered the taker of the order.  Similarly, when Alice accepts an offer from Bob to buy an NFT she owns, Alice is considered the taker of the order.
 - **Listing**: An order to sell an NFT once filled by a taker.  Listings are gaslessly signed off-chain by the owner of the NFT.
@@ -57,7 +57,7 @@ Exchanges should call `buyListing` when a taker wants to purchase a single listi
 
 ### Accept Offer
 
-Exchanges should call `acceptOffer` when a taker wants to sell a single item that matches an offer made by a prospective buyer.  The kinds of offers are currently supported by cPort:
+Exchanges should call `acceptOffer` when a taker wants to sell a single item that matches an offer made by a prospective buyer.  The kinds of offers are currently supported by PaymentProcessor:
 
 1. Item Offer - An offer made on a specific collection where only one specific token id can be used to fill the order.
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
@@ -96,7 +96,7 @@ Exchanges should call `bulkBuyListings` when a taker wants to purchase more than
 
 ### Bulk Accept Offers
 
-Exchanges should call `bulkAcceptOffers` when a taker wants to accept/fill more than one offer at once.  This allows a taker to sell multiple items they own across one or more collections in a single transaction.  The kinds of offers are currently supported by cPort:
+Exchanges should call `bulkAcceptOffers` when a taker wants to accept/fill more than one offer at once.  This allows a taker to sell multiple items they own across one or more collections in a single transaction.  The kinds of offers are currently supported by PaymentProcessor:
 
 1. Item Offer - An offer made on a specific collection where only one specific token id can be used to fill the order.
 2. Collection Offer - An offer made on a specific collection where any token id can be used to fill the order.
@@ -164,26 +164,26 @@ There are four variations of `sweepCollection`.
 
 ## Encoding Function Call Parameters
 
-In order to not overflow smart contract bytecode size limits, cPort is split into smaller library modules.  When making calls to cPort, these calls are forwarded to the corresponding module and implementation function using `DELEGATECALL`.  For gas efficiency purposes, the function calldata must be passed in as a raw calldata byte array.  cPort is deployed with a helper contract called the cPortEncoder.  It accepts the expected function implementation parameters and encodes them as a single calldata byte array that should be passed into cPort when making calls to fill orders.  The subsections below detail each cPortEncoder function.
+In order to not overflow smart contract bytecode size limits, PaymentProcessor is split into smaller library modules.  When making calls to PaymentProcessor, these calls are forwarded to the corresponding module and implementation function using `DELEGATECALL`.  For gas efficiency purposes, the function calldata must be passed in as a raw calldata byte array.  PaymentProcessor is deployed with a helper contract called the PaymentProcessorEncoder.  It accepts the expected function implementation parameters and encodes them as a single calldata byte array that should be passed into PaymentProcessor when making calls to fill orders.  The subsections below detail each PaymentProcessorEncoder function.
 
 ### encodeBuyListingCalldata
 
-Used to encode calldata for cPort `buyListing` function.
+Used to encode calldata for PaymentProcessor `buyListing` function.
 
 ```solidity
 function encodeBuyListingCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order memory saleDetails, 
         SignatureECDSA memory signature) external view returns (bytes memory);
 ```
 
 ### encodeBuyListingWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `buyListingWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `buyListingWithFeeOnTop` function.
 
 ```solidity
 function encodeBuyListingWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order memory saleDetails, 
         SignatureECDSA memory signature,
         FeeOnTop memory feeOnTop) external view returns (bytes memory);
@@ -191,11 +191,11 @@ function encodeBuyListingWithFeeOnTopCalldata(
 
 ### encodeBuyListingCosignedCalldata
 
-Used to encode calldata for cPort `buyListingCosigned` function.
+Used to encode calldata for PaymentProcessor `buyListingCosigned` function.
 
 ```solidity
 function encodeBuyListingCosignedCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order memory saleDetails, 
         SignatureECDSA memory signature,
         Cosignature memory cosignature) external view returns (bytes memory);
@@ -203,11 +203,11 @@ function encodeBuyListingCosignedCalldata(
 
 ### encodeBuyListingCosignedWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `buyListingCosignedWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `buyListingCosignedWithFeeOnTop` function.
 
 ```solidity
 function encodeBuyListingCosignedWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order memory saleDetails, 
         SignatureECDSA memory signature,
         Cosignature memory cosignature,
@@ -216,11 +216,11 @@ function encodeBuyListingCosignedWithFeeOnTopCalldata(
 
 ### encodeAcceptOfferCalldata
 
-Used to encode calldata for cPort `acceptOffer` function.
+Used to encode calldata for PaymentProcessor `acceptOffer` function.
 
 ```solidity
 function encodeAcceptOfferCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
         Order memory saleDetails, 
         SignatureECDSA memory signature,
@@ -235,11 +235,11 @@ function encodeAcceptOfferCalldata(
 
 ### encodeAcceptOfferWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `acceptOfferWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `acceptOfferWithFeeOnTop` function.
 
 ```solidity
 function encodeAcceptOfferWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
         Order memory saleDetails, 
         SignatureECDSA memory signature,
@@ -255,11 +255,11 @@ function encodeAcceptOfferWithFeeOnTopCalldata(
 
 ### encodeAcceptOfferCosignedCalldata
 
-Used to encode calldata for cPort `acceptOfferCosigned` function.
+Used to encode calldata for PaymentProcessor `acceptOfferCosigned` function.
 
 ```solidity
 function encodeAcceptOfferCosignedCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
         Order memory saleDetails, 
         SignatureECDSA memory signature,
@@ -275,11 +275,11 @@ function encodeAcceptOfferCosignedCalldata(
 
 ### encodeAcceptOfferCosignedWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `acceptOfferCosignedWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `acceptOfferCosignedWithFeeOnTop` function.
 
 ```solidity
 function encodeAcceptOfferCosignedWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
         Order memory saleDetails, 
         SignatureECDSA memory signature,
@@ -296,11 +296,11 @@ function encodeAcceptOfferCosignedWithFeeOnTopCalldata(
 
 ### encodeBulkBuyListingsCalldata
 
-Used to encode calldata for cPort `bulkBuyListings` function.
+Used to encode calldata for PaymentProcessor `bulkBuyListings` function.
 
 ```solidity
 function encodeBulkBuyListingsCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures) external view returns (bytes memory);
 ```
@@ -309,11 +309,11 @@ function encodeBulkBuyListingsCalldata(
 
 ### encodeBulkBuyListingsWithFeesOnTopCalldata
 
-Used to encode calldata for cPort `bulkBuyListingsWithFeesOnTop` function.
+Used to encode calldata for PaymentProcessor `bulkBuyListingsWithFeesOnTop` function.
 
 ```solidity
 function encodeBulkBuyListingsWithFeesOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures,
         FeeOnTop[] calldata feesOnTop) external view returns (bytes memory);
@@ -325,11 +325,11 @@ function encodeBulkBuyListingsWithFeesOnTopCalldata(
 
 ### encodeBulkBuyListingsCosignedCalldata
 
-Used to encode calldata for cPort `bulkBuyListingsCosigned` function.
+Used to encode calldata for PaymentProcessor `bulkBuyListingsCosigned` function.
 
 ```solidity
 function encodeBulkBuyListingsCosignedCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures,
         Cosignature[] calldata cosignatures) external view returns (bytes memory);
@@ -341,11 +341,11 @@ function encodeBulkBuyListingsCosignedCalldata(
 
 ### encodeBulkBuyListingsCosignedWithFeesOnTopCalldata
 
-Used to encode calldata for cPort `bulkBuyListingsCosignedWithFeesOnTop` function.
+Used to encode calldata for PaymentProcessor `bulkBuyListingsCosignedWithFeesOnTop` function.
 
 ```solidity
 function encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures,
         Cosignature[] calldata cosignatures,
@@ -360,11 +360,11 @@ function encodeBulkBuyListingsCosignedWithFeesOnTopCalldata(
 
 ### encodeBulkAcceptOffersCalldata
 
-Used to encode calldata for cPort `bulkAcceptOffers` function.
+Used to encode calldata for PaymentProcessor `bulkAcceptOffers` function.
 
 ```solidity
 function encodeBulkAcceptOffersCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool[] calldata isCollectionLevelOfferArray,
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures,
@@ -381,11 +381,11 @@ function encodeBulkAcceptOffersCalldata(
 
 ### encodeBulkAcceptOffersWithFeesOnTopCalldata
 
-Used to encode calldata for cPort `bulkAcceptOffersWithFeesOnTop` function.
+Used to encode calldata for PaymentProcessor `bulkAcceptOffersWithFeesOnTop` function.
 
 ```solidity
 function encodeBulkAcceptOffersWithFeesOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool[] calldata isCollectionLevelOfferArray,
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures,
@@ -405,11 +405,11 @@ function encodeBulkAcceptOffersWithFeesOnTopCalldata(
 
 ### encodeBulkAcceptOffersCosignedCalldata
 
-Used to encode calldata for cPort `bulkAcceptOffersCosigned` function.
+Used to encode calldata for PaymentProcessor `bulkAcceptOffersCosigned` function.
 
 ```solidity
 function encodeBulkAcceptOffersCosignedCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool[] calldata isCollectionLevelOfferArray,
         Order[] calldata saleDetailsArray,
         SignatureECDSA[] calldata signatures,
@@ -429,11 +429,11 @@ function encodeBulkAcceptOffersCosignedCalldata(
 
 ### encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata
 
-Used to encode calldata for cPort `bulkAcceptOffersCosignedWithFeesOnTop` function.
+Used to encode calldata for PaymentProcessor `bulkAcceptOffersCosignedWithFeesOnTop` function.
 
 ```solidity
 function encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool[] memory isCollectionLevelOfferArray,
         Order[] memory saleDetailsArray,
         SignatureECDSA[] memory signatures,
@@ -456,11 +456,11 @@ function encodeBulkAcceptOffersCosignedWithFeesOnTopCalldata(
 
 ### encodeSweepCollectionCalldata
 
-Used to encode calldata for cPort `sweepCollection` function.
+Used to encode calldata for PaymentProcessor `sweepCollection` function.
 
 ```solidity
 function encodeSweepCollectionCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
         SignatureECDSA[] calldata signatures) external view returns (bytes memory);
@@ -470,11 +470,11 @@ function encodeSweepCollectionCalldata(
 
 ### encodeSweepCollectionWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `sweepCollectionWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `sweepCollectionWithFeeOnTop` function.
 
 ```solidity
 function encodeSweepCollectionWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
@@ -487,11 +487,11 @@ function encodeSweepCollectionWithFeeOnTopCalldata(
 
 ### encodeSweepCollectionCosignedCalldata
 
-Used to encode calldata for cPort `sweepCollectionCosigned` function.
+Used to encode calldata for PaymentProcessor `sweepCollectionCosigned` function.
 
 ```solidity
 function encodeSweepCollectionCosignedCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
         SignatureECDSA[] calldata signatures,
@@ -504,11 +504,11 @@ function encodeSweepCollectionCosignedCalldata(
 
 ### encodeSweepCollectionCosignedWithFeeOnTopCalldata
 
-Used to encode calldata for cPort `sweepCollectionCosignedWithFeeOnTop` function.
+Used to encode calldata for PaymentProcessor `sweepCollectionCosignedWithFeeOnTop` function.
 
 ```solidity
 function encodeSweepCollectionCosignedWithFeeOnTopCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
@@ -524,23 +524,23 @@ function encodeSweepCollectionCosignedWithFeeOnTopCalldata(
 
 ### encodeRevokeSingleNonceCalldata
 
-Used to encode calldata for cPort `revokeSingleNonce` function (on-chain order cancellation).
+Used to encode calldata for PaymentProcessor `revokeSingleNonce` function (on-chain order cancellation).
 
 ```solidity
-function encodeRevokeSingleNonceCalldata(address cPortAddress, uint256 nonce) external view returns (bytes memory);
+function encodeRevokeSingleNonceCalldata(address paymentProcessorAddress, uint256 nonce) external view returns (bytes memory);
 ```
 
 ## Maker Signature Formats
 
-Makers sign orders in a human readable EIP-712 typed data format.  Exchanges that integrate cPort are responsible for correctly prompting makers to sign the appropriate messages at order creation time.  The typed data formats of each order vary depending on the order type.  The following subsections details the various typed data formats compatible with cPort.
+Makers sign orders in a human readable EIP-712 typed data format.  Exchanges that integrate PaymentProcessor are responsible for correctly prompting makers to sign the appropriate messages at order creation time.  The typed data formats of each order vary depending on the order type.  The following subsections details the various typed data formats compatible with PaymentProcessor.
 
-All cPort typed data signatures share the same EIP-712 domain:
+All PaymentProcessor typed data signatures share the same EIP-712 domain:
 
 ```js
 EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)
 ```
 
-***Note: One of the fields that must always be signed and acknowledged by the order maker is the maximum royalty fee that will be deducted from the proceeds. Upon each signature request, this max royalty fee amount should be queried from the NFT contract using the EIP-2981 `royaltyInfo` function. In case a collection does not implement `royaltyInfo`, the query logic should fallback to check the cPort contract to determine if a royalty backfill has been supplied by the collection creator/owner using the `collectionRoyaltyBackfillSettings` function. If the on-chain royalty increases after the listing has been signed, sales will not execute. However, if the on-chain royalty is reduced, the reduced royalty fee is paid during the sale.***
+***Note: One of the fields that must always be signed and acknowledged by the order maker is the maximum royalty fee that will be deducted from the proceeds. Upon each signature request, this max royalty fee amount should be queried from the NFT contract using the EIP-2981 `royaltyInfo` function. In case a collection does not implement `royaltyInfo`, the query logic should fallback to check the PaymentProcessor contract to determine if a royalty backfill has been supplied by the collection creator/owner using the `collectionRoyaltyBackfillSettings` function. If the on-chain royalty increases after the listing has been signed, sales will not execute. However, if the on-chain royalty is reduced, the reduced royalty fee is paid during the sale.***
 
 ### Sale Approval
 
@@ -616,7 +616,7 @@ Cosignature(uint8 v,bytes32 r,bytes32 s,uint256 expiration,address taker)
 
 ## Data Structures
 
-The following subsections detail the data structures needed for the creation of and filling of orders in cPort.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
+The following subsections detail the data structures needed for the creation of and filling of orders in PaymentProcessor.  Note that [maker signature formats vary by order-type](#maker-signature-formats).
 
 ### SignatureECDSA
 
@@ -691,7 +691,7 @@ This data structure is used to fill all single and bulk orders that are not swee
 - Nonce: An id unique to the order that helps prevent replay attacks.  Nonce applies only to standard signed orders, and may not be re-used.  For co-signed order, nonce should be set to `0`. Note: It is easier to generate a random nonce than attempt to keep track of nonces that have been used.  However, be aware that a gas optimization is in place such that filled or cancelled nonces are tracked in a bitmap. 0-255, 256-511, 512-767, etc all fall within the same slot, so if possible it is ideal to track used nonces through fill events and attempt to use sequential nonces starting at zero.  Because each maker address has its own set of nonces generated for gasless listings, it is possible that marketplaces will have no knowledge of nonces used in outstanding order signatures.  Ideally, a shared service could be created and utilized by all marketplaces that issues nonces for orders.
 - Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
 - Marketplace Fee Numerator: Marketplace fee percentage in bips. Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
-- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled  by calling the `collectionRoyaltyBackfillSettings` function on cPort.  If no on-chain royalties are present, this may be set to `0`.
+- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled  by calling the `collectionRoyaltyBackfillSettings` function on PaymentProcessor.  If no on-chain royalties are present, this may be set to `0`.
 
 ### Sweep Order
 
@@ -722,11 +722,11 @@ This data structure is used to fill sweep orders, and represents the values that
 - Nonce: An id unique to the order that helps prevent replay attacks.  Nonce applies only to standard signed orders, and may not be re-used.  For co-signed order, nonce should be set to `0`. Note: It is easier to generate a random nonce than attempt to keep track of nonces that have been used.  However, be aware that a gas optimization is in place such that filled or cancelled nonces are tracked in a bitmap. 0-255, 256-511, 512-767, etc all fall within the same slot, so if possible it is ideal to track used nonces through fill events and attempt to use sequential nonces starting at zero.  Because each maker address has its own set of nonces generated for gasless listings, it is possible that marketplaces will have no knowledge of nonces used in outstanding order signatures.  Ideally, a shared service could be created and utilized by all marketplaces that issues nonces for orders.
 - Expiration: The unix timestamp (in seconds) when the maker's order signature expires.  A marketplace's order making API should use the current unix timestamp and add a user-defined validity time that is acknowledged in the maker's signature.  
 - Marketplace Fee Numerator: Marketplace fee percentage in bips. Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.
-- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled by calling the `collectionRoyaltyBackfillSettings` function on cPort.  If no on-chain royalties are present, this may be set to `0`.
+- Max Royalty Fee Numerator: Maximum approved royalty fee percentage in bips.  Should be in range 0-10,000, as denominator is 10,000. 0.5% fee numerator is 50, 1% fee numerator is 100, 10% fee numerator is 1,000 and so on.  When requesting the order signature from the order maker, the marketplace MUST first attempt to read the royalties for the individual token using the EIP-2981 `royaltyInfo` function call on the collection.  If `royaltyInfo` raises an exception (likely because it is unimplemented), the marketplace MUST attempt to determine if royalties have been backfilled by calling the `collectionRoyaltyBackfillSettings` function on PaymentProcessor.  If no on-chain royalties are present, this may be set to `0`.
 
 ## Recommended Marketplace Workflows
 
-This section details the suggested workflows for implementing user facing trading features compatible with cPort.
+This section details the suggested workflows for implementing user facing trading features compatible with PaymentProcessor.
 
 ### Making Orders
 
@@ -801,7 +801,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 4. Taker prompted to review the details, including review and acknowledgement of fee on top when applicable.
 5. If listing order was co-signed, client requests a co-signature for the listing.
 6. The most applicable `buyListing` function should be called.  [Applicability Details](#buy-listing)
-7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
+7. Marketplace calls the appropriate PaymentProcessorEncoder function to generate the calldata to fill the order.
 8. Wallet pops up a transaction confirmation of the applicable `buyListing` call.
 9. Taker confirms or rejects the transaction through their wallet interface.
 
@@ -814,7 +814,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 5. Taker prompted to review the details, including review and acknowledgement of all fees on top when applicable.
 6. For any co-signed listing orders, client requests co-signatures.
 7. The most applicable `bulkBuyListings` function should be called.  [Applicability Details](#bulk-buy-listings)
-8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
+8. Marketplace calls the appropriate PaymentProcessorEncoder function to generate the calldata to bulk fill the orders.
 9. Wallet pops up a transaction confirmation of the applicable `bulkBuyListings` call.
 10. Taker confirms or rejects the transaction through their wallet interface.
 
@@ -826,7 +826,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 4. Taker prompted to review the details, including review and acknowledgement of the fee on top when applicable.
 5. For any co-signed listing orders, client requests co-signatures.
 6. The most applicable `sweepCollection` function should be called. [Applicability Details](#sweep-collection)
-7. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the sweep.
+7. Marketplace calls the appropriate PaymentProcessorEncoder function to generate the calldata to fill the sweep.
 8. Wallet pops up a transaction confirmation of the applicable `sweepCollection` call.
 9. Taker confirms or rejects the transaction through their wallet interface.
 
@@ -837,7 +837,7 @@ This can take a few forms depending on how the marketplace chooses to implement 
 3. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fee, maker marketplace fee, and fee on top when applicable.
 4. If the offer order was co-signed, client requests a co-signature for the offer.
 5. The most applicable `acceptOffer` function should be called. [Applicability Details](#accept-offer)
-6. Marketplace calls the appropriate cPortEncoder function to generate the calldata to fill the order.
+6. Marketplace calls the appropriate PaymentProcessorEncoder function to generate the calldata to fill the order.
 7. Wallet pops up a transaction confirmation of the applicable `acceptOffer` call.
 8. Taker confirms or rejects the transaction through their wallet interface.
 
@@ -849,8 +849,8 @@ This can take a few forms depending on how the marketplace chooses to implement 
 4. Taker prompted to review the details, including review and acknowledgement of the current on-chain royalty fees for each item, the maker marketplace fees for each item, and the fees on top when applicable.
 5. For any co-signed offer orders, client requests co-signatures.
 7. The most applicable `bulkAcceptOffers` function should be called.  [Applicability Details](#bulk-accept-offers)
-8. Marketplace calls the appropriate cPortEncoder function to generate the calldata to bulk fill the orders.
+8. Marketplace calls the appropriate PaymentProcessorEncoder function to generate the calldata to bulk fill the orders.
 9. Wallet pops up a transaction confirmation of the applicable `bulkAcceptOffers` call.
 10. Taker confirms or rejects the transaction through their wallet interface.
 
-***Note: There are other steps marketplaces may need to implement to prompt users in the workflow.  For instance: approving cPort to transfer NFTs and ERC-20 payments, prompting to wrap native currency or swap currencies when needed, or prompting buyers to perform a one-time signature to prove they are EOAs [for select ERC721-C security levels only].***
+***Note: There are other steps marketplaces may need to implement to prompt users in the workflow.  For instance: approving PaymentProcessor to transfer NFTs and ERC-20 payments, prompting to wrap native currency or swap currencies when needed, or prompting buyers to perform a one-time signature to prove they are EOAs [for select ERC721-C security levels only].***

@@ -1,9 +1,9 @@
 pragma solidity 0.8.19;
 
-import "../../modules/CPortModule.t.sol";
+import "../../modules/PaymentProcessorModule.t.sol";
 import {Merkle} from "murky/Merkle.sol";
 
-contract BenchmarkTradesBaseTest is cPortModuleTest {
+contract BenchmarkTradesBaseTest is PaymentProcessorModuleTest {
 
     struct BenchmarkParams {
         uint256 numRuns;

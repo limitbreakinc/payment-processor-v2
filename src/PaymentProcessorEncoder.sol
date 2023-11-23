@@ -18,22 +18,22 @@ pragma solidity 0.8.19;
 */ 
 
 import "./DataTypes.sol";
-import "./interfaces/ICPort.sol";
+import "./interfaces/IDomainSeparator.sol";
 
-contract cPortEncoder {
+contract PaymentProcessorEncoder {
 
     /**************************************************************/
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
 
-    function encodeCreatePaymentMethodWhitelistCalldata(address /*cPortAddress*/, string calldata whitelistName) external view returns (bytes memory) {
+    function encodeCreatePaymentMethodWhitelistCalldata(address /*paymentProcessorAddress*/, string calldata whitelistName) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "createPaymentMethodWhitelist(string)",
                 whitelistName));
     }
 
-    function encodeWhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeWhitelistPaymentMethodCalldata(address /*paymentProcessorAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "whitelistPaymentMethod(uint32,address)",
@@ -41,7 +41,7 @@ contract cPortEncoder {
                 paymentMethod));
     }
 
-    function encodeUnwhitelistPaymentMethodCalldata(address /*cPortAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
+    function encodeUnwhitelistPaymentMethodCalldata(address /*paymentProcessorAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "unwhitelistPaymentMethod(uint32,address)",
@@ -50,7 +50,7 @@ contract cPortEncoder {
     }
 
     function encodeSetCollectionPaymentSettingsCalldata(
-        address /*cPortAddress*/, 
+        address /*paymentProcessorAddress*/, 
         address tokenAddress, 
         PaymentSettings paymentSettings,
         uint32 paymentMethodWhitelistId,
@@ -76,7 +76,7 @@ contract cPortEncoder {
     }
 
     function encodeSetCollectionPricingBoundsCalldata(
-        address /*cPortAddress*/, 
+        address /*paymentProcessorAddress*/, 
         address tokenAddress, 
         PricingBounds calldata pricingBounds
     ) external view returns (bytes memory) {
@@ -88,7 +88,7 @@ contract cPortEncoder {
     }
 
     function encodeSetTokenPricingBoundsCalldata(
-        address /*cPortAddress*/, 
+        address /*paymentProcessorAddress*/, 
         address tokenAddress, 
         uint256[] calldata tokenIds, 
         PricingBounds[] calldata pricingBounds
@@ -101,7 +101,7 @@ contract cPortEncoder {
                 pricingBounds));
     }
 
-    function encodeAddTrustedChannelForCollectionCalldata(address /*cPortAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
+    function encodeAddTrustedChannelForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "addTrustedChannelForCollection(address,address)",
@@ -109,7 +109,7 @@ contract cPortEncoder {
                 channel));
     }
 
-    function encodeRemoveTrustedChannelForCollectionCalldata(address /*cPortAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
+    function encodeRemoveTrustedChannelForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "removeTrustedChannelForCollection(address,address)",
@@ -121,14 +121,14 @@ contract cPortEncoder {
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
 
-    function encodeRevokeSingleNonceCalldata(address /*cPortAddress*/, uint256 nonce) external view returns (bytes memory) {
+    function encodeRevokeSingleNonceCalldata(address /*paymentProcessorAddress*/, uint256 nonce) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "revokeSingleNonce(uint256)",
                 nonce));
     }
 
-    function encodeRevokeOrderDigestCalldata(address /*cPortAddress*/, bytes32 digest) external view returns (bytes memory) {
+    function encodeRevokeOrderDigestCalldata(address /*paymentProcessorAddress*/, bytes32 digest) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "revokeOrderDigest(bytes32)",
@@ -140,7 +140,7 @@ contract cPortEncoder {
     /**************************************************************/
 
     function encodeBuyListingCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order memory saleDetails, 
         SignatureECDSA memory signature,
         Cosignature memory cosignature,
@@ -149,7 +149,7 @@ contract cPortEncoder {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "buyListing(bytes32,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
-                IcPort(cPortAddress).getDomainSeparator(),
+                IDomainSeparator(paymentProcessorAddress).getDomainSeparator(),
                 saleDetails,
                 signature,
                 cosignature,
@@ -157,7 +157,7 @@ contract cPortEncoder {
     }
 
     function encodeAcceptOfferCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
         Order memory saleDetails, 
         SignatureECDSA memory signature,
@@ -168,7 +168,7 @@ contract cPortEncoder {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "acceptOffer(bytes32,bool,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248),(uint8,bytes32,bytes32),(bytes32,bytes32[]),(address,address,uint256,uint8,bytes32,bytes32),(address,uint256))",
-                IcPort(cPortAddress).getDomainSeparator(),
+                IDomainSeparator(paymentProcessorAddress).getDomainSeparator(),
                 isCollectionLevelOffer,
                 saleDetails,
                 signature,
@@ -178,7 +178,7 @@ contract cPortEncoder {
     }
 
     function encodeBulkBuyListingsCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
         SignatureECDSA[] calldata signatures,
         Cosignature[] calldata cosignatures,
@@ -187,7 +187,7 @@ contract cPortEncoder {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "bulkBuyListings(bytes32,(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[])",
-                IcPort(cPortAddress).getDomainSeparator(),
+                IDomainSeparator(paymentProcessorAddress).getDomainSeparator(),
                 saleDetailsArray,
                 signatures,
                 cosignatures,
@@ -195,7 +195,7 @@ contract cPortEncoder {
     }
 
     function encodeBulkAcceptOffersCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         bool[] memory isCollectionLevelOfferArray,
         Order[] memory saleDetailsArray,
         SignatureECDSA[] memory signatures,
@@ -215,12 +215,12 @@ contract cPortEncoder {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "bulkAcceptOffers(bytes32,(bool[],(uint8,address,address,address,address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256,uint248,uint248)[],(uint8,bytes32,bytes32)[],(bytes32,bytes32[])[],(address,address,uint256,uint8,bytes32,bytes32)[],(address,uint256)[]))",
-                IcPort(cPortAddress).getDomainSeparator(),
+                IDomainSeparator(paymentProcessorAddress).getDomainSeparator(),
                 params));
     }
 
     function encodeSweepCollectionCalldata(
-        address cPortAddress, 
+        address paymentProcessorAddress, 
         FeeOnTop memory feeOnTop,
         SweepOrder memory sweepOrder,
         SweepItem[] calldata items,
@@ -230,7 +230,7 @@ contract cPortEncoder {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
                 "sweepCollection(bytes32,(address,uint256),(uint8,address,address,address),(address,address,address,uint256,uint248,uint256,uint256,uint256,uint256,uint256)[],(uint8,bytes32,bytes32)[],(address,address,uint256,uint8,bytes32,bytes32)[])",
-                IcPort(cPortAddress).getDomainSeparator(),
+                IDomainSeparator(paymentProcessorAddress).getDomainSeparator(),
                 feeOnTop,
                 sweepOrder,
                 items,

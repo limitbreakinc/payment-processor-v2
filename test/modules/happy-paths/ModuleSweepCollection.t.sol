@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleSweepCollectionTest is cPortModuleTest {
+contract ModuleSweepCollectionTest is PaymentProcessorModuleTest {
 
     function _generateSweepOrder(
         TestTradeSingleItemParams memory params1,

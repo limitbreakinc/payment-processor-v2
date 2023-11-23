@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleForwardedSweepCollectionTest is cPortModuleTest {
+contract ModuleForwardedSweepCollectionTest is PaymentProcessorModuleTest {
 
     address channel;
 

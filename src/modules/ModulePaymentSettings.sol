@@ -17,9 +17,9 @@ pragma solidity 0.8.19;
  By Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
+import "./PaymentProcessorModule.sol";
 
-contract ModulePaymentSettings is cPortModule {
+contract ModulePaymentSettings is PaymentProcessorModule {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     constructor(
@@ -27,7 +27,11 @@ contract ModulePaymentSettings is cPortModule {
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  

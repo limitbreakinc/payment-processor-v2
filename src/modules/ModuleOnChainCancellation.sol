@@ -17,16 +17,20 @@ pragma solidity 0.8.19;
  By Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
+import "./PaymentProcessorModule.sol";
 
-contract ModuleOnChainCancellation is cPortModule {
+contract ModuleOnChainCancellation is PaymentProcessorModule {
 
     constructor(
         address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.

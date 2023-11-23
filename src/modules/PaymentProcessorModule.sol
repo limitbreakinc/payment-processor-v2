@@ -19,24 +19,27 @@ pragma solidity 0.8.19;
 
 
 import "../IOwnable.sol";
-import "../interfaces/CPortEvents.sol";
-import "../storage/CPortStorageAccess.sol";
+import "../interfaces/IPaymentProcessorEvents.sol";
+import "../storage/PaymentProcessorStorageAccess.sol";
 import "../Constants.sol";
 import "../Errors.sol";
 
-import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
+import "@openzeppelin/contracts/interfaces/IERC1271.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
-
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 import {TrustedForwarderERC2771Context} from "@limitbreak/trusted-forwarder/TrustedForwarderERC2771Context.sol";
 
-abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAccess, cPortEvents {
+abstract contract PaymentProcessorModule is 
+    TrustedForwarderERC2771Context, 
+    PaymentProcessorStorageAccess, 
+    IPaymentProcessorEvents {
+
     using EnumerableSet for EnumerableSet.AddressSet;
 
     // Recommendations For Default Immutable Payment Methods Per Chain
@@ -255,7 +258,10 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
             startingNativeFunds,
             SweepCollectionComputeAndDistributeProceedsParams({
                 paymentCoin: IERC20(sweepOrder.paymentMethod),
-                fnPointers: _getOrderFulfillmentFunctionPointers(Sides.Buy, sweepOrder.paymentMethod, sweepOrder.protocol),
+                fnPointers: _getOrderFulfillmentFunctionPointers(
+                    Sides.Buy, 
+                    sweepOrder.paymentMethod, 
+                    sweepOrder.protocol),
                 feeOnTop: feeOnTop,
                 royaltyBackfillAndBounty: royaltyBackfillAndBounty,
                 saleDetailsBatch: saleDetailsBatch
@@ -731,7 +737,8 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
                 }
 
                 proceeds.royaltyRecipient = royaltyBackfillAndBounty.backfillReceiver;
-                proceeds.royaltyProceeds = (salePrice * royaltyBackfillAndBounty.backfillNumerator) / FEE_DENOMINATOR;
+                proceeds.royaltyProceeds = 
+                    (salePrice * royaltyBackfillAndBounty.backfillNumerator) / FEE_DENOMINATOR;
 
                 unchecked {
                     proceeds.sellerProceeds -= proceeds.royaltyProceeds;
@@ -754,7 +761,8 @@ abstract contract cPortModule is TrustedForwarderERC2771Context, cPortStorageAcc
 
             if (royaltyBackfillAndBounty.exclusiveMarketplace == address(0) || 
                 royaltyBackfillAndBounty.exclusiveMarketplace == marketplaceFeeRecipient) {
-                uint256 royaltyBountyProceeds = proceeds.royaltyProceeds * royaltyBackfillAndBounty.bountyNumerator / FEE_DENOMINATOR;
+                uint256 royaltyBountyProceeds = 
+                    proceeds.royaltyProceeds * royaltyBackfillAndBounty.bountyNumerator / FEE_DENOMINATOR;
             
                 if (royaltyBountyProceeds > 0) {
                     unchecked {

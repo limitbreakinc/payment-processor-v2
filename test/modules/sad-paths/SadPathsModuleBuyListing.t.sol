@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract SadPathsModuleBuyListingTest is cPortModuleTest {
+contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
 
     function _runTestBuyListingWithUnderpayment(uint256 msgValue, TestTradeSingleItemParams memory params) internal {
         FuzzedOrder721 memory fuzzedOrderInputs = params.fuzzedOrderInputs;

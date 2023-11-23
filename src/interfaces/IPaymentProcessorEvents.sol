@@ -3,7 +3,7 @@ pragma solidity 0.8.19;
 
 import "../DataTypes.sol";
 
-interface cPortEvents {
+interface IPaymentProcessorEvents {
 
     event BuyListingERC721(
         address indexed buyer,

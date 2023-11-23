@@ -17,16 +17,20 @@ pragma solidity 0.8.19;
  By Limit Break, Inc.
 */ 
 
-import "./CPortModule.sol";
+import "./PaymentProcessorModule.sol";
 
-contract ModuleTradesAdvanced is cPortModule {
+contract ModuleTradesAdvanced is PaymentProcessorModule {
 
     constructor(
         address trustedForwarderFactory_,
         uint32 defaultPushPaymentGasLimit_,
         address wrappedNativeCoinAddress_,
         DefaultPaymentMethods memory defaultPaymentMethods) 
-    cPortModule(trustedForwarderFactory_, defaultPushPaymentGasLimit_, wrappedNativeCoinAddress_, defaultPaymentMethods) {}
+    PaymentProcessorModule(
+        trustedForwarderFactory_, 
+        defaultPushPaymentGasLimit_, 
+        wrappedNativeCoinAddress_, 
+        defaultPaymentMethods) {}
 
     function sweepCollection(
         bytes32 domainSeparator, 

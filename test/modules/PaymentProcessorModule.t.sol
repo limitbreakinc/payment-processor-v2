@@ -3,10 +3,10 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "src/interfaces/CPortEvents.sol";
+import "src/interfaces/IPaymentProcessorEvents.sol";
 import "src/Constants.sol";
-import "src/CPort.sol";
-import "src/CPortEncoder.sol";
+import "src/PaymentProcessor.sol";
+import "src/PaymentProcessorEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModuleTrades.sol";
@@ -23,7 +23,7 @@ import "../mocks/WNative.sol";
 import {TrustedForwarder} from "@limitbreak/trusted-forwarder/TrustedForwarder.sol";
 import {TrustedForwarderFactory} from "@limitbreak/trusted-forwarder/TrustedForwarderFactory.sol";
 
-contract cPortModuleTest is Test, cPortEvents {
+contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
     struct FuzzedOrder721 {
         bool buyerIsContract;
@@ -75,8 +75,8 @@ contract cPortModuleTest is Test, cPortEvents {
     address payable internal cosigner = payable(vm.addr(cosignerPk));
     address payable internal benchmarkFeeRecipient = payable(vm.addr(feePk));
 
-    cPort public _paymentProcessor;
-    cPortEncoder public _paymentProcessorEncoder;
+    PaymentProcessor public _paymentProcessor;
+    PaymentProcessorEncoder public _paymentProcessorEncoder;
 
     WNative public nativeWrapper;
 
@@ -99,10 +99,10 @@ contract cPortModuleTest is Test, cPortEvents {
     address public forwarderImplementation;
     TrustedForwarder public forwarder;
 
-    cPortModule public modulePaymentSettings;
-    cPortModule public moduleOnChainCancellation;
-    cPortModule public moduleTrades;
-    cPortModule public moduleTradesAdvanced;
+    PaymentProcessorModule public modulePaymentSettings;
+    PaymentProcessorModule public moduleOnChainCancellation;
+    PaymentProcessorModule public moduleTrades;
+    PaymentProcessorModule public moduleTradesAdvanced;
 
     uint32 public customPaymentMethodWhitelistId;
 
@@ -134,7 +134,7 @@ contract cPortModuleTest is Test, cPortEvents {
 
         factory = new TrustedForwarderFactory(forwarderImplementation);
 
-        _paymentProcessorEncoder = new cPortEncoder();
+        _paymentProcessorEncoder = new PaymentProcessorEncoder();
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
             defaultPaymentMethod1: address(weth),
@@ -168,7 +168,7 @@ contract cPortModuleTest is Test, cPortEvents {
             defaultPaymentMethods);
 
         _paymentProcessor = 
-            new cPort(
+            new PaymentProcessor(
                 address(this),
                 address(modulePaymentSettings),
                 address(moduleOnChainCancellation),

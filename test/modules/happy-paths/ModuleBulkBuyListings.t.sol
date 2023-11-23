@@ -3,9 +3,9 @@ pragma solidity 0.8.19;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import "../CPortModule.t.sol";
+import "../PaymentProcessorModule.t.sol";
 
-contract ModuleBulkBuyListingsTest is cPortModuleTest {
+contract ModuleBulkBuyListingsTest is PaymentProcessorModuleTest {
 
     function _getBulkBuyListingsInput(
         address buyer, 
