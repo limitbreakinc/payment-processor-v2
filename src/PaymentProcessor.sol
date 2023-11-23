@@ -1,22 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
-/*
- .----------------.  .----------------.  .----------------.  .----------------.  .----------------.  .----------------.
-| .--------------. || .--------------. || .--------------. || .--------------. || .--------------. || .--------------. |
-| |     ______   | || |              | || |   ______     | || |     ____     | || |  _______     | || |  _________   | |
-| |   .' ___  |  | || |              | || |  |_   __ \   | || |   .'    `.   | || | |_   __ \    | || | |  _   _  |  | |
-| |  / .'   \_|  | || |    ______    | || |    | |__) |  | || |  /  .--.  \  | || |   | |__) |   | || | |_/ | | \_|  | |
-| |  | |         | || |   |______|   | || |    |  ___/   | || |  | |    | |  | || |   |  __ /    | || |     | |      | |
-| |  \ `.___.'\  | || |              | || |   _| |_      | || |  \  `--'  /  | || |  _| |  \ \_  | || |    _| |_     | |
-| |   `._____.'  | || |              | || |  |_____|     | || |   `.____.'   | || | |____| |___| | || |   |_____|    | |
-| |              | || |              | || |              | || |              | || |              | || |              | |
-| '--------------' || '--------------' || '--------------' || '--------------' || '--------------' || '--------------' |
- '----------------'  '----------------'  '----------------'  '----------------'  '----------------'  '----------------'
- 
- By Limit Break, Inc.
-*/ 
-
 import "./Constants.sol";
 import "./Errors.sol";
 import "./interfaces/IPaymentProcessorEvents.sol";
@@ -26,90 +10,47 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
+/*
+                                                     @@@@@@@@@@@@@@             
+                                                    @@@@@@@@@@@@@@@@@@(         
+                                                   @@@@@@@@@@@@@@@@@@@@@        
+                                                  @@@@@@@@@@@@@@@@@@@@@@@@      
+                                                           #@@@@@@@@@@@@@@      
+                                                               @@@@@@@@@@@@     
+                            @@@@@@@@@@@@@@*                    @@@@@@@@@@@@     
+                           @@@@@@@@@@@@@@@     @               @@@@@@@@@@@@     
+                          @@@@@@@@@@@@@@@     @                @@@@@@@@@@@      
+                         @@@@@@@@@@@@@@@     @@               @@@@@@@@@@@@      
+                        @@@@@@@@@@@@@@@     #@@             @@@@@@@@@@@@/       
+                        @@@@@@@@@@@@@@.     @@@@@@@@@@@@@@@@@@@@@@@@@@@         
+                       @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@            
+                      @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@             
+                     @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+                    @@@@@@@@@@@@@@@     @@@@@&%%%%%%%%&&@@@@@@@@@@@@@@          
+                    @@@@@@@@@@@@@@      @@@@@               @@@@@@@@@@@         
+                   @@@@@@@@@@@@@@@     @@@@@                 @@@@@@@@@@@        
+                  @@@@@@@@@@@@@@@     @@@@@@                 @@@@@@@@@@@        
+                 @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@        
+                @@@@@@@@@@@@@@@     @@@@@@@                 @@@@@@@@@@@&        
+                @@@@@@@@@@@@@@     *@@@@@@@               (@@@@@@@@@@@@         
+               @@@@@@@@@@@@@@@     @@@@@@@@             @@@@@@@@@@@@@@          
+              @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@           
+             @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@            
+            @@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@              
+           .@@@@@@@@@@@@@@     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                 
+           @@@@@@@@@@@@@@%     @@@@@@@@@@@@@@@@@@@@@@@@(                        
+          @@@@@@@@@@@@@@@                                                       
+         @@@@@@@@@@@@@@@                                                        
+        @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                         
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                          
+       @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&                                          
+      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@                                           
+ 
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
+*/ 
 
-/**
- * @title  PaymentProcessor
- * @author Limit Break, Inc.
- * @notice PaymentProcessor is the world's first creator-centric ERC721-C compatible marketplace protocol.
- *         Built by creators, for creators.
- * @notice Use ERC721-C to whitelist this contract or other marketplace contracts that process royalties entirely 
- *         on-chain manner to make them 100% enforceable and fully programmable! 
- *
- * @notice <h4>Features</h4>
- *
- * @notice <ul>
- *            <li>Payment Standards</li>
- *            <ul>
- *             <li>Native Currency (ETH or Equivalent)</li>
- *             <li>ERC-20</li>
- *            </ul>
- *            <li>Tradeable Item Support</li>
- *            <ul>
- *             <li>ERC721 (Non-Fungible Tokens)</li>
- *             <ul>
- *               <li>ERC721-C</li>
- *               <li>ERC721 + EIP-2981</li>
- *               <li>ERC721</li>
- *             </ul>
- *             <li>ERC1155 (Fungible Tokens)</li>
- *             <ul>
- *               <li>ERC1155-C</li>
- *               <li>ERC1155 + EIP-2981</li>
- *               <li>ERC1155</li>
- *             </ul>
- *            </ul>
- *           <li>Enforceable/Programmable Fees</li>
- *           <ul>
- *             <li>On-Chain Royalties</li>
- *             <ul>
- *               <li>EIP-2981</li>
- *               <li>Missing Royalty Backfill Per Collection</li>
- *             </ul>
- *             <li>Marketplace Fees</li>
- *             <ul>
- *               <li>Maker Fee</li>
- *               <li>Taker Fee (Fee On Top)</li>
- *               <li>Optional Creator Royalty Bounty for Maker MP</li>
- *             </ul>
- *           </ul>
- *           <li>Creator-Defined Payment Settings for Collections</li>
- *           <ul>
- *             <li>Default Payment Method Whitelist</li>
- *             <li>Allow Any Payment Method</li>
- *             <li>Custom Payment Method Whitelist</li>
- *             <li>Pricing Constraints (Min/Max Pricing)</li>
- *           </ul>
- *           <li>Order Cancellation</li>
- *           <ul>
- *             <li>On-Chain</li>
- *             <li>Gasless Cancellation Oracles (Co-Signing)</li>
- *           </ul>
- *           <li>A Multitude of Supported Trade Types</li>
- *           <ul>
- *             <li>Buy Listing</li>
- *             <li>Bulk Buy Listings</li>
- *             <li>Sweep Collection</li>
- *             <li>Accept Offer</li>
- *             <li>Bulk Accept Offers</li>
- *             <li>Offer Types</li>
- *             <ul>
- *               <li>Item</li>
- *               <li>Collection</li>
- *               <li>Token Set</li>
- *             </ul>
- *           </ul>
- *         </ul>
- *
- * @notice <h4>Security Considerations for Users</h4>
- *
- * @notice Virtually all on-chain marketplace contracts have the potential to be front-run.
- *         When purchasing high-value items, whether individually or in a batch/bundle it is highly
- *         recommended to execute transactions using Flashbots RPC Relay/private mempool to avoid
- *         sniper bots.  Partial fills are available for bulk and sweep trades when the method of payment is an 
- *         ERC-20 token, but not for purchases using native currency.  It is preferable to use wrapped ETH 
- *         (or equivalent) when buying multiple tokens and it is highly advisable to use a private mempool
- *         like Flashbots whenever possible.
- */
 contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
