@@ -107,6 +107,8 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             // 4 bytes for the selector
             let ptr := mload(0x40)
             mstore(ptr, selector)
+            mstore(0x40, add(ptr, calldatasize()))
+            calldatacopy(add(ptr, 0x04), 0x04, sub(calldatasize(), 0x04))
             let result := delegatecall(gas(), module, ptr, add(sub(calldatasize(), 4), 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
