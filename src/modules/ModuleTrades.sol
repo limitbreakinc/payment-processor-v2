@@ -57,6 +57,34 @@ contract ModuleTrades is PaymentProcessorModule {
         wrappedNativeCoinAddress_, 
         defaultPaymentMethods) {}
 
+    /**
+     * @notice Executes a buy listing transaction for a single order item.
+     *
+     * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when the maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when the maker's master nonce does not match the order details.
+     * @dev    Throws when the order does not comply with the collection payment settings.
+     * @dev    Throws when the maker's signature is invalid.
+     * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
+     * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token no longer owned by maker.
+     * @dev    Any unused native token payment will be returned to the taker as wrapped native token.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Maker's nonce is marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Maker's partially fillable order state is updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. An `BuyListingERC721` event has been emitted for a ERC721 purchase.
+     * @dev    6. An `BuyListingERC1155` event has been emitted for a ERC1155 purchase.
+     *
+     * @param  domainSeparator The domain separator to be used when verifying the order signature.
+     * @param  saleDetails     The order execution details.
+     * @param  sellerSignature The maker's signature authorizing the order execution.
+     * @param  cosignature     The additional cosignature for a cosigned order, if applicable.
+     * @param  feeOnTop        The additional fee to add on top of the order, paid by taker.
+     */
     function buyListing(
         bytes32 domainSeparator, 
         Order memory saleDetails, 
@@ -93,6 +121,36 @@ contract ModuleTrades is PaymentProcessorModule {
         }
     }
 
+    /**
+     * @notice Executes an offer accept transaction for a single order item.
+     *
+     * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when the maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when the maker's master nonce does not match the order details.
+     * @dev    Throws when the order does not comply with the collection payment settings.
+     * @dev    Throws when the maker's signature is invalid.
+     * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker does not have sufficient funds to complete the purchase.
+     * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token not owned by the taker.
+     * @dev    Throws when the token the offer is being accepted for does not match the conditions set by the maker.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Maker's nonce is marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Maker's partially fillable order state is updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. An `AcceptOfferERC721` event has been emitted for a ERC721 sale.
+     * @dev    6. An `AcceptOfferERC1155` event has been emitted for a ERC1155 sale.
+     *
+     * @param  domainSeparator        The domain separator to be used when verifying the order signature.
+     * @param  isCollectionLevelOffer The flag to indicate if an offer is for any token in the collection.
+     * @param  saleDetails            The order execution details.
+     * @param  buyerSignature         The maker's signature authorizing the order execution.
+     * @param  tokenSetProof          The root hash and merkle proofs for an offer that is a subset of tokens in a collection.
+     * @param  cosignature            The additional cosignature for a cosigned order, if applicable.
+     * @param  feeOnTop               The additional fee to add on top of the order, paid by taker.
+     */
     function acceptOffer(
         bytes32 domainSeparator, 
         bool isCollectionLevelOffer, 
@@ -125,6 +183,34 @@ contract ModuleTrades is PaymentProcessorModule {
             feeOnTop);
     }
 
+    /**
+     * @notice Executes a buy listing transaction for multiple order items.
+     *
+     * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when a maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when a maker's master nonce does not match the order details.
+     * @dev    Throws when an order does not comply with the collection payment settings.
+     * @dev    Throws when a maker's signature is invalid.
+     * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
+     * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
+     * @dev    Any unused native token payment will be returned to the taker as wrapped native token.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Makers nonces are marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Makers partially fillable order states are updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. `BuyListingERC721` events have been emitted for each ERC721 purchase.
+     * @dev    6. `BuyListingERC1155` events have been emitted for each ERC1155 purchase.
+     *
+     * @param  domainSeparator  The domain separator to be used when verifying the order signature.
+     * @param  saleDetailsArray An array of order execution details.
+     * @param  sellerSignatures An array of maker signatures authorizing the order execution.
+     * @param  cosignatures     An array of additional cosignatures for cosigned orders, if applicable.
+     * @param  feesOnTop        An array of additional fees to add on top of the orders, paid by taker.
+     */
     function bulkBuyListings(
         bytes32 domainSeparator, 
         Order[] calldata saleDetailsArray,
@@ -201,6 +287,31 @@ contract ModuleTrades is PaymentProcessorModule {
         }
     }
 
+    /**
+     * @notice Executes an accept offer transaction for multiple order items.
+     *
+     * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when a maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when a maker's master nonce does not match the order details.
+     * @dev    Throws when an order does not comply with the collection payment settings.
+     * @dev    Throws when a maker's signature is invalid.
+     * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when a maker does not have sufficient funds to complete the purchase.
+     * @dev    Throws when the token an offer is being accepted for does not match the conditions set by the maker.
+     * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Makers nonces are marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Makers partially fillable order states are updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. `AcceptOfferERC721` events have been emitted for each ERC721 sale.
+     * @dev    6. `AcceptOfferERC1155` events have been emitted for each ERC1155 sale.
+     *
+     * @param  domainSeparator The domain separator to be used when verifying the order signature.
+     * @param  params          The parameters for the bulk offers being accepted.
+     */
     function bulkAcceptOffers(
         bytes32 domainSeparator, 
         BulkAcceptOffersParams memory params
