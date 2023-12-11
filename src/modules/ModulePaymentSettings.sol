@@ -127,8 +127,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
      * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
      * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
      *
-     * @param  paymentMethodWhitelistId The id of the payment method whitelist to update.
-     * @param  paymentMethod                     The address of the payment method to unwhitelist.
+     * @param  paymentMethodWhitelistId  The id of the payment method whitelist to update.
+     * @param  paymentMethod             The address of the payment method to unwhitelist.
      */
     function unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
