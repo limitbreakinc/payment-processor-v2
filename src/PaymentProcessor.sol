@@ -99,6 +99,14 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     /*                         MODIFIERS                          */
     /**************************************************************/
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` as the calldata
+     * @dev This delegatecall is for functions that do not have parameters. The only calldata added is
+     * @dev the extra calldata from a trusted forwarder.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     */
     modifier delegateCallNoData(address module, bytes4 selector) {
         assembly {
             // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
@@ -118,6 +126,15 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         _;
     }
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` and `data` as the 
+     * @dev calldata. This delegatecall is for functions that have parameters but **DO NOT** take domain
+     * @dev separator as a parameter. Additional calldata from a trusted forwarder is appended to the end.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     * @param data The calldata to send to the `module`.
+     */
     modifier delegateCall(address module, bytes4 selector, bytes calldata data) {
         assembly {
             // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
@@ -144,6 +161,17 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         _;
     }
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` and `data` as the 
+     * @dev calldata. This delegatecall is for functions that have parameters **AND** take domain
+     * @dev separator as the first parameter. Any domain separator that has been included in `data`
+     * @dev will be replaced with the Payment Processor domain separator.  Additional calldata from a 
+     * @dev trusted forwarder is appended to the end.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     * @param data The calldata to send to the `module`.
+     */
     modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
         bytes32 domainSeparator = _domainSeparatorV4();
         assembly {

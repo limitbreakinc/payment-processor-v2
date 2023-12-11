@@ -3,8 +3,14 @@ pragma solidity 0.8.19;
 
 import "../DataTypes.sol";
 
+/** 
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
+*/ 
 interface IPaymentProcessorEvents {
 
+    /// @notice Emitted when an ERC721 listing is purchased.
     event BuyListingERC721(
         address indexed buyer,
         address indexed seller,
@@ -14,6 +20,7 @@ interface IPaymentProcessorEvents {
         uint256 tokenId,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC1155 listing is purchased.
     event BuyListingERC1155(
         address indexed buyer,
         address indexed seller,
@@ -24,6 +31,7 @@ interface IPaymentProcessorEvents {
         uint256 amount,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC721 offer is accepted.
     event AcceptOfferERC721(
         address indexed seller,
         address indexed buyer,
@@ -33,6 +41,7 @@ interface IPaymentProcessorEvents {
         uint256 tokenId,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC1155 offer is accepted.
     event AcceptOfferERC1155(
         address indexed seller,
         address indexed buyer,
@@ -43,6 +52,7 @@ interface IPaymentProcessorEvents {
         uint256 amount,
         uint256 salePrice);
 
+    /// @notice Emitted when a new payment method whitelist is created.
     event CreatedPaymentMethodWhitelist(
         uint32 indexed paymentMethodWhitelistId, 
         address indexed whitelistOwner,
