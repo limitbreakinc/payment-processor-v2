@@ -580,6 +580,15 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         _paymentProcessor.revokeMasterNonce();
     }
 
+    function _revokeMasterNonce(address channel, address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
+        if(expectedRevertSelector == bytes4(0x00000000)) {
+            vm.expectEmit(true, false, false, true);
+            emit MasterNonceInvalidated(caller, previousMasterNonce);
+        }
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeMasterNonce.selector, "", expectedRevertSelector);
+    }
+
     function _revokeSingleNonce(address caller, uint256 nonce, bytes4 expectedRevertSelector) internal {
         bytes memory fnCalldata = 
             _paymentProcessorEncoder.encodeRevokeSingleNonceCalldata(
@@ -597,6 +606,20 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         _paymentProcessor.revokeSingleNonce(fnCalldata);
     }
 
+    function _revokeSingleNonce(address channel, address caller, uint256 nonce, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeRevokeSingleNonceCalldata(
+                address(_paymentProcessor), 
+                nonce);
+
+        if(expectedRevertSelector == bytes4(0x00000000)) {
+            vm.expectEmit(true, true, false, true);
+            emit NonceInvalidated(nonce, caller, true);
+        }
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeSingleNonce.selector, fnCalldata, expectedRevertSelector);
+    }
+
     function _revokeOrderDigest(address caller, bytes32 digest, bytes4 expectedRevertSelector) internal {
         bytes memory fnCalldata = 
             _paymentProcessorEncoder.encodeRevokeOrderDigestCalldata(
@@ -609,6 +632,15 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         vm.prank(caller, caller);
         _paymentProcessor.revokeOrderDigest(fnCalldata);
+    }
+
+    function _revokeOrderDigest(address channel, address caller, bytes32 digest, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeRevokeOrderDigestCalldata(
+                address(_paymentProcessor), 
+                digest);
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeOrderDigest.selector, fnCalldata, expectedRevertSelector);
     }
 
     // TODO: Start
