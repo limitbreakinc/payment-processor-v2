@@ -80,7 +80,7 @@ contract ModuleTradesAdvanced is PaymentProcessorModule {
      * @dev    6. `BuyListingERC1155` events have been emitted for each ERC1155 purchase.
      *
      * @param  domainSeparator  The domain separator to be used when verifying the order signature.
-     * @param  feeOnTop        An array of additional fees to add on top of the orders, paid by taker.
+     * @param  feeOnTop         The additional fee to add on top of the orders, paid by taker.
      * @param  sweepOrder       The order information that is common to all items in the sweep.
      * @param  items            An array of items that contains the order information unique to each item.
      * @param  signedSellOrders An array of maker signatures authorizing the order execution.

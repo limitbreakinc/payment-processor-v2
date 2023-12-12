@@ -72,11 +72,22 @@ abstract contract PaymentProcessorModule is
     // Default Payment Method 3: USDC (Native)
     // Default Payment Method 4: USDC (Bridged)
 
+    /// @dev The amount of gas units to be supplied with native token transfers.
     uint256 private immutable pushPaymentGasLimit;
+
+    /// @dev The address of the ERC20 contract used for wrapped native token.
     address public immutable wrappedNativeCoinAddress;
+
+    /// @dev The first default payment method defined at contract deployment. Immutable to save SLOAD cost.
     address private immutable defaultPaymentMethod1;
+
+    /// @dev The second default payment method defined at contract deployment. Immutable to save SLOAD cost.
     address private immutable defaultPaymentMethod2;
+
+    /// @dev The third default payment method defined at contract deployment. Immutable to save SLOAD cost.
     address private immutable defaultPaymentMethod3;
+
+    /// @dev The fourth default payment method defined at contract deployment. Immutable to save SLOAD cost.
     address private immutable defaultPaymentMethod4;
 
     constructor(
@@ -103,6 +114,11 @@ abstract contract PaymentProcessorModule is
     /*                        Default Payment Methods                        */
     /*************************************************************************/
 
+    /**
+     * @notice Returns true if `paymentMethod` is a default payment method.
+     * 
+     * @dev    This function will return true if the default payment method was added after contract deployment.
+     */
     function _isDefaultPaymentMethod(address paymentMethod) internal view returns (bool) {
         if (paymentMethod == address(0)) {
             return true;
@@ -122,6 +138,11 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Returns an array of the default payment methods defined at contract deployment.
+     * 
+     * @dev    This array will **NOT** include default payment methods added after contract deployment.
+     */
     function _getDefaultPaymentMethods() internal view returns (address[] memory) {
         address[] memory defaultPaymentMethods = new address[](5);
         defaultPaymentMethods[0] = address(0);
@@ -136,6 +157,21 @@ abstract contract PaymentProcessorModule is
     /*                            Order Execution                            */
     /*************************************************************************/
 
+    /**
+     * @notice Checks order validation and fulfills a buy listing order.
+     * 
+     * @dev    This function may be called multiple times during a bulk execution.
+     * @dev    Throws when a partial fill order is not equally divisible by the number of items in the order.
+     * 
+     * @param context             The current execution context to determine the taker.
+     * @param startingNativeFunds The amount of native funds available at the beginning of the order execution.
+     * @param saleDetails         The order execution details.
+     * @param signedSellOrder     The maker's signature authorizing the order execution.
+     * @param cosignature         The additional cosignature for a cosigned order, if applicable.
+     * @param feeOnTop            The additional fee to add on top of the order, paid by taker.
+     * 
+     * @return endingNativeFunds  The amount of native funds available at the end of the order execution.
+     */
     function _executeOrderBuySide(
         TradeContext memory context,
         uint256 startingNativeFunds,
@@ -173,6 +209,22 @@ abstract contract PaymentProcessorModule is
             feeOnTop);
     }
 
+    /**
+     * @notice Checks order validation and fulfills an offer acceptance.
+     * 
+     * @dev    This function may be called multiple times during a bulk execution.
+     * @dev    Throws when the payment method is the chain native token.
+     * @dev    Throws when the supplied token for a token set offer cannot be validated with the root hash and proof.
+     * @dev    Throws when a partial fill order is not equally divisible by the number of items in the order.
+     * 
+     * @param context                The current execution context to determine the taker.
+     * @param  isCollectionLevelOrder The flag to indicate if an offer is for any token in the collection.
+     * @param  saleDetails            The order execution details.
+     * @param  buyerSignature         The maker's signature authorizing the order execution.
+     * @param  tokenSetProof          The root hash and merkle proofs for an offer that is a subset of tokens in a collection.
+     * @param  cosignature            The additional cosignature for a cosigned order, if applicable.
+     * @param  feeOnTop               The additional fee to add on top of the order, paid by taker.
+     */
     function _executeOrderSellSide(
         TradeContext memory context,
         bool isCollectionLevelOrder, 
@@ -241,6 +293,23 @@ abstract contract PaymentProcessorModule is
             feeOnTop);
     }
 
+    /**
+     * @notice Checks order validation and fulfills a sweep order.
+     * 
+     * @dev    Throws when the order protocol is for ERC1155 partial fills.
+     * @dev    Throws when the `items`, `signedSellOrders` and `cosignatures` arrays have different lengths.
+     * @dev    Throws when the `items` array length is zero.
+     * 
+     * @param context             The current execution context to determine the taker.
+     * @param startingNativeFunds The amount of native funds available at the beginning of the order execution.
+     * @param feeOnTop            The additional fee to add on top of the orders, paid by taker.
+     * @param sweepOrder          The order information that is common to all items in the sweep.
+     * @param items               An array of items that contains the order information unique to each item.
+     * @param signedSellOrders    An array of maker signatures authorizing the order execution.
+     * @param cosignatures        An array of additional cosignatures for cosigned orders, if applicable.
+     * 
+     * @return endingNativeFunds  The amount of native funds available at the end of the order execution.
+     */
     function _executeSweepOrder(
         TradeContext memory context,
         uint256 startingNativeFunds,
@@ -297,6 +366,23 @@ abstract contract PaymentProcessorModule is
     /*                           Order Validation                            */
     /*************************************************************************/
 
+    /**
+     * @notice Loads collection payment settings to validate a single item order.
+     * 
+     * @dev    This function may be called multiple times during a bulk execution.
+     * @dev    Throws when a collection is set to block untrusted channels and the transaction originates 
+     * @dev    from an untrusted channel.
+     * @dev    Throws when the payment method is not an allowed payment method.
+     * @dev    Throws when the sweep order is for ERC721 tokens and the amount is set to a value other than one.
+     * @dev    Throws when the sweep order is for ERC1155 tokens and the amount is set to zero.
+     * @dev    Throws when the marketplace fee and maximum royalty fee will exceed the sales price of an item.
+     * @dev    Throws when the current block time is greater than the order expiration.
+     * 
+     * @param context     The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     * 
+     * @return royaltyBackfillAndBounty The on-chain royalty backfill and bounty information defined by the creator.
+     */
     function _validateBasicOrderDetails(
         TradeContext memory context,
         Order memory saleDetails
@@ -368,6 +454,28 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Loads collection payment settings to validate a sweep order.
+     * 
+     * @dev    Throws when a collection is set to block untrusted channels and the transaction originates 
+     * @dev    from an untrusted channel.
+     * @dev    Throws when the payment method is not an allowed payment method.
+     * @dev    Throws when the sweep order is for ERC721 tokens and the amount is set to a value other than one.
+     * @dev    Throws when the sweep order is for ERC1155 tokens and the amount is set to zero.
+     * @dev    Throws when the marketplace fee and maximum royalty fee will exceed the sales price of an item.
+     * @dev    Throws when the current block time is greater than the order expiration.
+     * @dev    Throws when the fee on top amount exceeds the sum of all items.
+     * 
+     * @param context          The current execution context to determine the taker.
+     * @param feeOnTop         The additional fee to add on top of the orders, paid by taker.
+     * @param sweepOrder       The order information that is common to all items in the sweep.
+     * @param items            An array of items that contains the order information unique to each item.
+     * @param signedSellOrders An array of maker signatures authorizing the order execution.
+     * @param cosignatures     An array of additional cosignatures for cosigned orders, if applicable.
+     * 
+     * @return saleDetailsBatch         An array of order execution details.
+     * @return royaltyBackfillAndBounty The on-chain royalty backfill and bounty information defined by the creator.
+     */
     function _validateSweepOrder(
         TradeContext memory context,
         FeeOnTop memory feeOnTop,
@@ -485,6 +593,17 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Validates the sales price for a token is within the bounds set.
+     * 
+     * @dev    Throws when the unit price is above the ceiling bound.
+     * @dev    Throws when the unit price is below the floor bound.
+     * 
+     * @param tokenAddress The contract address for the token.
+     * @param tokenId      The token id.
+     * @param amount       The quantity of the token being transacted.
+     * @param salePrice    The total price for the token quantity.
+     */
     function _validateSalePriceInRange(
         address tokenAddress, 
         uint256 tokenId, 
@@ -506,6 +625,16 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Returns the floor and ceiling price for a token for collections set to use pricing constraints.
+     * 
+     * @dev    Returns token pricing bounds if token bounds are set. 
+     * @dev    If token bounds are not set then returns collection pricing bounds if they are set.
+     * @dev    If collection bounds are not set, returns zero floor bound and uint256 max ceiling bound.
+     * 
+     * @param tokenAddress The contract address for the token.
+     * @param tokenId      The token id.
+     */
     function _getFloorAndCeilingPrices(
         address tokenAddress, 
         uint256 tokenId
@@ -527,6 +656,27 @@ abstract contract PaymentProcessorModule is
     /*                           Order Fulfillment                           */
     /*************************************************************************/
 
+    /**
+     * @notice Dispenses tokens and proceeds for a single order.
+     * 
+     * @dev    This function may be called multiple times during a bulk execution.
+     * @dev    Throws when a token false to dispense AND partial fills are disabled.
+     * @dev    Throws when the taker did not supply enough native funds.
+     * @dev    Throws when the fee on top amount is greater than the item price.
+     * 
+     * @param startingNativeFunds      The amount of native funds remaining at the beginning of the function call.
+     * @param context                  The current execution context to determine the taker.
+     * @param purchaser                The user that is buying the token.
+     * @param seller                   The user that is selling the token.
+     * @param paymentCoin              The ERC20 token used for payment, will be zero values for chain native token.
+     * @param fnPointers               Struct containing the function pointers for dispensing tokens, sending payments
+     *                                 and emitting events.
+     * @param saleDetails              The order execution details.
+     * @param royaltyBackfillAndBounty Struct containing the royalty backfill and bounty information.
+     * @param feeOnTop                 The additional fee on top of the item sales price to be paid by the taker.
+     *
+     * @return endingNativeFunds       The amount of native funds remaining at the end of the function call.
+     */
     function _fulfillSingleOrderWithFeeOnTop(
         uint256 startingNativeFunds,
         TradeContext memory context,
@@ -602,6 +752,19 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Dispenses tokens and proceeds for a sweep order.
+     * 
+     * @dev    This function will **NOT** throw if a token fails to dispense.
+     * @dev    Throws when the taker did not supply enough native funds.
+     * 
+     * @param context             The current execution context to determine the taker.
+     * @param startingNativeFunds The amount of native funds remaining at the beginning of the function call.
+     * @param params              Struct containing the order execution details, backfilled royalty information 
+     *                            and fulfillment function pointers.
+     *
+     * @return endingNativeFunds  The amount of native funds remaining at the end of the function call.
+     */
     function _fulfillSweepOrderWithFeeOnTop(
         TradeContext memory context,
         uint256 startingNativeFunds,
@@ -720,6 +883,27 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Calculates the payment splits between seller, creator and marketplace based
+     * @notice on on-chain royalty information or backfilled royalty information if on-chain
+     * @notice data is unavailable.
+     * 
+     * @dev    Throws when ERC2981 on-chain royalties are set to an amount greater than the 
+     * @dev    maker signed maximum.
+     * 
+     * @param salePrice                The sale price for the token being sold.
+     * @param tokenAddress             The contract address for the token being sold.
+     * @param tokenId                  The token id for the token being sold.
+     * @param marketplaceFeeRecipient  The address that will receive the marketplace fee. 
+     *                                 If zero, no marketplace fee will be applied.
+     * @param marektplaceFeeNumerator  The fee numerator for calculating marketplace fees.
+     * @param maxRoyaltyFeeNumberator  The maximum royalty fee authorized by the order maker.
+     * @param fallbackRoyaltyRecipient The address that will receive royalties if not defined onchain.
+     * @param royaltyBackfillAndBounty The royalty backfill and bounty information set onchain by the creator.
+     *
+     * @return proceeds A struct containing the split of payment and receiving addresses for the
+     *                  seller, creator and marketplace.
+     */
     function _computePaymentSplits(
         uint256 salePrice,
         address tokenAddress,
@@ -798,6 +982,16 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Transfers chain native token to `to`.
+     * 
+     * @dev    Throws when the native token transfer call reverts.
+     * @dev    Throws when the payee uses more gas than `gasLimit_`.
+     *
+     * @param to                   The address that will receive chain native tokens.
+     * @param proceeds             The amount of chain native token value to transfer.
+     * @param pushPaymentGasLimit_ The amount of gas units to allow the payee to use.
+     */
     function _pushProceeds(address to, uint256 proceeds, uint256 pushPaymentGasLimit_) internal {
         bool success;
 
@@ -811,6 +1005,16 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Transfers chain native token to `payee`.
+     * 
+     * @dev    Throws when the native token transfer call reverts.
+     * @dev    Throws when the payee uses more gas than `gasLimit_`.
+     *
+     * @param payee     The address that will receive chain native tokens.
+     * @param proceeds  The amount of chain native token value to transfer.
+     * @param gasLimit_ The amount of gas units to allow the payee to use.
+     */
     function _payoutNativeCurrency(
         address payee, 
         address /*payer*/, 
@@ -820,6 +1024,16 @@ abstract contract PaymentProcessorModule is
         _pushProceeds(payee, proceeds, gasLimit_);
     }
 
+    /**
+     * @notice Transfers ERC20 tokens to from `payer` to `payee`.
+     * 
+     * @dev    Throws when the ERC20 transfer call reverts.
+     *
+     * @param payee The address that will receive ERC20 tokens.
+     * @param payer The address the ERC20 tokens will be sent from.
+     * @param paymentCoin The ERC20 token being transferred.
+     * @param proceeds The amount of token value to transfer.
+     */
     function _payoutCoinCurrency(
         address payee, 
         address payer, 
@@ -829,6 +1043,18 @@ abstract contract PaymentProcessorModule is
         SafeERC20.safeTransferFrom(paymentCoin, payer, payee, proceeds);
     }
 
+    /**
+     * @notice Calls the token contract to transfer an ERC721 token from the seller to the buyer.
+     * 
+     * @dev    This will **NOT** throw if the transfer fails. It will instead return false
+     * @dev    so that the calling function can handle the failed transfer.
+     * @dev    Returns true if the transfer does not revert.
+     * 
+     * @param from         The seller of the token.
+     * @param to           The beneficiary of the order execution.
+     * @param tokenAddress The contract address for the token being transferred.
+     * @param tokenId      The token id for the order.
+     */
     function _dispenseERC721Token(
         address from, 
         address to, 
@@ -842,6 +1068,19 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Calls the token contract to transfer an ERC1155 token from the seller to the buyer.
+     * 
+     * @dev    This will **NOT** throw if the transfer fails. It will instead return false
+     * @dev    so that the calling function can handle the failed transfer.
+     * @dev    Returns true if the transfer does not revert.
+     * 
+     * @param from         The seller of the token.
+     * @param to           The beneficiary of the order execution.
+     * @param tokenAddress The contract address for the token being transferred.
+     * @param tokenId      The token id for the order.
+     * @param amount       The quantity of the token to transfer.
+     */
     function _dispenseERC1155Token(
         address from, 
         address to, 
@@ -855,6 +1094,12 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Emits a a BuyListingERC721 event.
+     * 
+     * @param context The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     */
     function _emitBuyListingERC721Event(TradeContext memory context, Order memory saleDetails) internal {
         emit BuyListingERC721(
                 context.taker,
@@ -866,6 +1111,12 @@ abstract contract PaymentProcessorModule is
                 saleDetails.itemPrice);
     }
 
+    /**
+     * @notice Emits a BuyListingERC1155 event.
+     * 
+     * @param context The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     */
     function _emitBuyListingERC1155Event(TradeContext memory context, Order memory saleDetails) internal {
         emit BuyListingERC1155(
                 context.taker,
@@ -878,6 +1129,12 @@ abstract contract PaymentProcessorModule is
                 saleDetails.itemPrice);
     }
 
+    /**
+     * @notice Emits an AcceptOfferERC721 event.
+     * 
+     * @param context The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     */
     function _emitAcceptOfferERC721Event(TradeContext memory context, Order memory saleDetails) internal {
         emit AcceptOfferERC721(
                 context.taker,
@@ -889,6 +1146,12 @@ abstract contract PaymentProcessorModule is
                 saleDetails.itemPrice);
     }
 
+    /**
+     * @notice Emits an AcceptOfferERC1155 event.
+     * 
+     * @param context The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     */
     function _emitAcceptOfferERC1155Event(TradeContext memory context, Order memory saleDetails) internal {
         emit AcceptOfferERC1155(
                 context.taker,
@@ -901,6 +1164,13 @@ abstract contract PaymentProcessorModule is
                 saleDetails.itemPrice);
     }
 
+    /**
+     * @notice Returns the appropriate function pointers for payouts, dispensing tokens and event emissions.
+     *
+     * @param side The taker's side of the order.
+     * @param paymentMethod The payment method for the order. If address zero, the chain native token.
+     * @param orderProtocol The type of token and fill method for the order.
+     */
     function _getOrderFulfillmentFunctionPointers(
         Sides side,
         address paymentMethod,
@@ -919,6 +1189,21 @@ abstract contract PaymentProcessorModule is
     /*                        Signature Verification                         */
     /*************************************************************************/
 
+    /**
+     * @notice Updates the remaining fillable amount and order status for partially fillable orders.
+     * @notice Performs checks for minimum fillable amount and order status.
+     *
+     * @dev    Throws when the remaining fillable amount is less than the minimum fillable amount requested.
+     * @dev    Throws when the order status is not open.
+     *
+     * @param account             The maker account for the order.
+     * @param orderDigest         The hash digest of the order execution details.
+     * @param orderStartAmount    The original amount for the partially fillable order.
+     * @param requestedFillAmount The amount the taker is requesting to fill.
+     * @param minimumFillAmount   The minimum amount the taker is willing to fill.
+     *
+     * @return quantityToFill     Lesser of remainingFillableAmount and requestedFillAmount.
+     */
     function _checkAndUpdateRemainingFillableItems(
         address account,
         bytes32 orderDigest, 
@@ -956,6 +1241,16 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Invalidates a maker's nonce and emits a NonceInvalidated event.
+     * 
+     * @dev    Throws when the nonce has already been invalidated.
+     * 
+     * @param account         The maker account to invalidate `nonce` of.
+     * @param nonce           The nonce to invalidate.
+     * @param wasCancellation If true, the invalidation is the maker cancelling the nonce. 
+     *                        If false, from the nonce being used to execute an order.
+     */
     function _checkAndInvalidateNonce(
         address account, 
         uint256 nonce, 
@@ -990,6 +1285,14 @@ abstract contract PaymentProcessorModule is
         return appStorage().masterNonces[account];
     }
 
+    /**
+     * @notice Updates the state of a maker's order to cancelled and remaining fillable quantity to zero.
+     *
+     * @dev    Throws when the current order state is not open.
+     *
+     * @param account     The maker account to invalid the order for.
+     * @param orderDigest The hash digest of the order to invalidate.
+     */
     function _revokeOrderDigest(address account, bytes32 orderDigest) internal {
         PartiallyFillableOrderStatus storage partialFillStatus = 
             appStorage().partiallyFillableOrderStatuses[account][orderDigest];
@@ -1003,6 +1306,22 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Verifies a token offer is approved by the maker.
+     *
+     * @dev    Throws when a cosignature is required and the cosignature is invalid.
+     * @dev    Throws when the maker signature is invalid.
+     * @dev    Throws when the maker's order nonce has already been used or was cancelled.
+     * @dev    Throws when a partially fillable order has already been filled, cancelled or 
+     * @dev    cannot be filled with the minimum fillable amount.
+     *
+     * @param context       The current execution context to determine the taker.
+     * @param saleDetails   The order execution details.
+     * @param signature     The order maker's signature.
+     * @param cosignature   The cosignature from the order cosigner, if applicable.
+     * 
+     * @return quantityToFill The amount of the token that will be filled for this order.
+     */
     function _verifyItemOffer(
         TradeContext memory context, 
         Order memory saleDetails,
@@ -1052,6 +1371,22 @@ abstract contract PaymentProcessorModule is
             saleDetails.amount;
     }
 
+    /**
+     * @notice Verifies a collection offer is approved by the maker.
+     *
+     * @dev    Throws when a cosignature is required and the cosignature is invalid.
+     * @dev    Throws when the maker signature is invalid.
+     * @dev    Throws when the maker's order nonce has already been used or was cancelled.
+     * @dev    Throws when a partially fillable order has already been filled, cancelled or 
+     * @dev    cannot be filled with the minimum fillable amount.
+     *
+     * @param context       The current execution context to determine the taker.
+     * @param saleDetails   The order execution details.
+     * @param signature     The order maker's signature.
+     * @param cosignature   The cosignature from the order cosigner, if applicable.
+     * 
+     * @return quantityToFill The amount of the token that will be filled for this order.
+     */
     function _verifyCollectionOffer(
         TradeContext memory context, 
         Order memory saleDetails,
@@ -1100,6 +1435,24 @@ abstract contract PaymentProcessorModule is
             saleDetails.amount;
     }
 
+    /**
+     * @notice Verifies a token set offer is approved by the maker.
+     *
+     * @dev    Throws when a cosignature is required and the cosignature is invalid.
+     * @dev    Throws when the maker signature is invalid.
+     * @dev    Throws when the maker's order nonce has already been used or was cancelled.
+     * @dev    Throws when a partially fillable order has already been filled, cancelled or 
+     * @dev    cannot be filled with the minimum fillable amount.
+     *
+     * @param context       The current execution context to determine the taker.
+     * @param saleDetails   The order execution details.
+     * @param signature     The order maker's signature.
+     * @param tokenSetProof The token set proof that contains the root hash for the merkle  
+     *                      tree of allowed tokens for accepting the maker's offer.
+     * @param cosignature   The cosignature from the order cosigner, if applicable.
+     * 
+     * @return quantityToFill The amount of the token that will be filled for this order.
+     */
     function _verifyTokenSetOffer(
         TradeContext memory context, 
         Order memory saleDetails,
@@ -1150,6 +1503,22 @@ abstract contract PaymentProcessorModule is
             saleDetails.amount;
     }
 
+    /**
+     * @notice Verifies a listing is approved by the maker.
+     *
+     * @dev    Throws when a cosignature is required and the cosignature is invalid.
+     * @dev    Throws when the maker signature is invalid.
+     * @dev    Throws when the maker's order nonce has already been used or was cancelled.
+     * @dev    Throws when a partially fillable order has already been filled, cancelled or 
+     * @dev    cannot be filled with the minimum fillable amount.
+     *
+     * @param context     The current execution context to determine the taker.
+     * @param saleDetails The order execution details.
+     * @param signature   The order maker's signature.
+     * @param cosignature The cosignature from the order cosigner, if applicable.
+     * 
+     * @return quantityToFill The amount of the token that will be filled for this order.
+     */
     function _verifySaleApproval(
         TradeContext memory context, 
         Order memory saleDetails,
@@ -1199,6 +1568,17 @@ abstract contract PaymentProcessorModule is
             saleDetails.amount;
     }
 
+    /**
+     * @notice Reverts a transaction when the recovered signer is not the order maker.
+     *
+     * @dev Throws when the recovered signer for the `signature` and `digest` does not match the order maker AND
+     * @dev - The maker address does not have deployed code, OR 
+     * @dev - The maker contract does not return the correct ERC1271 value to validate the signature.
+     *
+     * @param maker The adress for the order maker.
+     * @param signature The order maker's signature.
+     * @param digest The hash digest of the order.
+     */
     function _verifyMakerSignature(address maker, SignatureECDSA memory signature, bytes32 digest ) private view {
         if (maker != _ecdsaRecover(digest, signature.v, signature.r, signature.s)) {
             if (maker.code.length > 0) {
@@ -1209,6 +1589,17 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Reverts the transaction when a supplied cosignature is not valid.
+     *
+     * @dev    Throws when the current block timestamp is greater than the cosignature expiration.
+     * @dev    Throws when the order taker does not match the cosignature taker.
+     * @dev    Throws when the recovered address for the cosignature does not match the cosigner address.
+     * 
+     * @param context     The current execution context to determine the order taker.
+     * @param signature   The order maker's signature.
+     * @param cosignature The cosignature from the order cosigner.
+     */
     function _verifyCosignature(
         TradeContext memory context, 
         SignatureECDSA memory signature, 
@@ -1240,6 +1631,18 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Reverts the transaction if the contract at `signer` does not return the ERC1271
+     * @notice isValidSignature selector when called with `hash`.
+     * 
+     * @dev    Throws when attempting to verify a signature from an address that has deployed
+     * @dev    contract code using ERC1271 and the contract does not return the isValidSignature
+     * @dev    function selector as its return value.
+     *
+     * @param signer The signer address for a maker order that has deployed contract code.
+     * @param hash The ERC712 hash value of the order.
+     * @param signature The signature for the order hash.
+     */
     function _verifyEIP1271Signature(
         address signer, 
         bytes32 hash, 
@@ -1258,6 +1661,20 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Recovers the signer address from a hash and signature.
+     * 
+     * @dev Throws when `s` is greater than 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0 to
+     * @dev prevent malleable signatures from being utilized. 
+     * @dev Throws when the recovered address is zero.
+     *
+     * @param digest The hash digest that was signed.
+     * @param v The v-value of the signature.
+     * @param r The r-value of the signature.
+     * @param s The s-value of the signature.
+     *
+     * @return signer The recovered signer address from the signature.
+     */
     function _ecdsaRecover(
         bytes32 digest, 
         uint8 v, 
@@ -1274,6 +1691,12 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+    /**
+     * @notice Returns the EIP-712 hash digest for `domainSeparator` and `structHash`.
+     * 
+     * @param domainSeparator The domain separator for the EIP-712 hash.
+     * @param structHash The hash of the EIP-712 struct.
+     */
     function _hashTypedDataV4(bytes32 domainSeparator, bytes32 structHash) private pure returns (bytes32) {
         return ECDSA.toTypedDataHash(domainSeparator, structHash);
     }
@@ -1282,12 +1705,27 @@ abstract contract PaymentProcessorModule is
     /*                             Miscellaneous                             */
     /*************************************************************************/
 
+    /**
+     * @notice Reverts the transaction if the caller is not the owner of the payment method whitelist.
+     *
+     * @dev    Throws when the caller is not the owner of the payment method whitelist.
+     *
+     * @param paymentMethodWhitelistId The payment method whitelist id to check ownership for.
+     */
     function _requireCallerOwnsPaymentMethodWhitelist(uint32 paymentMethodWhitelistId) internal view {
         if(_msgSender() != appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId]) {
             revert PaymentProcessor__CallerDoesNotOwnPaymentMethodWhitelist();
         }
     }
 
+    /**
+     * @notice Reverts the transaction if the caller is not the owner or assigned the default
+     * @notice admin role of the contract at `tokenAddress`.
+     *
+     * @dev    Throws when the caller is neither owner nor assigned the default admin role.
+     * 
+     * @param tokenAddress The contract address of the token to check permissions for.
+     */
     function _requireCallerIsNFTOrContractOwnerOrAdmin(address tokenAddress) internal view {
         bool callerHasPermissions = false;
 
