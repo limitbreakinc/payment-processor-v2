@@ -854,3 +854,24 @@ This can take a few forms depending on how the marketplace chooses to implement 
 10. Taker confirms or rejects the transaction through their wallet interface.
 
 ***Note: There are other steps marketplaces may need to implement to prompt users in the workflow.  For instance: approving PaymentProcessor to transfer NFTs and ERC-20 payments, prompting to wrap native currency or swap currencies when needed, or prompting buyers to perform a one-time signature to prove they are EOAs [for select ERC721-C security levels only].***
+
+## Gas Analysis
+
+### Payment Processor vs Seaport
+
+We used a fork of OpenSea's marketplace gas benchmark repository to assess the deltas between Payment Processor and Seaport.  [The repo can be found here](https://github.com/limitbreakinc/marketplace-benchmarks).
+
+| Benchmark                               | PP V1     | Seaport 1.5 | PP V2     | Delta (Seaport vs PP V2) | Delta % (Seaport vs PP V2) |
+|-----------------------------------------|-----------| ------------|-----------|--------------------------|----------------------------|
+| Buy Listing (ERC721 w/Native)           | 118,480   | 109,190     | 102,234   | -6,956                   | -6.36%                     |
+| Buy Listing (ERC1155 w/Native)          | 98,330    | 101,298     | 86,773    | -14,525                  | -14.35%                    |
+| Buy Listing (ERC721 w/Coin)             | 106,412   | 109,451     | 94,096    | -15,355                  | -14.03%                    |
+| Buy Listing (ERC1155 w/Coin)            | 105,870   | 110,158     | 93,936    | -16,222                  | -14.74%                    |
+| Accept Offer (ERC721 w/Coin)            | 106,444   | 109,578     | 95,662    | -13,916                  | -12.68%                    |
+| Accept Offer (ERC1155 w/Coin)           | 105,882   | 110,214     | 95,491    | -14,723                  | -13.35%                    |
+| Buy Listing (ERC721 w/Native) + 1 Fee   | 171,179   | 132,833     | 115,642   | -17,191                  | -12.93%                    |
+| Buy Listing (ERC721 w/Native) + 2 Fees  | 199,368   | 166,953     | 147,675   | -19,278                  | -11.55%                    |
+| Bulk Buy Listings x10 (ERC721 w/Native) | 586,294   | 729,535     | 449,019   | -280,516                 | -38.51%                    |
+| Bulk Buy Listings x10 (ERC721 w/Coin)   | 546,598   | 722,368     | 405,921   | -316,447                 | -43.84%                    |
+| Sweep Collection x10 (ERC721 w/Native)  | 336,373   | 701,283     | 333,395   | -367,888                 | -52.49%                    |
+| Sweep Collection x10 (ERC721 w/Coin)    | 348,065   | 685,493     | 341,591   | -343,902                 | -50.16%                    |

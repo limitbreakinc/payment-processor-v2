@@ -8,13 +8,17 @@ import "src/PaymentProcessorEncoder.sol";
 contract DeployPaymentProcessorEncoder is Script {
     function run() public {
         bytes32 saltValue = bytes32(vm.envUint("SALT_PAYMENT_PROCESSOR_ENCODER"));
+        address expectedAddress = vm.envAddress("EXPECTED_PAYMENT_PROCESSOR_ENCODER_ADDRESS");
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
+        
         vm.startBroadcast(deployerPrivateKey);
-
-        address PaymentProcessorEncoderAddress = address(new PaymentProcessorEncoder{salt: saltValue}());
-
+        address encoder = address(new PaymentProcessorEncoder{salt: saltValue}());
         vm.stopBroadcast();
 
-        console.log("PaymentProcessorEncoder: ", PaymentProcessorEncoderAddress);
+        console.log("PaymentProcessorEncoder: ", encoder);
+
+        if (expectedAddress != address(encoder)) {
+            revert("Unexpected deploy address");
+        }
     }
 }

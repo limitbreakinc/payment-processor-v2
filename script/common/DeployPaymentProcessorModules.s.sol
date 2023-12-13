@@ -7,6 +7,7 @@ import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleTrades.sol";
 import "src/modules/ModuleTradesAdvanced.sol";
+import "src/PaymentProcessor.sol";
 
 contract DeployPaymentProcessorModules is Script {
     struct ModuleAddresses {
@@ -16,12 +17,15 @@ contract DeployPaymentProcessorModules is Script {
         address moduleTradesAdvanced;
     }
 
-    address private immutable forwarderFactory = address(0x982369EB4c671Fee7800B1381Ac419AB5e77cAb7);
-    address private immutable weth = address(0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9);
-    address private immutable usdc = address(0x8267cF9254734C6Eb452a7bb9AAF97B392258b21);
-    uint32 private immutable pushPaymentGasLimit = 8_000;
-
     function run() public {
+        address forwarderFactory = vm.envAddress("TRUSTED_FORWARDER_FACTORY_ADDRESS");
+        address wrappedNativeCoin = vm.envAddress("WRAPPED_NATIVE_COIN");
+        address coin1 = vm.envAddress("COIN_1");
+        address coin2 = vm.envAddress("COIN_2");
+        address coin3 = vm.envAddress("COIN_3");
+        address coin4 = vm.envAddress("COIN_4");
+        uint32 pushPaymentGasLimit = uint32(vm.envUint("PUSH_PAYMENT_GAS_LIMIT"));
+
         ModuleAddresses memory moduleAddresses = ModuleAddresses({
             moduleOnChainCancellation: address(0),
             modulePaymentSettings: address(0),
@@ -30,19 +34,27 @@ contract DeployPaymentProcessorModules is Script {
         });
 
         DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
-            defaultPaymentMethod1: weth,
-            defaultPaymentMethod2: usdc,
-            defaultPaymentMethod3: address(0),
-            defaultPaymentMethod4: address(0)
+            defaultPaymentMethod1: coin1,
+            defaultPaymentMethod2: coin2,
+            defaultPaymentMethod3: coin3,
+            defaultPaymentMethod4: coin4
         });
 
         uint256 deployerPrivateKey = vm.envUint("DEPLOYER_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
-        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
-        moduleAddresses.moduleTrades = address(new ModuleTrades(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
-        moduleAddresses.moduleTradesAdvanced = address(new ModuleTradesAdvanced(forwarderFactory, pushPaymentGasLimit, address(0), defaultPaymentMethods));
+        moduleAddresses.modulePaymentSettings = address(new ModulePaymentSettings(forwarderFactory, pushPaymentGasLimit, wrappedNativeCoin, defaultPaymentMethods));
+        moduleAddresses.moduleOnChainCancellation = address(new ModuleOnChainCancellation(forwarderFactory, pushPaymentGasLimit, wrappedNativeCoin, defaultPaymentMethods));
+        moduleAddresses.moduleTrades = address(new ModuleTrades(forwarderFactory, pushPaymentGasLimit, wrappedNativeCoin, defaultPaymentMethods));
+        moduleAddresses.moduleTradesAdvanced = address(new ModuleTradesAdvanced(forwarderFactory, pushPaymentGasLimit, wrappedNativeCoin, defaultPaymentMethods));
+
+        address paymentProcessorAddress = address(new PaymentProcessor(
+            vm.addr(deployerPrivateKey),
+            moduleAddresses.modulePaymentSettings,
+            moduleAddresses.moduleOnChainCancellation,
+            moduleAddresses.moduleTrades,
+            moduleAddresses.moduleTradesAdvanced
+        ));
 
         vm.stopBroadcast();
 
@@ -50,5 +62,6 @@ contract DeployPaymentProcessorModules is Script {
         console.log("Module Payment Settings: ", moduleAddresses.modulePaymentSettings);
         console.log("Module Trades: ", moduleAddresses.moduleTrades);
         console.log("Module Trades Advanced: ", moduleAddresses.moduleTradesAdvanced);
+        console.log("PaymentProcessor: ", paymentProcessorAddress);
     }
 }
