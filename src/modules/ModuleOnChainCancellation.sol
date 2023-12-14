@@ -46,16 +46,7 @@ import "./PaymentProcessorModule.sol";
 
 contract ModuleOnChainCancellation is PaymentProcessorModule {
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) 
-    PaymentProcessorModule(
-        trustedForwarderFactory_, 
-        defaultPushPaymentGasLimit_, 
-        wrappedNativeCoinAddress_, 
-        defaultPaymentMethods) {}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract){}
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.

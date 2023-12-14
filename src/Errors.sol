@@ -120,3 +120,6 @@ error PaymentProcessor__UnauthorizedOrder();
 
 /// @dev Thrown when the taker on a cosigned order does not match the taker on the cosignature.
 error PaymentProcessor__UnauthorizedTaker();
+
+/// @dev Thrown when the Payment Processor or a module is being deployed with uninitialized configuration values.
+error PaymentProcessor__UninitializedConfiguration();

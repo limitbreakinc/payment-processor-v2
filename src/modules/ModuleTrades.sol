@@ -46,16 +46,7 @@ import "./PaymentProcessorModule.sol";
 
 contract ModuleTrades is PaymentProcessorModule {
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) 
-    PaymentProcessorModule(
-        trustedForwarderFactory_, 
-        defaultPushPaymentGasLimit_, 
-        wrappedNativeCoinAddress_, 
-        defaultPaymentMethods) {}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract){}
 
     /**
      * @notice Executes a buy listing transaction for a single order item.

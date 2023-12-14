@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "./Constants.sol";
 import "./Errors.sol";
+import "./interfaces/IPaymentProcessorConfiguration.sol";
 import "./interfaces/IPaymentProcessorEvents.sol";
 import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/PaymentProcessorStorageAccess.sol";
@@ -65,26 +66,25 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     /// @dev The Trades module implements all advanced trade-related functionality.
     address private immutable _moduleTradesAdvanced;
 
-    constructor(
-        address defaultContractOwner_,
-        address modulePaymentSettings_,
-        address moduleOnChainCancellation_,
-        address moduleTrades_,
-        address moduleTradesAdvanced_) 
-        EIP712("PaymentProcessor", "2") {
+    constructor(address configurationContract) EIP712("PaymentProcessor", "2") {
+        (
+            address defaultContractOwner_,
+            PaymentProcessorModules memory paymentProcessorModules
+        ) = IPaymentProcessorConfiguration(configurationContract).getPaymentProcessorDeploymentParams();
+        
         
         if (defaultContractOwner_ == address(0) ||
-            modulePaymentSettings_ == address(0) ||
-            moduleOnChainCancellation_ == address(0) ||
-            moduleTrades_ == address(0) ||
-            moduleTradesAdvanced_ == address(0)) {
+            paymentProcessorModules.modulePaymentSettings == address(0) ||
+            paymentProcessorModules.moduleOnChainCancellation == address(0) ||
+            paymentProcessorModules.moduleTrades == address(0) ||
+            paymentProcessorModules.moduleTradesAdvanced == address(0)) {
             revert PaymentProcessor__InvalidConstructorArguments();
         }
 
-        _modulePaymentSettings = modulePaymentSettings_;
-        _moduleOnChainCancellation = moduleOnChainCancellation_;
-        _moduleTrades = moduleTrades_;
-        _moduleTradesAdvanced = moduleTradesAdvanced_;
+        _modulePaymentSettings = paymentProcessorModules.modulePaymentSettings;
+        _moduleOnChainCancellation = paymentProcessorModules.moduleOnChainCancellation;
+        _moduleTrades = paymentProcessorModules.moduleTrades;
+        _moduleTradesAdvanced = paymentProcessorModules.moduleTradesAdvanced;
 
         unchecked {
             uint32 paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;

@@ -2,6 +2,7 @@
 pragma solidity 0.8.19;
 
 import "../IOwnable.sol";
+import "../interfaces/IPaymentProcessorConfiguration.sol";
 import "../interfaces/IPaymentProcessorEvents.sol";
 import "../storage/PaymentProcessorStorageAccess.sol";
 import "../Constants.sol";
@@ -90,19 +91,21 @@ abstract contract PaymentProcessorModule is
     /// @dev The fourth default payment method defined at contract deployment. Immutable to save SLOAD cost.
     address private immutable defaultPaymentMethod4;
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods)
-    TrustedForwarderERC2771Context(trustedForwarderFactory_) {
+    constructor(address configurationContract)
+    TrustedForwarderERC2771Context(
+        IPaymentProcessorConfiguration(configurationContract).getPaymentProcessorModuleERC2771ContextParams()
+    ) {
+        (
+            uint32 pushPaymentGasLimit_,
+            address wrappedNativeCoinAddress_,
+            DefaultPaymentMethods memory defaultPaymentMethods
+        ) = IPaymentProcessorConfiguration(configurationContract).getPaymentProcessorModuleDeploymentParams();
         
-        if (defaultPushPaymentGasLimit_ == 0 ||
-            wrappedNativeCoinAddress_ == address(0)) {
+        if (pushPaymentGasLimit_ == 0 || wrappedNativeCoinAddress_ == address(0)) {
             revert PaymentProcessor__InvalidConstructorArguments();
         }
 
-        pushPaymentGasLimit = defaultPushPaymentGasLimit_;        
+        pushPaymentGasLimit = pushPaymentGasLimit_;
         wrappedNativeCoinAddress = wrappedNativeCoinAddress_;
         defaultPaymentMethod1 = defaultPaymentMethods.defaultPaymentMethod1;
         defaultPaymentMethod2 = defaultPaymentMethods.defaultPaymentMethod2;

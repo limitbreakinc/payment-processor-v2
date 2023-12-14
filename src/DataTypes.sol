@@ -58,6 +58,17 @@ struct DefaultPaymentMethods {
 }
 
 /**
+ * @dev This struct is used internally for the deployment of the Payment Processor contract to define the
+ * @dev module addresses to be used for the contract.
+ */
+struct PaymentProcessorModules {
+    address modulePaymentSettings;
+    address moduleOnChainCancellation;
+    address moduleTrades;
+    address moduleTradesAdvanced;
+}
+
+/**
  * @dev This struct defines the payment settings parameters for a collection.
  *
  * @dev **paymentSettings**: The general rule definition for payment methods allowed.
@@ -333,7 +344,7 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
  struct FulfillOrderFunctionPointers {
     function(address,address,IERC20,uint256,uint256) funcPayout;
     function(address,address,address,uint256,uint256) returns (bool) funcDispenseToken;
-    function(TradeContext memory context, Order memory) funcEmitOrderExecutionEvent;
+    function(TradeContext memory, Order memory) funcEmitOrderExecutionEvent;
  }
 
  /** 

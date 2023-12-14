@@ -47,16 +47,7 @@ import "./PaymentProcessorModule.sol";
 contract ModulePaymentSettings is PaymentProcessorModule {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) 
-    PaymentProcessorModule(
-        trustedForwarderFactory_, 
-        defaultPushPaymentGasLimit_, 
-        wrappedNativeCoinAddress_, 
-        defaultPaymentMethods) {}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract){}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  
