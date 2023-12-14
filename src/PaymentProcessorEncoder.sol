@@ -51,6 +51,17 @@ contract PaymentProcessorEncoder {
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `createPaymentMethodWhitelist` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  whitelistName            The name of the payment method whitelist.
+     */
     function encodeCreatePaymentMethodWhitelistCalldata(address /*paymentProcessorAddress*/, string calldata whitelistName) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -58,6 +69,18 @@ contract PaymentProcessorEncoder {
                 whitelistName));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `whitelistPaymentMethod` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentMethodWhitelistId  The id of the payment method whitelist to update.
+     * @param  paymentMethod             The address of the payment method to whitelist.
+     */
     function encodeWhitelistPaymentMethodCalldata(address /*paymentProcessorAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -66,6 +89,18 @@ contract PaymentProcessorEncoder {
                 paymentMethod));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `unwhitelistPaymentMethod` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentMethodWhitelistId  The id of the payment method whitelist to update.
+     * @param  paymentMethod             The address of the payment method to unwhitelist.
+     */
     function encodeUnwhitelistPaymentMethodCalldata(address /*paymentProcessorAddress*/, uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -74,6 +109,25 @@ contract PaymentProcessorEncoder {
                 paymentMethod));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `setCollectionPaymentSettings` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress                     The smart contract address of the NFT collection.
+     * @param  paymentSettings                  The payment settings for the collection.
+     * @param  paymentMethodWhitelistId         The id of the payment method whitelist to use for the collection.
+     * @param  constrainedPricingPaymentMethod  The payment method to use for min/max pricing.
+     * @param  royaltyBackfillNumerator         The royalty backfill numerator for the collection.
+     * @param  royaltyBackfillReceiver          The royalty backfill receiver for the collection.
+     * @param  royaltyBountyNumerator           The royalty bounty numerator for the collection.
+     * @param  exclusiveBountyReceiver          The exclusive bounty receiver for the collection.
+     * @param  blockTradesFromUntrustedChannels The block trades from untrusted channels flag for the collection.
+     */
     function encodeSetCollectionPaymentSettingsCalldata(
         address /*paymentProcessorAddress*/, 
         address tokenAddress, 
@@ -100,6 +154,18 @@ contract PaymentProcessorEncoder {
                 blockTradesFromUntrustedChannels));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `setCollectionPricingBounds` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress The smart contract address of the NFT collection.
+     * @param  pricingBounds Includes the floor price and ceiling price.
+     */
     function encodeSetCollectionPricingBoundsCalldata(
         address /*paymentProcessorAddress*/, 
         address tokenAddress, 
@@ -112,6 +178,18 @@ contract PaymentProcessorEncoder {
                 pricingBounds));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `setTokenPricingBounds` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenIds      An array of token ids for which pricing bounds are being set.
+     * @param  pricingBounds An array of pricing bounds used to set the floor and ceiling per token.
+     */
     function encodeSetTokenPricingBoundsCalldata(
         address /*paymentProcessorAddress*/, 
         address tokenAddress, 
@@ -126,6 +204,18 @@ contract PaymentProcessorEncoder {
                 pricingBounds));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `addTrustedChannelForCollection` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to add.
+     */
     function encodeAddTrustedChannelForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -134,6 +224,18 @@ contract PaymentProcessorEncoder {
                 channel));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `removeTrustedChannelForCollection` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress The collection.
+     * @param  channel      The channel to remove.
+     */
     function encodeRemoveTrustedChannelForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address channel) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -146,6 +248,17 @@ contract PaymentProcessorEncoder {
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `revokeSingleNonce` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  nonce The nonce that was signed in the revoked listing or offer.
+     */
     function encodeRevokeSingleNonceCalldata(address /*paymentProcessorAddress*/, uint256 nonce) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -153,6 +266,17 @@ contract PaymentProcessorEncoder {
                 nonce));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `revokeOrderDigest` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  digest The order digest that was signed in the revoked listing or offer.
+     */
     function encodeRevokeOrderDigestCalldata(address /*paymentProcessorAddress*/, bytes32 digest) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
@@ -164,6 +288,21 @@ contract PaymentProcessorEncoder {
     /*                     TRADING OPERATIONS                     */
     /**************************************************************/
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `buyListing` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentProcessorAddress  The address for Payment Processor, used to get Payment Processor's EIP-712 domain separator.
+     * @param  saleDetails              The order execution details.
+     * @param  signature                The maker's signature authorizing the order execution.
+     * @param  cosignature              The additional cosignature for a cosigned order, if applicable.
+     * @param  feeOnTop                 The additional fee to add on top of the order, paid by taker.
+     */
     function encodeBuyListingCalldata(
         address paymentProcessorAddress, 
         Order memory saleDetails, 
@@ -181,6 +320,23 @@ contract PaymentProcessorEncoder {
                 feeOnTop));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `acceptOffer` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentProcessorAddress  The address for Payment Processor, used to get Payment Processor's EIP-712 domain separator.
+     * @param  isCollectionLevelOffer   The flag to indicate if an offer is for any token in the collection.
+     * @param  saleDetails              The order execution details.
+     * @param  signature                The maker's signature authorizing the order execution.
+     * @param  tokenSetProof            The root hash and merkle proofs for an offer that is a subset of tokens in a collection.
+     * @param  cosignature              The additional cosignature for a cosigned order, if applicable.
+     * @param  feeOnTop                 The additional fee to add on top of the order, paid by taker.
+     */
     function encodeAcceptOfferCalldata(
         address paymentProcessorAddress, 
         bool isCollectionLevelOffer,
@@ -202,6 +358,21 @@ contract PaymentProcessorEncoder {
                 feeOnTop));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `bulkBuyListings` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentProcessorAddress  The address for Payment Processor, used to get Payment Processor's EIP-712 domain separator.
+     * @param  saleDetailsArray         An array of order execution details.
+     * @param  signatures               An array of maker signatures authorizing the order execution.
+     * @param  cosignatures             An array of additional cosignatures for cosigned orders, if applicable.
+     * @param  feesOnTop                An array of additional fees to add on top of the orders, paid by taker.
+     */
     function encodeBulkBuyListingsCalldata(
         address paymentProcessorAddress, 
         Order[] calldata saleDetailsArray, 
@@ -219,6 +390,23 @@ contract PaymentProcessorEncoder {
                 feesOnTop));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `bulkAcceptOffers` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentProcessorAddress       The address for Payment Processor, used to get Payment Processor's EIP-712 domain separator.
+     * @param  isCollectionLevelOfferArray   An array of flags to indicate if an offer is for any token in the collection.
+     * @param  saleDetailsArray              An array of order execution details.
+     * @param  signatures                    An array of maker signatures authorizing the order executions.
+     * @param  tokenSetProofsArray           An array of root hashes and merkle proofs for offers that are a subset of tokens in a collection.
+     * @param  cosignaturesArray             An array of additional cosignatures for cosigned orders, as applicable.
+     * @param  feesOnTopArray                An array of additional fees to add on top of the orders, paid by taker.
+     */
     function encodeBulkAcceptOffersCalldata(
         address paymentProcessorAddress, 
         bool[] memory isCollectionLevelOfferArray,
@@ -244,6 +432,22 @@ contract PaymentProcessorEncoder {
                 params));
     }
 
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `sweepCollection` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  paymentProcessorAddress  The address for Payment Processor, used to get Payment Processor's EIP-712 domain separator.
+     * @param  feeOnTop                 An array of additional fees to add on top of the orders, paid by taker.
+     * @param  sweepOrder               The order information that is common to all items in the sweep.
+     * @param  items                    An array of items that contains the order information unique to each item.
+     * @param  signatures               An array of maker signatures authorizing the order execution.
+     * @param  cosignatures             An array of additional cosignatures for cosigned orders, if applicable.
+     */
     function encodeSweepCollectionCalldata(
         address paymentProcessorAddress, 
         FeeOnTop memory feeOnTop,

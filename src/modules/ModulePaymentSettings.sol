@@ -127,8 +127,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
      * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
      * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
      *
-     * @param  paymentMethodWhitelistId The id of the payment method whitelist to update.
-     * @param  paymentMethod                     The address of the payment method to unwhitelist.
+     * @param  paymentMethodWhitelistId  The id of the payment method whitelist to update.
+     * @param  paymentMethod             The address of the payment method to unwhitelist.
      */
     function unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
@@ -162,16 +162,18 @@ contract ModulePaymentSettings is PaymentProcessorModule {
      * @dev    5. The `royaltyBackfillReceiver` for the collection has been set.
      * @dev    6. The `royaltyBountyNumerator` for the collection has been set.
      * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
+     * @dev    8. The `blockTradesFromUntrustedChannels` for the collection has been set.
      * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
      *
-     * @param  tokenAddress                    The smart contract address of the NFT collection.
-     * @param  paymentSettings                 The payment settings for the collection.
-     * @param  paymentMethodWhitelistId        The id of the payment method whitelist to use for the collection.
-     * @param  constrainedPricingPaymentMethod The payment method to use for min/max pricing.
-     * @param  royaltyBackfillNumerator        The royalty backfill numerator for the collection.
-     * @param  royaltyBackfillReceiver         The royalty backfill receiver for the collection.
-     * @param  royaltyBountyNumerator          The royalty bounty numerator for the collection.
-     * @param  exclusiveBountyReceiver         The exclusive bounty receiver for the collection.
+     * @param  tokenAddress                     The smart contract address of the NFT collection.
+     * @param  paymentSettings                  The payment settings for the collection.
+     * @param  paymentMethodWhitelistId         The id of the payment method whitelist to use for the collection.
+     * @param  constrainedPricingPaymentMethod  The payment method to use for min/max pricing.
+     * @param  royaltyBackfillNumerator         The royalty backfill numerator for the collection.
+     * @param  royaltyBackfillReceiver          The royalty backfill receiver for the collection.
+     * @param  royaltyBountyNumerator           The royalty bounty numerator for the collection.
+     * @param  exclusiveBountyReceiver          The exclusive bounty receiver for the collection.
+     * @param  blockTradesFromUntrustedChannels The block trades from untrusted channels flag for the collection.
      */
     function setCollectionPaymentSettings(
         address tokenAddress, 
