@@ -275,7 +275,7 @@ contract PaymentProcessorEncoder {
      * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
      * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
      *
-     * @param  orderDigest The order digest that was signed in the revoked listing or offer.
+     * @param  digest The order digest that was signed in the revoked listing or offer.
      */
     function encodeRevokeOrderDigestCalldata(address /*paymentProcessorAddress*/, bytes32 digest) external view returns (bytes memory) {
         return _removeFirst4Bytes(

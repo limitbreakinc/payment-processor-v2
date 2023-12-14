@@ -896,8 +896,8 @@ abstract contract PaymentProcessorModule is
      * @param tokenId                  The token id for the token being sold.
      * @param marketplaceFeeRecipient  The address that will receive the marketplace fee. 
      *                                 If zero, no marketplace fee will be applied.
-     * @param marektplaceFeeNumerator  The fee numerator for calculating marketplace fees.
-     * @param maxRoyaltyFeeNumberator  The maximum royalty fee authorized by the order maker.
+     * @param marketplaceFeeNumerator  The fee numerator for calculating marketplace fees.
+     * @param maxRoyaltyFeeNumerator  The maximum royalty fee authorized by the order maker.
      * @param fallbackRoyaltyRecipient The address that will receive royalties if not defined onchain.
      * @param royaltyBackfillAndBounty The royalty backfill and bounty information set onchain by the creator.
      *

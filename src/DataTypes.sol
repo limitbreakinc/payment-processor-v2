@@ -66,7 +66,7 @@ struct DefaultPaymentMethods {
  * @dev **royaltyBackfillNumerator**: The royalty fee to apply to the collection when ERC2981 is not supported.
  * @dev **royaltyBountyNumerator**: The percentage of royalties the creator will grant to a marketplace for order fulfillment.
  * @dev **isRoyaltyBountyExclusive**: If true, royalty bounties will only be paid if the order marketplace is the set exclusive marketplace.
- * @dev **blockTradesFromUntrustedChannells**: If true, trades that originate from untrusted channels will not be executed.
+ * @dev **blockTradesFromUntrustedChannels**: If true, trades that originate from untrusted channels will not be executed.
  */
 struct CollectionPaymentSettings {
     PaymentSettings paymentSettings;
@@ -94,9 +94,9 @@ struct SignatureECDSA {
  * @dev **protocol**: The order protocol to apply to the order.
  * @dev **maker**: The user that created and signed the order to be executed by a taker.
  * @dev **beneficiary**: The account that will receive the tokens.
- * @dev **marketplace**: The marketplace that the order was created on.
+ * @dev **marketplace**: The fee receiver of the marketplace that the order was created on.
  * @dev **fallbackRoyaltyRecipient**: The address that will receive royalties if ERC2981 
- * @dev is not supported by the collection and the creator has not defined royalties with Payment Processor.
+ * @dev is not supported by the collection and the creator has not defined backfilled royalties with Payment Processor.
  * @dev **paymentMethod**: The payment method for the order.
  * @dev **tokenAddress**: The address of the token collection the order is for.
  * @dev **tokenId**: The token id that the order is for.
