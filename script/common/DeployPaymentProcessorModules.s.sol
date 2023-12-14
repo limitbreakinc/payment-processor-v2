@@ -3,6 +3,7 @@ pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
 import "forge-std/console2.sol";
+import "src/PaymentProcessorConfiguration.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleTrades.sol";
@@ -18,6 +19,7 @@ contract DeployPaymentProcessorModules is Script {
     }
 
     function run() public {
+        /*
         address forwarderFactory = vm.envAddress("TRUSTED_FORWARDER_FACTORY_ADDRESS");
         address wrappedNativeCoin = vm.envAddress("WRAPPED_NATIVE_COIN");
         address coin1 = vm.envAddress("COIN_1");
@@ -63,5 +65,6 @@ contract DeployPaymentProcessorModules is Script {
         console.log("Module Trades: ", moduleAddresses.moduleTrades);
         console.log("Module Trades Advanced: ", moduleAddresses.moduleTradesAdvanced);
         console.log("PaymentProcessor: ", paymentProcessorAddress);
+        */
     }
 }

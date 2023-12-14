@@ -6,6 +6,7 @@ import "forge-std/console.sol";
 import "src/interfaces/IPaymentProcessorEvents.sol";
 import "src/Constants.sol";
 import "src/PaymentProcessor.sol";
+import "src/PaymentProcessorConfiguration.sol";
 import "src/PaymentProcessorEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
@@ -75,6 +76,7 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
     address payable internal cosigner = payable(vm.addr(cosignerPk));
     address payable internal benchmarkFeeRecipient = payable(vm.addr(feePk));
 
+    PaymentProcessorConfiguration public _paymentProcessorConfiguration;
     PaymentProcessor public _paymentProcessor;
     PaymentProcessorEncoder public _paymentProcessorEncoder;
 
@@ -129,6 +131,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         erc1155s = [test1155];
 
+        _paymentProcessorConfiguration = new PaymentProcessorConfiguration(address(this));
+
         forwarderImplementation = address(new TrustedForwarder());
         TrustedForwarder(forwarderImplementation).__TrustedForwarder_init(address(this), address(this));
 
@@ -136,45 +140,30 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         _paymentProcessorEncoder = new PaymentProcessorEncoder();
 
-        DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
-            defaultPaymentMethod1: address(weth),
-            defaultPaymentMethod2: address(usdc),
-            defaultPaymentMethod3: address(usdt),
-            defaultPaymentMethod4: address(dai)
-        });
-
-        modulePaymentSettings = new ModulePaymentSettings(
+        _paymentProcessorConfiguration.setPaymentProcessorModuleConfiguration(
+            2300,
             address(factory),
-            2300, 
             address(nativeWrapper),
-            defaultPaymentMethods);
+            address(weth),
+            address(usdc),
+            address(usdt),
+            address(dai)
+        );
 
-        moduleOnChainCancellation = new ModuleOnChainCancellation(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
+        modulePaymentSettings = new ModulePaymentSettings(address(_paymentProcessorConfiguration));
+        moduleOnChainCancellation = new ModuleOnChainCancellation(address(_paymentProcessorConfiguration));
+        moduleTrades = new ModuleTrades(address(_paymentProcessorConfiguration));
+        moduleTradesAdvanced = new ModuleTradesAdvanced(address(_paymentProcessorConfiguration));
 
-        moduleTrades = new ModuleTrades(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
+        _paymentProcessorConfiguration.setPaymentProcessorConfiguration(
+            address(this),
+            address(modulePaymentSettings),
+            address(moduleOnChainCancellation),
+            address(moduleTrades),
+            address(moduleTradesAdvanced)
+        );
 
-        moduleTradesAdvanced = new ModuleTradesAdvanced(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
-
-        _paymentProcessor = 
-            new PaymentProcessor(
-                address(this),
-                address(modulePaymentSettings),
-                address(moduleOnChainCancellation),
-                address(moduleTrades),
-                address(moduleTradesAdvanced)
-            );
+        _paymentProcessor = new PaymentProcessor(address(_paymentProcessorConfiguration));
 
         vm.label(alice, "alice");
         vm.label(bob, "bob");
