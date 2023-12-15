@@ -137,7 +137,7 @@ abstract contract PaymentProcessorModule is
             // If it isn't one of the gas efficient immutable default payment methods,
             // it may have bee added to the fallback default payment method whitelist,
             // but there are SLOAD costs.
-            return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+            return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID].contains(paymentMethod);
         }
     }
 
@@ -375,6 +375,7 @@ abstract contract PaymentProcessorModule is
      * @dev    This function may be called multiple times during a bulk execution.
      * @dev    Throws when a collection is set to block untrusted channels and the transaction originates 
      * @dev    from an untrusted channel.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the payment method is not an allowed payment method.
      * @dev    Throws when the sweep order is for ERC721 tokens and the amount is set to a value other than one.
      * @dev    Throws when the sweep order is for ERC1155 tokens and the amount is set to zero.
@@ -415,6 +416,19 @@ abstract contract PaymentProcessorModule is
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
 
+        if (paymentSettingsForCollection.blockBannedAccounts) {
+            EnumerableSet.AddressSet storage bannedAccounts = 
+                appStorage().collectionBannedAccounts[saleDetails.tokenAddress];
+
+            if (bannedAccounts.contains(saleDetails.maker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+            }
+
+            if (bannedAccounts.contains(context.taker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+            }
+        }
+
         if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
             EnumerableSet.AddressSet storage trustedChannels = 
                 appStorage().collectionTrustedChannels[saleDetails.tokenAddress];
@@ -441,7 +455,7 @@ abstract contract PaymentProcessorModule is
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId].contains(saleDetails.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {
@@ -520,12 +534,21 @@ abstract contract PaymentProcessorModule is
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId].contains(sweepOrder.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
+            }
+        }
+
+        EnumerableSet.AddressSet storage bannedAccounts = 
+            appStorage().collectionBannedAccounts[sweepOrder.tokenAddress];
+
+        if (paymentSettingsForCollection.blockBannedAccounts) {
+            if (bannedAccounts.contains(context.taker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
             }
         }
 
@@ -557,6 +580,12 @@ abstract contract PaymentProcessorModule is
 
             saleDetailsBatch[i] = saleDetails;
             sumListingPrices += saleDetails.itemPrice;
+
+            if (paymentSettingsForCollection.blockBannedAccounts) {
+                if (bannedAccounts.contains(saleDetails.maker)) {
+                    revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+                }
+            }
 
             if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
                 if (saleDetails.amount != ONE) {

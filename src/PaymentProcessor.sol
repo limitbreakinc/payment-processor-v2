@@ -53,6 +53,7 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 */ 
 
 contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
     address private immutable _modulePaymentSettings;
@@ -365,7 +366,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @notice Returns true if the specified payment method is whitelisted for the specified payment method whitelist.
      */
     function isPaymentMethodWhitelisted(uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
-        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].contains(paymentMethod);
     }
 
     /**
@@ -408,6 +409,34 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         return type(uint256).max;
     }
 
+    /**
+     * @notice Returns the last created payment method whitelist id.
+     */
+    function lastPaymentMethodWhitelistId() external view returns (uint32) {
+        return appStorage().lastPaymentMethodWhitelistId;
+    }
+
+    /**
+     * @notice Returns the set of payment methods for a given payment method whitelist.
+     */
+    function getWhitelistedPaymentMethods(uint32 paymentMethodWhitelistId) external view returns (address[] memory) {
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].values();
+    }
+
+    /**
+     * @notice Returns the set of trusted channels for a given collection.
+     */
+    function getTrustedChannels(address tokenAddress) external view returns (address[] memory) {
+        return appStorage().collectionTrustedChannels[tokenAddress].values();
+    }
+
+    /**
+     * @notice Returns the set of banned accounts for a given collection.
+     */
+    function getBannedAccounts(address tokenAddress) external view returns (address[] memory) {
+        return appStorage().collectionBannedAccounts[tokenAddress].values();
+    }
+
     /**************************************************************/
     /*           PAYMENT SETTINGS MANAGEMENT OPERATIONS           */
     /**************************************************************/
@@ -430,7 +459,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             }
         }
 
-        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID].contains(paymentMethod);
     }
 
     /**
@@ -623,12 +652,48 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
      *
      * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
-     *              `addTrustedChannelForCollection(
+     *              `removeTrustedChannelForCollection(
      *                  address tokenAddress, 
      *                  address channel)`
      */
     function removeTrustedChannelForCollection(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
+
+    /**
+     * @notice Allows creator to ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` has been banned from trading on a collection.
+     * @dev    2. A `BannedAccountAddedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `addBannedAccountForCollection(
+     *                  address tokenAddress, 
+     *                  address account)`
+     */
+    function addBannedAccountForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_ADD_BANNED_ACCOUNT_FOR_COLLECTION, data) {}
+
+    /**
+     * @notice Allows creator to un-ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` ban has been lifted for trades on a collection.
+     * @dev    2. A `BannedAccountRemovedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `removeBannedAccountForCollection(
+     *                  address tokenAddress, 
+     *                  address account)`
+     */
+    function removeBannedAccountForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_BANNED_ACCOUNT_FOR_COLLECTION, data) {}
 
     /**************************************************************/
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
@@ -696,6 +761,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    Throws when the maker's signature is invalid.
      * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token no longer owned by maker.
      * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
@@ -737,6 +803,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    Throws when the maker's signature is invalid.
      * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the maker does not have sufficient funds to complete the purchase.
      * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token not owned by the taker.
      * @dev    Throws when the token the offer is being accepted for does not match the conditions set by the maker.
@@ -780,6 +847,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
      * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
@@ -821,6 +889,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when a maker does not have sufficient funds to complete the purchase.
      * @dev    Throws when the token an offer is being accepted for does not match the conditions set by the maker.
      * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
@@ -860,6 +929,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
      * @dev    Any unused native token payment will be returned to the taker as wrapped native token.

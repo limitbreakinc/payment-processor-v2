@@ -138,11 +138,12 @@ contract PaymentProcessorEncoder {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts
     ) external view returns (bytes memory) {
         return _removeFirst4Bytes(
             abi.encodeWithSignature(
-                "setCollectionPaymentSettings(address,uint8,uint32,address,uint16,address,uint16,address,bool)",
+                "setCollectionPaymentSettings(address,uint8,uint32,address,uint16,address,uint16,address,bool,bool)",
                 tokenAddress,
                 paymentSettings,
                 paymentMethodWhitelistId,
@@ -151,7 +152,8 @@ contract PaymentProcessorEncoder {
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels));
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts));
     }
 
     /**
@@ -242,6 +244,46 @@ contract PaymentProcessorEncoder {
                 "removeTrustedChannelForCollection(address,address)",
                 tokenAddress,
                 channel));
+    }
+
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `addBannedAccountForCollection` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to add to the banned list.
+     */
+    function encodeAddBannedAccountForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address account) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "addBannedAccountForCollection(address,address)",
+                tokenAddress,
+                account));
+    }
+
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `removeBannedAccountForCollection` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to remove from the banned list.
+     */
+    function encodeRemoveBannedAccountForCollectionCalldata(address /*paymentProcessorAddress*/, address tokenAddress, address account) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "removeBannedAccountForCollection(address,address)",
+                tokenAddress,
+                account));
     }
 
     /**************************************************************/

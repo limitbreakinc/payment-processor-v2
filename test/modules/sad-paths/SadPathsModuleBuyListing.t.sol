@@ -79,6 +79,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -192,6 +193,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -310,6 +312,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {
@@ -421,6 +424,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -535,6 +539,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -638,6 +643,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -743,6 +749,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
@@ -846,6 +853,7 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         bytes4 errorSelector;
@@ -881,6 +889,218 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
                 fuzzedOrderInputs,
                 saleDetails, 
                 errorSelector);
+        }
+    }
+
+    function _runTestBuyListingWhenMakerIsBanned(TestTradeSingleItemParams memory params) internal {
+        FuzzedOrder721 memory fuzzedOrderInputs = params.fuzzedOrderInputs;
+
+        _scrubFuzzedOrderInputs(fuzzedOrderInputs);
+        vm.assume(params.amount > 0);
+
+        address token = params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? address(test721) : address(test1155);
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
+        Order memory saleDetails = Order({
+            protocol: params.orderProtocol,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
+            beneficiary: fuzzedOrderInputs.beneficiary,
+            marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
+            paymentMethod: params.paymentMethod,
+            tokenAddress: token,
+            tokenId: fuzzedOrderInputs.tokenId,
+            amount: params.amount,
+            itemPrice: fuzzedOrderInputs.itemPrice,
+            nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.sellerKey)),
+            expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
+            marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: params.fillAmount,
+            minimumFillAmount: params.fillAmount
+        });
+
+        uint256 paymentAmount = saleDetails.itemPrice;
+
+        if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            test721.mint(saleDetails.maker, saleDetails.tokenId);
+            test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
+
+            vm.prank(saleDetails.maker);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
+        } else {
+            test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
+            test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
+
+            vm.prank(saleDetails.maker);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
+
+            if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+                vm.assume(params.amount > 0);
+                vm.assume(params.fillAmount > 0);
+                vm.assume(params.fillAmount < params.amount);
+                vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
+
+                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+                paymentAmount = unitPrice * saleDetails.requestedFillAmount;
+            }
+        }
+
+        if (params.paymentMethod == address(0)) {
+            vm.deal(buyer, saleDetails.itemPrice);
+        } else {
+            _allocateTokensAndApprovals(buyer, uint128(saleDetails.itemPrice));
+        }
+
+        _banAccount(saleDetails.tokenAddress, saleDetails.maker);
+
+        _setPaymentSettings(
+            params.paymentSettings,
+            saleDetails.itemPrice,
+            token,
+            params.paymentMethod,
+            0,
+            address(0),
+            0,
+            address(0),
+            false,
+            true);
+
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+        }
+
+        if (params.cosigned) {
+            if (params.isCosignatureEmpty) {
+                _buyEmptyCosignedListing(
+                    buyer,
+                    params.paymentMethod == address(0) ? paymentAmount: 0,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
+            } else {
+                _buyCosignedListing(
+                    buyer,
+                    params.paymentMethod == address(0) ? paymentAmount: 0,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
+            }
+            
+        } else {
+            _buySignedListing(
+                buyer,
+                params.paymentMethod == address(0) ? paymentAmount: 0,
+                fuzzedOrderInputs,
+                saleDetails, 
+                PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
+        }
+    }
+
+    function _runTestBuyListingWhenTakerIsBanned(TestTradeSingleItemParams memory params) internal {
+        FuzzedOrder721 memory fuzzedOrderInputs = params.fuzzedOrderInputs;
+
+        _scrubFuzzedOrderInputs(fuzzedOrderInputs);
+        vm.assume(params.amount > 0);
+
+        address token = params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL ? address(test721) : address(test1155);
+        address buyer = fuzzedOrderInputs.buyerIsContract ? address(new ContractMock()) : vm.addr(fuzzedOrderInputs.buyerKey);
+
+        Order memory saleDetails = Order({
+            protocol: params.orderProtocol,
+            maker: vm.addr(fuzzedOrderInputs.sellerKey),
+            beneficiary: fuzzedOrderInputs.beneficiary,
+            marketplace: fuzzedOrderInputs.marketplace,
+            fallbackRoyaltyRecipient: address(0),
+            paymentMethod: params.paymentMethod,
+            tokenAddress: token,
+            tokenId: fuzzedOrderInputs.tokenId,
+            amount: params.amount,
+            itemPrice: fuzzedOrderInputs.itemPrice,
+            nonce: _getNextNonce(vm.addr(fuzzedOrderInputs.sellerKey)),
+            expiration: block.timestamp + fuzzedOrderInputs.expirationSeconds,
+            marketplaceFeeNumerator: fuzzedOrderInputs.marketplaceFeeRate,
+            maxRoyaltyFeeNumerator: fuzzedOrderInputs.royaltyFeeRate,
+            requestedFillAmount: params.fillAmount,
+            minimumFillAmount: params.fillAmount
+        });
+
+        uint256 paymentAmount = saleDetails.itemPrice;
+
+        if (params.orderProtocol == OrderProtocols.ERC721_FILL_OR_KILL) {
+            test721.mint(saleDetails.maker, saleDetails.tokenId);
+            test721.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
+
+            vm.prank(saleDetails.maker);
+            test721.setApprovalForAll(address(_paymentProcessor), true);
+        } else {
+            test1155.mint(saleDetails.maker, saleDetails.tokenId, saleDetails.amount);
+            test1155.setTokenRoyalty(saleDetails.tokenId, fuzzedOrderInputs.royaltyReceiver, uint96(saleDetails.maxRoyaltyFeeNumerator));
+
+            vm.prank(saleDetails.maker);
+            test1155.setApprovalForAll(address(_paymentProcessor), true);
+
+            if (params.orderProtocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+                vm.assume(params.amount > 0);
+                vm.assume(params.fillAmount > 0);
+                vm.assume(params.fillAmount < params.amount);
+                vm.assume(fuzzedOrderInputs.itemPrice > params.amount);
+                fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(params.amount));
+
+                uint256 unitPrice = saleDetails.itemPrice / saleDetails.amount;
+                paymentAmount = unitPrice * saleDetails.requestedFillAmount;
+            }
+        }
+
+        if (params.paymentMethod == address(0)) {
+            vm.deal(buyer, saleDetails.itemPrice);
+        } else {
+            _allocateTokensAndApprovals(buyer, uint128(saleDetails.itemPrice));
+        }
+
+        _banAccount(saleDetails.tokenAddress, buyer);
+
+        _setPaymentSettings(
+            params.paymentSettings,
+            saleDetails.itemPrice,
+            token,
+            params.paymentMethod,
+            0,
+            address(0),
+            0,
+            address(0),
+            false,
+            true);
+
+        if (params.paymentSettings % 4 == uint8(PaymentSettings.PricingConstraints)) {
+            vm.assume(saleDetails.itemPrice >= 1 ether && saleDetails.itemPrice <= 500 ether);
+        }
+
+        if (params.cosigned) {
+            if (params.isCosignatureEmpty) {
+                _buyEmptyCosignedListing(
+                    buyer,
+                    params.paymentMethod == address(0) ? paymentAmount: 0,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
+            } else {
+                _buyCosignedListing(
+                    buyer,
+                    params.paymentMethod == address(0) ? paymentAmount: 0,
+                    fuzzedOrderInputs,
+                    saleDetails, 
+                    PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
+            }
+            
+        } else {
+            _buySignedListing(
+                buyer,
+                params.paymentMethod == address(0) ? paymentAmount: 0,
+                fuzzedOrderInputs,
+                saleDetails, 
+                PaymentProcessor__MakerOrTakerIsBannedAccount.selector);
         }
     }
 
@@ -1340,6 +1560,88 @@ contract SadPathsModuleBuyListingTest is PaymentProcessorModuleTest {
                 cosigned: isCosigned,
                 isCosignatureEmpty: isCosignatureEmpty,
                 paymentMethod: address(memecoin),
+                amount: amount, 
+                fillAmount: fillAmount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testRevertsWhenMakerIsBanned(
+        uint256 secondsInPast,
+        uint8 paymentSettings, 
+        uint8 orderProtocol,
+        bool isCosigned,
+        bool isCosignatureEmpty,
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount, 
+        uint248 fillAmount
+    ) public {
+        orderProtocol = orderProtocol % 3;
+
+        if (OrderProtocols(orderProtocol) == OrderProtocols.ERC721_FILL_OR_KILL) {
+            amount = 1;
+            fillAmount = 1;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
+            fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
+        }
+
+        _runTestBuyListingWhenMakerIsBanned(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols(orderProtocol), 
+                cosigned: isCosigned,
+                isCosignatureEmpty: isCosignatureEmpty,
+                paymentMethod: address(0),
+                amount: amount, 
+                fillAmount: fillAmount, 
+                fuzzedOrderInputs: fuzzedOrderInputs
+            }));
+    }
+
+    function testRevertsWhenTakerIsBanned(
+        uint256 secondsInPast,
+        uint8 paymentSettings, 
+        uint8 orderProtocol,
+        bool isCosigned,
+        bool isCosignatureEmpty,
+        FuzzedOrder721 memory fuzzedOrderInputs, 
+        uint248 amount, 
+        uint248 fillAmount
+    ) public {
+        orderProtocol = orderProtocol % 3;
+
+        if (OrderProtocols(orderProtocol) == OrderProtocols.ERC721_FILL_OR_KILL) {
+            amount = 1;
+            fillAmount = 1;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_OR_KILL) {
+            fillAmount = amount;
+        } else if (OrderProtocols(orderProtocol) == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            vm.assume(amount > 0);
+            vm.assume(fillAmount > 0);
+            vm.assume(fillAmount < amount);
+            vm.assume(fuzzedOrderInputs.itemPrice > amount);
+            fuzzedOrderInputs.itemPrice = fuzzedOrderInputs.itemPrice - (fuzzedOrderInputs.itemPrice % uint128(amount));
+
+            uint256 unitPrice = fuzzedOrderInputs.itemPrice / amount;
+            vm.assume(unitPrice < 1 ether);
+        }
+
+        _runTestBuyListingWhenTakerIsBanned(
+            TestTradeSingleItemParams({
+                paymentSettings: paymentSettings,
+                orderProtocol: OrderProtocols(orderProtocol), 
+                cosigned: isCosigned,
+                isCosignatureEmpty: isCosignatureEmpty,
+                paymentMethod: address(0),
                 amount: amount, 
                 fillAmount: fillAmount, 
                 fuzzedOrderInputs: fuzzedOrderInputs

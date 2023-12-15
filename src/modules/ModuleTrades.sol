@@ -60,6 +60,7 @@ contract ModuleTrades is PaymentProcessorModule {
      * @dev    Throws when the maker's signature is invalid.
      * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token no longer owned by maker.
      * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
@@ -131,6 +132,7 @@ contract ModuleTrades is PaymentProcessorModule {
      * @dev    Throws when the maker's signature is invalid.
      * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the maker does not have sufficient funds to complete the purchase.
      * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token not owned by the taker.
      * @dev    Throws when the token the offer is being accepted for does not match the conditions set by the maker.
@@ -200,6 +202,7 @@ contract ModuleTrades is PaymentProcessorModule {
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
      * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
@@ -311,6 +314,7 @@ contract ModuleTrades is PaymentProcessorModule {
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when a maker does not have sufficient funds to complete the purchase.
      * @dev    Throws when the token an offer is being accepted for does not match the conditions set by the maker.
      * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.

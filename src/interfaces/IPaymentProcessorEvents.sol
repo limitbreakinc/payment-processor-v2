@@ -9,6 +9,15 @@ import "../DataTypes.sol";
 * @author Limit Break, Inc.
 */ 
 interface IPaymentProcessorEvents {
+    /// @notice Emitted when an account is banned from trading a collection
+    event BannedAccountAddedForCollection(
+        address indexed tokenAddress, 
+        address indexed account);
+
+    /// @notice Emitted when an account ban has been lifted on a collection
+    event BannedAccountRemovedForCollection(
+        address indexed tokenAddress, 
+        address indexed account);
 
     /// @notice Emitted when an ERC721 listing is purchased.
     event BuyListingERC721(
@@ -109,7 +118,8 @@ interface IPaymentProcessorEvents {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels);
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts);
 
     /// @notice Emitted whenever pricing bounds change at a token level for price-constrained collections.
     event UpdatedTokenLevelPricingBoundaries(
