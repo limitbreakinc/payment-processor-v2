@@ -3952,6 +3952,15 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         }
     }
 
+    function _banAccount(address token, address account) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeAddBannedAccountForCollectionCalldata(
+                address(_paymentProcessor), 
+                token, 
+                account);
+
+        _paymentProcessor.addBannedAccountForCollection(data);
+    }
+
     function _setPaymentSettings(
         uint8 paymentSettings,
         uint256 itemPrice,
@@ -3961,7 +3970,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts
     ) internal {
         paymentSettings = paymentSettings % 4;
         PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
@@ -3977,7 +3987,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
@@ -3991,7 +4002,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.CustomPaymentMethodWhitelist) {
@@ -4005,7 +4017,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.PricingConstraints) {
@@ -4019,7 +4032,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(
                 address(_paymentProcessor), 

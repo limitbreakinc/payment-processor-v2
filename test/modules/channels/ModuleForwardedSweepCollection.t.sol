@@ -158,7 +158,8 @@ contract ModuleForwardedSweepCollectionTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
-            true);
+            true,
+            false);
 
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));
@@ -222,7 +223,8 @@ contract ModuleForwardedSweepCollectionTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
-            true);
+            true,
+            false);
 
         address trustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000001));
         address untrustedChannel = factory.cloneTrustedForwarder(address(this), address(0), bytes32(0x0000000000000000000000000000000000000000000000000000000000000002));

@@ -55,6 +55,9 @@ error PaymentProcessor__InputArrayLengthMismatch();
 /// @dev Thrown when Payment Processor or a module is being deployed with invalid constructor arguments.
 error PaymentProcessor__InvalidConstructorArguments();
 
+/// @dev Thrown when the maker or taker is a banned account on the collection being traded.
+error PaymentProcessor__MakerOrTakerIsBannedAccount();
+
 /// @dev Thrown when the combined marketplace and royalty fees will exceed the item price.
 error PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
 

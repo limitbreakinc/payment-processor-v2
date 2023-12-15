@@ -175,7 +175,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels) external {
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (royaltyBackfillNumerator > FEE_DENOMINATOR) {
@@ -212,7 +213,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 royaltyBackfillNumerator: royaltyBackfillNumerator,
                 royaltyBountyNumerator: royaltyBountyNumerator,
                 isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
-                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels});
+                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels,
+                blockBannedAccounts: blockBannedAccounts});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -223,7 +225,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
     }
 
     /**
@@ -358,6 +361,48 @@ contract ModulePaymentSettings is PaymentProcessorModule {
 
         if (appStorage().collectionTrustedChannels[tokenAddress].remove(channel)) {
             emit TrustedChannelRemovedForCollection(tokenAddress, channel);
+        }
+    }
+
+    /**
+     * @notice Allows creator to ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` has been banned from trading on a collection.
+     * @dev    2. A `BannedAccountAddedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to add to the banned list.
+     */
+    function addBannedAccountForCollection(address tokenAddress, address account) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionBannedAccounts[tokenAddress].add(account)) {
+            emit BannedAccountAddedForCollection(tokenAddress, account);
+        }
+    }
+
+    /**
+     * @notice Allows creator to un-ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` ban has been lifted for trades on a collection.
+     * @dev    2. A `BannedAccountRemovedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to remove from the banned list.
+     */
+    function removeBannedAccountForCollection(address tokenAddress, address account) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionBannedAccounts[tokenAddress].remove(account)) {
+            emit BannedAccountRemovedForCollection(tokenAddress, account);
         }
     }
 }

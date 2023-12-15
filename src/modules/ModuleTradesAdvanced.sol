@@ -61,6 +61,7 @@ contract ModuleTradesAdvanced is PaymentProcessorModule {
      * @dev    Throws when a maker's signature is invalid.
      * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
      * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
      * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
      * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
      * @dev    Any unused native token payment will be returned to the taker as wrapped native token.

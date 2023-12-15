@@ -375,6 +375,7 @@ abstract contract PaymentProcessorModule is
      * @dev    This function may be called multiple times during a bulk execution.
      * @dev    Throws when a collection is set to block untrusted channels and the transaction originates 
      * @dev    from an untrusted channel.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
      * @dev    Throws when the payment method is not an allowed payment method.
      * @dev    Throws when the sweep order is for ERC721 tokens and the amount is set to a value other than one.
      * @dev    Throws when the sweep order is for ERC1155 tokens and the amount is set to zero.
@@ -414,6 +415,19 @@ abstract contract PaymentProcessorModule is
         PaymentSettings paymentSettings = paymentSettingsForCollection.paymentSettings;
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
+
+        if (paymentSettingsForCollection.blockBannedAccounts) {
+            EnumerableSet.AddressSet storage bannedAccounts = 
+                appStorage().collectionBannedAccounts[saleDetails.tokenAddress];
+
+            if (bannedAccounts.contains(saleDetails.maker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+            }
+
+            if (bannedAccounts.contains(context.taker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+            }
+        }
 
         if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
             EnumerableSet.AddressSet storage trustedChannels = 
@@ -529,6 +543,15 @@ abstract contract PaymentProcessorModule is
             }
         }
 
+        EnumerableSet.AddressSet storage bannedAccounts = 
+            appStorage().collectionBannedAccounts[sweepOrder.tokenAddress];
+
+        if (paymentSettingsForCollection.blockBannedAccounts) {
+            if (bannedAccounts.contains(context.taker)) {
+                revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+            }
+        }
+
         uint256 itemsLength = items.length;
 
         saleDetailsBatch = new Order[](itemsLength);
@@ -557,6 +580,12 @@ abstract contract PaymentProcessorModule is
 
             saleDetailsBatch[i] = saleDetails;
             sumListingPrices += saleDetails.itemPrice;
+
+            if (paymentSettingsForCollection.blockBannedAccounts) {
+                if (bannedAccounts.contains(saleDetails.maker)) {
+                    revert PaymentProcessor__MakerOrTakerIsBannedAccount();
+                }
+            }
 
             if (saleDetails.protocol == OrderProtocols.ERC721_FILL_OR_KILL) {
                 if (saleDetails.amount != ONE) {

@@ -81,6 +81,7 @@ contract ModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {
@@ -188,6 +189,7 @@ contract ModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {
@@ -293,6 +295,7 @@ contract ModuleBuyListingTest is PaymentProcessorModuleTest {
             fuzzedOrderInputs.royaltyReceiver,
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {
@@ -395,6 +398,7 @@ contract ModuleBuyListingTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {

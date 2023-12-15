@@ -78,6 +78,7 @@ struct PaymentProcessorModules {
  * @dev **royaltyBountyNumerator**: The percentage of royalties the creator will grant to a marketplace for order fulfillment.
  * @dev **isRoyaltyBountyExclusive**: If true, royalty bounties will only be paid if the order marketplace is the set exclusive marketplace.
  * @dev **blockTradesFromUntrustedChannels**: If true, trades that originate from untrusted channels will not be executed.
+ * @dev **blockBannedAccounts**: If true, banned accounts can be neither maker or taker for trades on a per-collection basis.
  */
 struct CollectionPaymentSettings {
     PaymentSettings paymentSettings;
@@ -87,6 +88,7 @@ struct CollectionPaymentSettings {
     uint16 royaltyBountyNumerator;
     bool isRoyaltyBountyExclusive;
     bool blockTradesFromUntrustedChannels;
+    bool blockBannedAccounts;
 }
 
 /**
@@ -420,4 +422,7 @@ struct PaymentProcessorStorage {
 
     /// @dev Mapping of token contract addresses to the defined list of trusted channels for the token contract.
     mapping (address => EnumerableSet.AddressSet) collectionTrustedChannels;
+
+    /// @dev Mapping of token contract addresses to the defined list of banned accounts for the token contract.
+    mapping (address => EnumerableSet.AddressSet) collectionBannedAccounts;
 }
