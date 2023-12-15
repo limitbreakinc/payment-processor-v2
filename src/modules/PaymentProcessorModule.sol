@@ -137,7 +137,7 @@ abstract contract PaymentProcessorModule is
             // If it isn't one of the gas efficient immutable default payment methods,
             // it may have bee added to the fallback default payment method whitelist,
             // but there are SLOAD costs.
-            return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+            return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID].contains(paymentMethod);
         }
     }
 
@@ -455,7 +455,7 @@ abstract contract PaymentProcessorModule is
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][saleDetails.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId].contains(saleDetails.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {
@@ -534,7 +534,7 @@ abstract contract PaymentProcessorModule is
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.CustomPaymentMethodWhitelist) {
-            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId][sweepOrder.paymentMethod]) {
+            if (!appStorage().collectionPaymentMethodWhitelists[paymentSettingsForCollection.paymentMethodWhitelistId].contains(sweepOrder.paymentMethod)) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
         } else if (paymentSettings == PaymentSettings.PricingConstraints) {

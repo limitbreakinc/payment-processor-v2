@@ -96,15 +96,11 @@ contract ModulePaymentSettings is PaymentProcessorModule {
     function whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
-            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
-
-        if (ptrPaymentMethodWhitelist[paymentMethod]) {
+        if (appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].add(paymentMethod)) {
+            emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
+        } else {
             revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
         }
-
-        ptrPaymentMethodWhitelist[paymentMethod] = true;
-        emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
     /**
@@ -124,15 +120,12 @@ contract ModulePaymentSettings is PaymentProcessorModule {
     function unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
-            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
-
-        if (!ptrPaymentMethodWhitelist[paymentMethod]) {
+        if (appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].remove(paymentMethod)) {
+            emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
+        } else {
             revert PaymentProcessor__CoinIsNotApproved();
         }
-
-        delete ptrPaymentMethodWhitelist[paymentMethod];
-        emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
+        
     }
 
     /**

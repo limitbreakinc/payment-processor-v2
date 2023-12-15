@@ -366,7 +366,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @notice Returns true if the specified payment method is whitelisted for the specified payment method whitelist.
      */
     function isPaymentMethodWhitelisted(uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
-        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].contains(paymentMethod);
     }
 
     /**
@@ -417,6 +417,13 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     }
 
     /**
+     * @notice Returns the set of payment methods for a given payment method whitelist.
+     */
+    function getWhitelistedPaymentMethods(uint32 paymentMethodWhitelistId) external view returns (address[] memory) {
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].values();
+    }
+
+    /**
      * @notice Returns the set of trusted channels for a given collection.
      */
     function getTrustedChannels(address tokenAddress) external view returns (address[] memory) {
@@ -452,7 +459,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             }
         }
 
-        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID].contains(paymentMethod);
     }
 
     /**

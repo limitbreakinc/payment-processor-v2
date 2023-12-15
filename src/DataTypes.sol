@@ -402,8 +402,8 @@ struct PaymentProcessorStorage {
     /// @dev Mapping of payment method whitelist id to the owner address for the list.
     mapping (uint32 => address) paymentMethodWhitelistOwners;
 
-    /// @dev Mapping of payment method whitelist id to a mapping of allowed payment methods for the list.
-    mapping (uint32 => mapping (address => bool)) collectionPaymentMethodWhitelists;
+    /// @dev Mapping of payment method whitelist id to a defined list of allowed payment methods.
+    mapping (uint32 => EnumerableSet.AddressSet) collectionPaymentMethodWhitelists;
 
     /// @dev Mapping of token contract addresses to the collection-level pricing boundaries (floor and ceiling price).
     mapping (address => PricingBounds) collectionPricingBounds;
