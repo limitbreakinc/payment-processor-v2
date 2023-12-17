@@ -32,31 +32,33 @@ usage() {
 # Function to set RPC URL based on chain ID
 set_rpc_url() {
     case $1 in
-        1) RPC_URL="https://eth.llamarpc.com" ;;
-        10) RPC_URL="https://optimism.llamarpc.com" ;;
-        56) RPC_URL="https://bsc.meowrpc.com" ;;
-        137) RPC_URL="https://polygon.llamarpc.com" ;;
-        324) RPC_URL="https://mainnet.era.zksync.io" ;;
-        1101) RPC_URL="https://zkevm-rpc.com" ;;
-        8453) RPC_URL="https://developer-access-mainnet.base.org" ;;
-        42161) RPC_URL="https://arbitrum.llamarpc.com" ;;
-        42170) RPC_URL="https://arbitrum-nova.publicnode.com" ;;
-        43114) RPC_URL="https://avalanche-c-chain.publicnode.com" ;;
-        59144) RPC_URL="https://rpc.linea.build" ;;
-        7777777) RPC_URL="https://rpc.zora.co" ;;
-        534352) RPC_URL="https://rpc.ankr.com/scroll" ;;
-        5) RPC_URL="https://goerli.blockpi.network/v1/rpc/public" ;;
-        999) RPC_URL="https://testnet.rpc.zora.co" ;;
-        5001) RPC_URL="https://rpc.testnet.mantle.xyz" ;;
-        59140) RPC_URL="https://rpc.goerli.linea.build/" ;;
-        80001) RPC_URL="https://endpoints.omniatech.io/v1/matic/mumbai/public" ;;
-        84531) RPC_URL="https://goerli.base.org" ;;
-        534353) RPC_URL="https://alpha-rpc.scroll.io/l2" ;;
-        11155111) RPC_URL="https://1rpc.io/sepolia" ;;
-        2863311531) RPC_URL="https://rpc-testnet.ancient8.gg/" ;;
-        13472) RPC_URL="https://rpc.testnet.immutable.com/" ;;
+        1) RPC_URL=$RPC_URL_ETHEREUM ;;
+        10) RPC_URL=$RPC_URL_OPTIMISM ;;
+        56) RPC_URL=$RPC_URL_BSC ;;
+        137) RPC_URL=$RPC_URL_POLYGON ;;
+        324) RPC_URL=$RPC_URL_ZKEVM ;;
+        1101) RPC_URL=$RPC_URL_POLYGON_ZKEVM ;;
+        8453) RPC_URL=$RPC_URL_BASE ;;
+        42161) RPC_URL=$RPC_URL_ARBITRUM ;;
+        42170) RPC_URL=$RPC_URL_ARBITRUM_NOVA ;;
+        43114) RPC_URL=$RPC_URL_AVALANCHE_C ;;
+        59144) RPC_URL=$RPC_URL_LINEA ;;
+        7777777) RPC_URL=$RPC_URL_ZORA ;;
+        534352) RPC_URL=$RPC_URL_SCROLL ;;
+        5) RPC_URL=$RPC_URL_GOERLI ;;
+        999) RPC_URL=$RPC_URL_ZORA_TESTNET ;;
+        5001) RPC_URL=$RPC_URL_MANTLE_TESTNET ;;
+        59140) RPC_URL=$RPC_URL_GOERLI_LINEA ;;
+        80001) RPC_URL=$RPC_URL_MUMBAI ;;
+        84531) RPC_URL=$RPC_URL_GOERLI_BASE ;;
+        534353) RPC_URL=$RPC_URL_SCROLL_ALPHA ;;
+        11155111) RPC_URL=$RPC_URL_SEPOLIA ;;
+        2863311531) RPC_URL=$RPC_URL_ANCIENT8 ;;
+        13472) RPC_URL=$RPC_URL_IMMUTABLE_TESTNET ;;
         *) echo "Unsupported chain id"; exit 1 ;;
     esac
+
+    export RPC_URL
 }
 
 # Function to set verification api key based on chain ID
@@ -139,4 +141,5 @@ forge script script/common/DeployModuleOnChainCancellation.s.sol:DeployModuleOnC
   --priority-gas-price $PRIORITY_GAS_PRICE \
   --rpc-url $RPC_URL \
   --broadcast \
+  --optimizer-runs 30000 \
   --verify $RESUME
