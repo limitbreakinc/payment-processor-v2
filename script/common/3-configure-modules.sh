@@ -273,9 +273,17 @@ case $yn in
     exit 1;;
 esac
 
-forge script script/common/DeployPaymentProcessorModules.s.sol:DeployPaymentProcessorModules \
+cast send \
+  --private-key $DEFAULT_OWNER_PRIVATE_KEY \
   --gas-price $GAS_PRICE \
   --priority-gas-price $PRIORITY_GAS_PRICE \
   --rpc-url $RPC_URL \
-  --broadcast \
-  --slow
+  $EXPECTED_PAYMENT_PROCESSOR_CONFIGURATION_ADDRESS \
+  "setPaymentProcessorModuleConfiguration(uint32,address,address,address,address,address,address)" \
+  $PUSH_PAYMENT_GAS_LIMIT \
+  $TRUSTED_FORWARDER_FACTORY_ADDRESS \
+  $WRAPPED_NATIVE_COIN \
+  $COIN_1 \
+  $COIN_2 \
+  $COIN_3 \
+  $COIN_4

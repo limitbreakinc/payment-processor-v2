@@ -21,7 +21,6 @@ GAS_PRICE=""
 PRIORITY_GAS_PRICE=""
 CHAIN_ID=""
 RPC_URL=""
-RESUME=""
 
 # Function to display usage
 usage() {
@@ -65,7 +64,6 @@ while [[ "$#" -gt 0 ]]; do
         --gas-price) GAS_PRICE=$(($2 * 1000000000)); shift ;;
         --priority-gas-price) PRIORITY_GAS_PRICE=$(($2 * 1000000000)); shift ;;
         --chain-id) CHAIN_ID=$2; shift ;;
-        --resume) RESUME="--resume" ;;
         *) usage ;;
     esac
     shift
@@ -86,8 +84,11 @@ echo "Gas Price (wei): $GAS_PRICE"
 echo "Priority Gas Price (wei): $PRIORITY_GAS_PRICE"
 echo "Chain ID: $CHAIN_ID"
 echo "RPC URL: $RPC_URL"
-echo "SALT_PAYMENT_PROCESSOR_ENCODER: $SALT_PAYMENT_PROCESSOR_ENCODER"
-echo "EXPECTED_PAYMENT_PROCESSOR_ENCODER_ADDRESS: $EXPECTED_PAYMENT_PROCESSOR_ENCODER_ADDRESS"
+echo "DEFAULT_OWNER_ADDRESS: $DEFAULT_OWNER_ADDRESS"
+echo "EXPECTED_MODULE_PAYMENT_SETTINGS_ADDRESS: $EXPECTED_MODULE_PAYMENT_SETTINGS_ADDRESS"
+echo "EXPECTED_MODULE_ON_CHAIN_CANCELLATION_ADDRESS: $EXPECTED_MODULE_ON_CHAIN_CANCELLATION_ADDRESS"
+echo "EXPECTED_MODULE_TRADES_ADDRESS: $EXPECTED_MODULE_TRADES_ADDRESS"
+echo "EXPECTED_MODULE_TRADES_ADVANCED_ADDRESS: $EXPECTED_MODULE_TRADES_ADVANCED_ADDRESS"
 read -p "Do you want to proceed? (yes/no) " yn
 
 case $yn in 
@@ -98,9 +99,15 @@ case $yn in
     exit 1;;
 esac
 
-forge script script/common/DeployPaymentProcessorEncoder.s.sol:DeployPaymentProcessorEncoder \
+cast send \
+  --private-key $DEFAULT_OWNER_PRIVATE_KEY \
   --gas-price $GAS_PRICE \
   --priority-gas-price $PRIORITY_GAS_PRICE \
   --rpc-url $RPC_URL \
-  --broadcast \
-  --verify $RESUME
+  $EXPECTED_PAYMENT_PROCESSOR_CONFIGURATION_ADDRESS \
+  "setPaymentProcessorConfiguration(address,address,address,address,address)" \
+  $DEFAULT_OWNER_ADDRESS \
+  $EXPECTED_MODULE_PAYMENT_SETTINGS_ADDRESS \
+  $EXPECTED_MODULE_ON_CHAIN_CANCELLATION_ADDRESS \
+  $EXPECTED_MODULE_TRADES_ADDRESS \
+  $EXPECTED_MODULE_TRADES_ADVANCED_ADDRESS
