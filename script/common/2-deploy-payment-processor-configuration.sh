@@ -123,8 +123,9 @@ echo "Gas Price (wei): $GAS_PRICE"
 echo "Priority Gas Price (wei): $PRIORITY_GAS_PRICE"
 echo "Chain ID: $CHAIN_ID"
 echo "RPC URL: $RPC_URL"
-echo "SALT_PAYMENT_PROCESSOR_ENCODER: $SALT_PAYMENT_PROCESSOR_ENCODER"
-echo "EXPECTED_PAYMENT_PROCESSOR_ENCODER_ADDRESS: $EXPECTED_PAYMENT_PROCESSOR_ENCODER_ADDRESS"
+echo "SALT_PAYMENT_PROCESSOR_CONFIGURATION: $SALT_PAYMENT_PROCESSOR_CONFIGURATION"
+echo "EXPECTED_PAYMENT_PROCESSOR_CONFIGURATION_ADDRESS: $EXPECTED_PAYMENT_PROCESSOR_CONFIGURATION_ADDRESS"
+echo "DEFAULT_OWNER_ADDRESS: $DEFAULT_OWNER_ADDRESS"
 read -p "Do you want to proceed? (yes/no) " yn
 
 case $yn in 
@@ -135,7 +136,7 @@ case $yn in
     exit 1;;
 esac
 
-forge script script/common/DeployPaymentProcessorEncoder.s.sol:DeployPaymentProcessorEncoder \
+forge script script/common/DeployPaymentProcessorConfiguration.s.sol:DeployPaymentProcessorConfiguration \
   --gas-price $GAS_PRICE \
   --priority-gas-price $PRIORITY_GAS_PRICE \
   --rpc-url $RPC_URL \
