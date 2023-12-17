@@ -61,6 +61,38 @@ set_rpc_url() {
     export RPC_URL
 }
 
+# Function to set verification api key based on chain ID
+set_etherscan_api_key() {
+  case $1 in
+      1) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;;
+      10) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_OPTIMISM ;;
+      56) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_BSC ;;
+      137) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON ;;
+      324) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;;
+      1101) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON_ZKEVM ;;
+      8453) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_BASE ;;
+      42161) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ARBITRUM ;;
+      42170) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ARBITRUM_NOVA ;;
+      43114) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM;; #Avalanche C-Chain
+      59144) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_LINEA ;;
+      7777777) echo "Unsupported chain id"; exit 1 ;; #Zora
+      534352) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_SCROLL ;;
+      5) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;;
+      999) echo "Unsupported chain id"; exit 1 ;; #Zora Testnet
+      5001) echo "Unsupported chain id"; exit 1 ;; #Mantle Testnet
+      59140) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_LINEA ;;
+      80001) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_POLYGON ;; 
+      84531) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_BASE ;;
+      534353) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_SCROLL ;; # Scroll Alpha
+      11155111) ETHERSCAN_API_KEY=$VERIFICATION_API_KEY_ETHEREUM ;;
+      2863311531) echo "Unsupported chain id"; exit 1 ;; # Ancient 8 Testnet
+      13472) echo "Unsupported chain id"; exit 1 ;; # Immutable X Testnet
+      *) echo "Unsupported chain id"; exit 1 ;;
+  esac
+
+  export ETHERSCAN_API_KEY
+}
+
 # Process arguments
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -80,6 +112,9 @@ fi
 
 # Set the RPC URL based on chain ID
 set_rpc_url $CHAIN_ID
+
+# Set the ETHERSCAN API KEY based on chain ID
+set_etherscan_api_key $CHAIN_ID
 
 echo ""
 echo "============= DEPLOYING CREATOR REGISTRY ============="

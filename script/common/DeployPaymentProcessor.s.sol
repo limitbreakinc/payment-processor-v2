@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "forge-std/console2.sol";
 import "src/PaymentProcessor.sol";
 
-contract DeployModuleOnChainCancellation is Script {
+contract DeployPaymentProcessor is Script {
     function run() public {
         bytes32 saltValue = bytes32(vm.envUint("SALT_PAYMENT_PROCESSOR"));
         address expectedAddress = vm.envAddress("EXPECTED_PAYMENT_PROCESSOR_ADDRESS");
