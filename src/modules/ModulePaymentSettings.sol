@@ -81,6 +81,42 @@ contract ModulePaymentSettings is PaymentProcessorModule {
     }
 
     /**
+     * @notice Transfer ownership of a payment method whitelist list to a new owner.
+     *
+     * @dev Throws when the new owner is the zero address.
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The payment method whitelist list ownership is transferred to the new owner.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param id       The id of the payment method whitelist.
+     * @param newOwner The address of the new owner.
+     */
+    function reassignOwnershipOfPaymentMethodWhitelist(uint32 id, address newOwner) external {
+        if(newOwner == address(0)) {
+            revert PaymentProcessor__PaymentMethodWhitelistOwnershipCannotBeTransferredToZeroAddress();
+        }
+
+        _reassignOwnershipOfPaymentMethodWhitelist(id, newOwner);
+    }
+
+    /**
+     * @notice Renounce the ownership of a payment method whitelist, rendering the list immutable.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The ownership of the specified payment method whitelist is renounced.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param id The id of the payment method whitelist.
+     */
+    function renounceOwnershipOfPaymentMethodWhitelist(uint32 id) external {
+        _reassignOwnershipOfPaymentMethodWhitelist(id, address(0));
+    }
+
+    /**
      * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
      *
      * @dev    Throws when caller is not the owner of the specified payment method whitelist.

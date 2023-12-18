@@ -1738,6 +1738,20 @@ abstract contract PaymentProcessorModule is
     /*************************************************************************/
 
     /**
+     * @notice Transfers ownership of a payment method whitelist.
+     * 
+     * @dev    Throws when the caller is not the owner of the payment method whitelist.
+     *
+     * @param id       The payment method whitelist id to transfer ownership of.
+     * @param newOwner The address to transfer ownership to.
+     */
+    function _reassignOwnershipOfPaymentMethodWhitelist(uint32 id, address newOwner) internal {
+        _requireCallerOwnsPaymentMethodWhitelist(id);
+        appStorage().paymentMethodWhitelistOwners[id] = newOwner;
+        emit ReassignedPaymentMethodWhitelistOwnership(id, newOwner);
+    }
+
+    /**
      * @notice Reverts the transaction if the caller is not the owner of the payment method whitelist.
      *
      * @dev    Throws when the caller is not the owner of the payment method whitelist.

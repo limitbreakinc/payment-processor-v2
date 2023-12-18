@@ -514,6 +514,37 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     }
 
     /**
+     * @notice Transfer ownership of a payment method whitelist list to a new owner.
+     *
+     * @dev Throws when the new owner is the zero address.
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The payment method whitelist list ownership is transferred to the new owner.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `reassignOwnershipOfPaymentMethodWhitelist(uint32 id, address newOwner)`
+     */
+    function reassignOwnershipOfPaymentMethodWhitelist(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REASSIGN_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST, data) {}
+
+    /**
+     * @notice Renounce the ownership of a payment method whitelist, rendering the list immutable.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The ownership of the specified payment method whitelist is renounced.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `renounceOwnershipOfPaymentMethodWhitelist(uint32 id)`
+     */
+    function renounceOwnershipOfPaymentMethodWhitelist(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_RENOUNCE_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST, data) {}
+
+    /**
      * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
      *
      * @dev    Throws when caller is not the owner of the specified payment method whitelist.
