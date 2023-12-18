@@ -557,6 +557,36 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         return signedOffer;
     }
 
+    function _reassignOwnershipOfPaymentMethodWhitelist(address caller, uint32 id, address newOwner, bytes4 expectedRevertSelector) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeReassignOwnershipOfPaymentMethodWhitelistCalldata(address(_paymentProcessor), id, newOwner);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, true, false, false);
+            emit ReassignedPaymentMethodWhitelistOwnership(id, newOwner);
+        }
+
+        vm.startPrank(caller, caller);
+        _paymentProcessor.reassignOwnershipOfPaymentMethodWhitelist(data);
+        vm.stopPrank();
+    }
+
+    function _renounceOwnershipOfPaymentMethodWhitelist(address caller, uint32 id, bytes4 expectedRevertSelector) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeRenounceOwnershipOfPaymentMethodWhitelistCalldata(address(_paymentProcessor), id);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, true, false, false);
+            emit ReassignedPaymentMethodWhitelistOwnership(id, address(0));
+        }
+
+        vm.startPrank(caller, caller);
+        _paymentProcessor.renounceOwnershipOfPaymentMethodWhitelist(data);
+        vm.stopPrank();
+    }
+
     function _revokeMasterNonce(address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);

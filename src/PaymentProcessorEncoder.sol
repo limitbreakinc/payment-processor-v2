@@ -70,6 +70,44 @@ contract PaymentProcessorEncoder {
     }
 
     /**
+     * @notice Helper function to encode transaction calldata in the format required for a `reassignOwnershipOfPaymentMethodWhitelist` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  id  The id of the payment method whitelist to transfer.
+     * @param  newOwner The address of the new payment method whitelist owner.
+     */
+    function encodeReassignOwnershipOfPaymentMethodWhitelistCalldata(address /*paymentProcessorAddress*/, uint32 id, address newOwner) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "reassignOwnershipOfPaymentMethodWhitelist(uint32,address)",
+                id,
+                newOwner));
+    }
+
+    /**
+     * @notice Helper function to encode transaction calldata in the format required for a `renounceOwnershipOfPaymentMethodWhitelist` call.
+     *
+     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
+     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
+     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
+     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
+     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
+     *
+     * @param  id  The id of the payment method whitelist to renounce.
+     */
+    function encodeRenounceOwnershipOfPaymentMethodWhitelistCalldata(address /*paymentProcessorAddress*/, uint32 id) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "renounceOwnershipOfPaymentMethodWhitelist(uint32)",
+                id));
+    }
+
+    /**
      * @notice Helper function to encode transaction calldata in the format required for a `whitelistPaymentMethod` call.
      *
      * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.

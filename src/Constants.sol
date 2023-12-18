@@ -34,6 +34,8 @@ bytes32 constant DEFAULT_ACCESS_CONTROL_ADMIN_ROLE = 0x00;
 /*                   PRECOMPUTED SELECTORS                    */
 /**************************************************************/
 
+bytes4 constant SELECTOR_REASSIGN_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST= hex"a1e6917e";
+bytes4 constant SELECTOR_RENOUNCE_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST= hex"0886702e";
 bytes4 constant SELECTOR_WHITELIST_PAYMENT_METHOD = hex"bb39ce91";
 bytes4 constant SELECTOR_UNWHITELIST_PAYMENT_METHOD = hex"e9d4c14e";
 bytes4 constant SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS = hex"fc5d8393";
