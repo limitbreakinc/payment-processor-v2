@@ -468,6 +468,8 @@ abstract contract PaymentProcessorModule is
                 saleDetails.tokenId, 
                 saleDetails.amount, 
                 saleDetails.itemPrice);
+        } else if (paymentSettings == PaymentSettings.Paused) {
+            revert PaymentProcessor__TradingIsPausedForCollection();
         }
     }
 
@@ -541,6 +543,8 @@ abstract contract PaymentProcessorModule is
             if (paymentSettingsForCollection.constrainedPricingPaymentMethod != sweepOrder.paymentMethod) {
                 revert PaymentProcessor__PaymentCoinIsNotAnApprovedPaymentMethod();
             }
+        } else if (paymentSettings == PaymentSettings.Paused) {
+            revert PaymentProcessor__TradingIsPausedForCollection();
         }
 
         EnumerableSet.AddressSet storage bannedAccounts = 

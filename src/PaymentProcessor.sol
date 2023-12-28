@@ -7,8 +7,6 @@ import "./interfaces/IPaymentProcessorConfiguration.sol";
 import "./interfaces/IPaymentProcessorEvents.sol";
 import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/PaymentProcessorStorageAccess.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
 /*
@@ -52,7 +50,7 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 * @author Limit Break, Inc.
 */ 
 
-contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
@@ -92,8 +90,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = defaultContractOwner_;
             emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, defaultContractOwner_, "Default Payment Methods");
         }
-
-        _transferOwnership(defaultContractOwner_);
     }
 
     /**************************************************************/
@@ -201,40 +197,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             }
         }
         _;
-    }
-
-    /**************************************************************/
-    /*                  CONTRACT OWNER FUNCTIONS                  */
-    /**************************************************************/
-
-    /**
-     * @notice Allows PaymentProcessor contract owner to pause trading on this contract.  This is only to be used
-     *         in case a future vulnerability emerges to allow a migration to an updated contract.
-     *
-     * @dev    Throws when caller is not the contract owner.
-     * @dev    Throws when contract is already paused.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The contract has been placed in the `paused` state.
-     * @dev    2. Trading is frozen.
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @notice Allows PaymentProcessor contract owner to resume trading on this contract.  This is only to be used
-     *         in case a pause was not necessary and trading can safely resume.
-     *
-     * @dev    Throws when caller is not the contract owner.
-     * @dev    Throws when contract is not currently paused.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The contract has been placed in the `unpaused` state.
-     * @dev    2. Trading is resumed.
-     */
-    function unpause() external onlyOwner {
-        _unpause();
     }
 
     /**************************************************************/
@@ -819,7 +781,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      *                  FeeOnTop memory feeOnTop)`
      */
     function buyListing(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
 
     /**
@@ -863,7 +824,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      *                  FeeOnTop memory feeOnTop)`
      */
     function acceptOffer(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
     /**
@@ -905,7 +865,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      *                  FeeOnTop[] calldata feesOnTop)`
      */
     function bulkBuyListings(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
     /**
@@ -944,7 +903,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      *                  BulkAcceptOffersParams memory params)`
      */
     function bulkAcceptOffers(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
     /**
@@ -984,6 +942,5 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      *                  Cosignature[] memory cosignatures)`
      */
     function sweepCollection(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTradesAdvanced, SELECTOR_SWEEP_COLLECTION, data) {}
 }
