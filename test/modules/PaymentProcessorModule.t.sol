@@ -3991,6 +3991,50 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         _paymentProcessor.addBannedAccountForCollection(data);
     }
 
+    function _getSetCoollectionPaymentSettingsCalldata(
+        address tokenAddress,
+        address exclusiveBountyReceiver,
+        address royaltyBackfillReceiver,
+        CollectionPaymentSettings memory collectionPaymentSettings
+    ) internal view returns (bytes memory data) {
+        data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_paymentProcessor), 
+            tokenAddress, 
+            collectionPaymentSettings.paymentSettings, 
+            collectionPaymentSettings.paymentMethodWhitelistId, 
+            collectionPaymentSettings.constrainedPricingPaymentMethod, 
+            collectionPaymentSettings.royaltyBackfillNumerator, 
+            royaltyBackfillReceiver, 
+            collectionPaymentSettings.royaltyBountyNumerator, 
+            exclusiveBountyReceiver,
+            collectionPaymentSettings.blockTradesFromUntrustedChannels,
+            collectionPaymentSettings.blockBannedAccounts);
+    }
+
+    function _pauseCollectionTrading(address tokenAddress) internal {
+        CollectionPaymentSettings memory collectionPaymentSettings = 
+            _paymentProcessor.collectionPaymentSettings(tokenAddress);
+
+        collectionPaymentSettings.paymentSettings = PaymentSettings.Paused;
+
+        (, address exclusiveBountyReceiver) = 
+            _paymentProcessor.collectionBountySettings(tokenAddress);
+
+        (, address royaltyBackfillReceiver) = 
+            _paymentProcessor.collectionRoyaltyBackfillSettings(tokenAddress);
+        
+        vm.startPrank(tokenAddress);
+        _paymentProcessor.setCollectionPaymentSettings(
+            _getSetCoollectionPaymentSettingsCalldata(
+                tokenAddress,
+                exclusiveBountyReceiver,
+                royaltyBackfillReceiver,
+                collectionPaymentSettings
+            )
+        );
+        vm.stopPrank();
+    }
+
     function _setPaymentSettings(
         uint8 paymentSettings,
         uint256 itemPrice,

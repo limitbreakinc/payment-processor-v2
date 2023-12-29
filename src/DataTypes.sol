@@ -43,7 +43,10 @@ enum PaymentSettings {
     CustomPaymentMethodWhitelist,
 
     // 3: Single payment method with floor and ceiling limits.
-    PricingConstraints
+    PricingConstraints,
+
+    // 4: Pauses trading for the collection.
+    Paused
 }
 
 /**

@@ -115,6 +115,9 @@ error PaymentProcessor__SignatureAlreadyUsedOrRevoked();
  */ 
 error PaymentProcessor__TradeOriginatedFromUntrustedChannel();
 
+/// @dev Thrown when a trading of a specific collection has been paused by the collection owner or admin.
+error PaymentProcessor__TradingIsPausedForCollection();
+
 /**
  * @dev Thrown when attempting to fill a partially fillable order and the amount available to fill 
  * @dev is less than the specified minimum to fill.
