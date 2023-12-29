@@ -1650,7 +1650,7 @@ abstract contract PaymentProcessorModule is
             revert PaymentProcessor__UnauthorizedTaker();
         }
 
-        if (appStorage().destroyedCosigners.contains(cosignature.signer)) {
+        if (appStorage().destroyedCosigners[cosignature.signer]) {
             revert PaymentProcessor__CosignerHasSelfDestructed();
         }
 

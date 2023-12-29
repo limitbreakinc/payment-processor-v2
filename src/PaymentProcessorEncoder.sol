@@ -328,6 +328,18 @@ contract PaymentProcessorEncoder {
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
 
+    function encodeDestroyCosignerCalldata(
+        address /*paymentProcessorAddress*/, 
+        address cosigner,
+        SignatureECDSA memory signature
+    ) external view returns (bytes memory) {
+        return _removeFirst4Bytes(
+            abi.encodeWithSignature(
+                "destroyCosigner(address,(uint8,bytes32,bytes32))",
+                cosigner,
+                signature));
+    }
+
     /**
      * @notice Helper function to encode transaction calldata in the format required for a `revokeSingleNonce` call.
      *

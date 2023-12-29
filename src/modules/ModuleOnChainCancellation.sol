@@ -45,9 +45,13 @@ import "./PaymentProcessorModule.sol";
 */ 
 
 contract ModuleOnChainCancellation is PaymentProcessorModule {
-    using EnumerableSet for EnumerableSet.AddressSet;
+    
+    /// @dev A pre-cached signed message hash used for gas-efficient signature recovery
+    bytes32 immutable private signedMessageHash;
 
-    constructor(address configurationContract) PaymentProcessorModule(configurationContract){}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract) {
+        signedMessageHash = ECDSA.toEthSignedMessageHash(bytes(COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN));
+    }
 
     /**
      * @notice Allows a cosigner to destroy itself, never to be used again.  This is a fail-safe in case of a failure
@@ -55,15 +59,22 @@ contract ModuleOnChainCancellation is PaymentProcessorModule {
      *         compromise, or when a co-signer key is rotated, the cosigner MUST destroy itself to prevent past listings 
      *         that were cancelled off-chain from being used by a malicious actor.
      *
+     * @dev    Throws when the cosigner did not sign an authorization to self-destruct.
+     *
      * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The _msgSender() can never be used to co-sign orders again.
-     * @dev    2. A `DestroyedCosigner` event has been emitted.  If cosigner previously destroyed, no event is emitted.
+     * @dev    1. The cosigner can never be used to co-sign orders again.
+     * @dev    2. A `DestroyedCosigner` event has been emitted.
+     *
+     * @param  cosigner The address of the cosigner to destroy.
+     * @param  signature The signature of the cosigner authorizing the destruction of itself.
      */
-    function destroyCosigner() external {
-        address cosigner = _msgSender();
-        if (appStorage().destroyedCosigners.add(cosigner)) {
-            emit DestroyedCosigner(cosigner);
+    function destroyCosigner(address cosigner, SignatureECDSA calldata signature) external {
+        if(cosigner != ECDSA.recover(signedMessageHash, signature.v, signature.r, signature.s)) {
+            revert PaymentProcessor__NotAuthorizedByCoSigner();
         }
+
+        appStorage().destroyedCosigners[cosigner] = true;
+        emit DestroyedCosigner(cosigner);
     }
 
     /**

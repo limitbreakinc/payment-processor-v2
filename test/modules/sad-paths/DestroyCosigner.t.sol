@@ -81,8 +81,7 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
             false,
             false);
 
-        vm.prank(vm.addr(fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
+        _destroyCosigner(vm.addr(fuzzedOrderInputs.cosignerKey), fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
 
         _buyCosignedListing(
             buyer,
@@ -166,8 +165,7 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
             false,
             false);
 
-        vm.prank(vm.addr(fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
+        _destroyCosigner(vm.addr(fuzzedOrderInputs.cosignerKey), fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
 
         _acceptCosignedCollectionOffer(
             seller, 
@@ -250,8 +248,7 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
             false,
             false);
 
-        vm.prank(vm.addr(fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
+        _destroyCosigner(vm.addr(fuzzedOrderInputs.cosignerKey), fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
 
         _acceptCosignedItemOffer(
             seller, 
@@ -347,8 +344,7 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
             false,
             false);
 
-        vm.prank(vm.addr(fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
+        _destroyCosigner(vm.addr(fuzzedOrderInputs.cosignerKey), fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
 
         _acceptCosignedTokenSetOffer(
             seller, 
@@ -495,11 +491,8 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
             FuzzedOrder721[] memory fuzzedOrderInputsArray
         ) = _generateSweepOrder(params1, params2, FeeOnTop({recipient: address(0), amount: 0}));
 
-        vm.prank(vm.addr(params1.fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
-
-        vm.prank(vm.addr(params2.fuzzedOrderInputs.cosignerKey));
-        _paymentProcessor.destroyCosigner();
+        _destroyCosigner(vm.addr(params1.fuzzedOrderInputs.cosignerKey), params1.fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
+        _destroyCosigner(vm.addr(params2.fuzzedOrderInputs.cosignerKey), params2.fuzzedOrderInputs.cosignerKey, EMPTY_SELECTOR);
 
         _sweepCosignedListings(
             buyer, 
@@ -728,5 +721,46 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
                 });
                 
         _runTestSweepCollectionWhenCosignerIsDestroyed(false, false, params1, params2);
+    }
+
+    function testAnyAccountCanExecuteDestroyCosignerWithSignatureApproval(address caller, uint160 cosignerKey) public {
+        vm.assume(cosignerKey > 0);
+        _destroyCosigner(caller, cosignerKey, EMPTY_SELECTOR);
+    }
+
+    function testRevertsWhenDestroyCosignerIsCalledWithInvalidSignature(address caller, uint160 signerKey, uint160 cosignerKey) public {
+        vm.assume(signerKey > 0);
+        vm.assume(cosignerKey > 0);
+        address signerAddr = vm.addr(signerKey);
+        address cosignerAddr = vm.addr(cosignerKey);
+        vm.assume(signerAddr != cosignerAddr);
+
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(signerKey, ECDSA.toEthSignedMessageHash(bytes(COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN)));
+
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeDestroyCosignerCalldata(
+                address(_paymentProcessor), 
+                cosignerAddr,
+                SignatureECDSA({v: v, r: r, s: s}));
+
+        vm.expectRevert(PaymentProcessor__NotAuthorizedByCoSigner.selector);
+        vm.prank(caller, caller);
+        _paymentProcessor.destroyCosigner(fnCalldata);
+    }
+
+    function testRevertsWhenDestroyCosignerIsCalledWithEmptySignature(address caller, uint160 cosignerKey) public {
+        vm.assume(cosignerKey > 0);
+        address cosignerAddr = vm.addr(cosignerKey);
+
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeDestroyCosignerCalldata(
+                address(_paymentProcessor), 
+                cosignerAddr,
+                SignatureECDSA({v: 0, r: bytes32(0), s: bytes32(0)}));
+
+        vm.expectRevert("ECDSA: invalid signature");
+        vm.prank(caller, caller);
+        _paymentProcessor.destroyCosigner(fnCalldata);
     }
 }

@@ -698,12 +698,17 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
      *         compromise, or when a co-signer key is rotated, the cosigner MUST destroy itself to prevent past listings 
      *         that were cancelled off-chain from being used by a malicious actor.
      *
+     * @dev    Throws when the cosigner did not sign an authorization to self-destruct.
+     *
      * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The _msgSender() can never be used to co-sign orders again.
-     * @dev    2. A `DestroyedCosigner` event has been emitted.  If cosigner previously destroyed, no event is emitted.
+     * @dev    1. The cosigner can never be used to co-sign orders again.
+     * @dev    2. A `DestroyedCosigner` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `destroyCosigner(address cosigner, SignatureECDSA signature)`
      */
-    function destroyCosigner() external
-    delegateCallNoData(_moduleOnChainCancellation, SELECTOR_DESTROY_COSIGNER) {}
+    function destroyCosigner(bytes calldata data) external
+    delegateCall(_moduleOnChainCancellation, SELECTOR_DESTROY_COSIGNER, data) {}
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
