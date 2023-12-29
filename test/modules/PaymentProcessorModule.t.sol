@@ -587,6 +587,29 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         vm.stopPrank();
     }
 
+    function _destroyCosigner(address caller, uint160 cosignerKey, bytes4 expectedRevertSelector) internal {
+        vm.assume(cosignerKey > 0 && cosignerKey < type(uint160).max);
+        address cosignerAddr = vm.addr(cosignerKey);
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(cosignerKey, ECDSA.toEthSignedMessageHash(bytes(COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN)));
+
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeDestroyCosignerCalldata(
+                address(_paymentProcessor), 
+                cosignerAddr,
+                SignatureECDSA({v: v, r: r, s: s}));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, false, false, false);
+            emit DestroyedCosigner(cosignerAddr);
+        }
+
+        vm.prank(caller, caller);
+        _paymentProcessor.destroyCosigner(fnCalldata);
+    }
+
     function _revokeMasterNonce(address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);

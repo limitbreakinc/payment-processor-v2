@@ -67,6 +67,9 @@ interface IPaymentProcessorEvents {
         address indexed whitelistOwner,
         string whitelistName);
 
+    /// @notice Emitted when a cosigner destroys itself.
+    event DestroyedCosigner(address indexed cosigner);
+
     /// @notice Emitted when a user revokes all of their existing listings or offers that share the master nonce.
     event MasterNonceInvalidated(address indexed account, uint256 nonce);
 

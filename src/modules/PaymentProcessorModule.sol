@@ -1630,6 +1630,7 @@ abstract contract PaymentProcessorModule is
      *
      * @dev    Throws when the current block timestamp is greater than the cosignature expiration.
      * @dev    Throws when the order taker does not match the cosignature taker.
+     * @dev    Throws when the cosigner has self-destructed their account.
      * @dev    Throws when the recovered address for the cosignature does not match the cosigner address.
      * 
      * @param context     The current execution context to determine the order taker.
@@ -1649,6 +1650,10 @@ abstract contract PaymentProcessorModule is
             revert PaymentProcessor__UnauthorizedTaker();
         }
 
+        if (appStorage().destroyedCosigners[cosignature.signer]) {
+            revert PaymentProcessor__CosignerHasSelfDestructed();
+        }
+
         if (cosignature.signer != _ecdsaRecover(
             _hashTypedDataV4(context.domainSeparator, keccak256(
                 abi.encode(
@@ -1663,7 +1668,7 @@ abstract contract PaymentProcessorModule is
             cosignature.v, 
             cosignature.r, 
             cosignature.s)) {
-            revert PaymentProcessor__NotAuthorizedByCoSigner();
+            revert PaymentProcessor__NotAuthorizedByCosigner();
         }
     }
 
