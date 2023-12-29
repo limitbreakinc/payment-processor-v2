@@ -693,6 +693,19 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
     /**************************************************************/
 
     /**
+     * @notice Allows a cosigner to destroy itself, never to be used again.  This is a fail-safe in case of a failure
+     *         to secure the co-signer private key in a Web2 co-signing service.  In case of suspected cosigner key
+     *         compromise, or when a co-signer key is rotated, the cosigner MUST destroy itself to prevent past listings 
+     *         that were cancelled off-chain from being used by a malicious actor.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The _msgSender() can never be used to co-sign orders again.
+     * @dev    2. A `DestroyedCosigner` event has been emitted.  If cosigner previously destroyed, no event is emitted.
+     */
+    function destroyCosigner() external
+    delegateCallNoData(_moduleOnChainCancellation, SELECTOR_DESTROY_COSIGNER) {}
+
+    /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
      *
      * @dev    <h4>Postconditions:</h4>

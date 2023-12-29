@@ -31,6 +31,9 @@ error PaymentProcessor__CoinIsNotApproved();
 /// @dev Thrown when the current block time is greater than the expiration time for the cosignature.
 error PaymentProcessor__CosignatureHasExpired();
 
+/// @dev Thrown when the cosigner has self destructed.
+error PaymentProcessor__CosignerHasSelfDestructed();
+
 /// @dev Thrown when a token failed to transfer to the beneficiary and partial fills are disabled.
 error PaymentProcessor__DispensingTokenWasUnsuccessful();
 

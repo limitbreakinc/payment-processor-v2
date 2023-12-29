@@ -428,4 +428,7 @@ struct PaymentProcessorStorage {
 
     /// @dev Mapping of token contract addresses to the defined list of banned accounts for the token contract.
     mapping (address => EnumerableSet.AddressSet) collectionBannedAccounts;
+
+    /// @dev A list of all co-signers that have self-destructed and can never be used as cosigners again.
+    EnumerableSet.AddressSet destroyedCosigners;
 }
