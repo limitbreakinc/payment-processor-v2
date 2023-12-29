@@ -1668,7 +1668,7 @@ abstract contract PaymentProcessorModule is
             cosignature.v, 
             cosignature.r, 
             cosignature.s)) {
-            revert PaymentProcessor__NotAuthorizedByCoSigner();
+            revert PaymentProcessor__NotAuthorizedByCosigner();
         }
     }
 

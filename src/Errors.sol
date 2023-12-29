@@ -65,7 +65,7 @@ error PaymentProcessor__MakerOrTakerIsBannedAccount();
 error PaymentProcessor__MarketplaceAndRoyaltyFeesWillExceedSalePrice();
 
 /// @dev Thrown when the recovered address from a cosignature does not match the order cosigner.
-error PaymentProcessor__NotAuthorizedByCoSigner();
+error PaymentProcessor__NotAuthorizedByCosigner();
 
 /// @dev Thrown when the ERC2981 or backfilled royalties exceed the maximum fee specified by the order maker.
 error PaymentProcessor__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();

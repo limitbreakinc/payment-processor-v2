@@ -744,7 +744,7 @@ contract DestroyCosignerTest is PaymentProcessorModuleTest {
                 cosignerAddr,
                 SignatureECDSA({v: v, r: r, s: s}));
 
-        vm.expectRevert(PaymentProcessor__NotAuthorizedByCoSigner.selector);
+        vm.expectRevert(PaymentProcessor__NotAuthorizedByCosigner.selector);
         vm.prank(caller, caller);
         _paymentProcessor.destroyCosigner(fnCalldata);
     }

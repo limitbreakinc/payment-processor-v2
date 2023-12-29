@@ -70,7 +70,7 @@ contract ModuleOnChainCancellation is PaymentProcessorModule {
      */
     function destroyCosigner(address cosigner, SignatureECDSA calldata signature) external {
         if(cosigner != ECDSA.recover(signedMessageHash, signature.v, signature.r, signature.s)) {
-            revert PaymentProcessor__NotAuthorizedByCoSigner();
+            revert PaymentProcessor__NotAuthorizedByCosigner();
         }
 
         appStorage().destroyedCosigners[cosigner] = true;
