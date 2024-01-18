@@ -30,18 +30,26 @@ uint256 constant ONE = uint256(1);
 // The default admin role for NFT collections using Access Control.
 bytes32 constant DEFAULT_ACCESS_CONTROL_ADMIN_ROLE = 0x00;
 
+/// @dev The plain text message to sign for cosigner self-destruct signature verification
+string constant COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN = "COSIGNER_SELF_DESTRUCT";
+
 /**************************************************************/
 /*                   PRECOMPUTED SELECTORS                    */
 /**************************************************************/
 
+bytes4 constant SELECTOR_REASSIGN_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST= hex"a1e6917e";
+bytes4 constant SELECTOR_RENOUNCE_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST= hex"0886702e";
 bytes4 constant SELECTOR_WHITELIST_PAYMENT_METHOD = hex"bb39ce91";
 bytes4 constant SELECTOR_UNWHITELIST_PAYMENT_METHOD = hex"e9d4c14e";
-bytes4 constant SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS = hex"7950c27b";
+bytes4 constant SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS = hex"fc5d8393";
 bytes4 constant SELECTOR_SET_COLLECTION_PRICING_BOUNDS = hex"7141ae10";
 bytes4 constant SELECTOR_SET_TOKEN_PRICING_BOUNDS = hex"22146d70";
 bytes4 constant SELECTOR_ADD_TRUSTED_CHANNEL_FOR_COLLECTION = hex"ab559c14";
 bytes4 constant SELECTOR_REMOVE_TRUSTED_CHANNEL_FOR_COLLECTION = hex"282e89f8";
+bytes4 constant SELECTOR_ADD_BANNED_ACCOUNT_FOR_COLLECTION = hex"e21dde50";
+bytes4 constant SELECTOR_REMOVE_BANNED_ACCOUNT_FOR_COLLECTION = hex"adf14a76";
 
+bytes4 constant SELECTOR_DESTROY_COSIGNER = hex"2aebdefe";
 bytes4 constant SELECTOR_REVOKE_MASTER_NONCE = hex"226d4adb";
 bytes4 constant SELECTOR_REVOKE_SINGLE_NONCE = hex"b6d7dc33";
 bytes4 constant SELECTOR_REVOKE_ORDER_DIGEST = hex"96ae0380";

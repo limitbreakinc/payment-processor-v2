@@ -45,17 +45,37 @@ import "./PaymentProcessorModule.sol";
 */ 
 
 contract ModuleOnChainCancellation is PaymentProcessorModule {
+    
+    /// @dev A pre-cached signed message hash used for gas-efficient signature recovery
+    bytes32 immutable private signedMessageHash;
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) 
-    PaymentProcessorModule(
-        trustedForwarderFactory_, 
-        defaultPushPaymentGasLimit_, 
-        wrappedNativeCoinAddress_, 
-        defaultPaymentMethods) {}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract) {
+        signedMessageHash = ECDSA.toEthSignedMessageHash(bytes(COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN));
+    }
+
+    /**
+     * @notice Allows a cosigner to destroy itself, never to be used again.  This is a fail-safe in case of a failure
+     *         to secure the co-signer private key in a Web2 co-signing service.  In case of suspected cosigner key
+     *         compromise, or when a co-signer key is rotated, the cosigner MUST destroy itself to prevent past listings 
+     *         that were cancelled off-chain from being used by a malicious actor.
+     *
+     * @dev    Throws when the cosigner did not sign an authorization to self-destruct.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The cosigner can never be used to co-sign orders again.
+     * @dev    2. A `DestroyedCosigner` event has been emitted.
+     *
+     * @param  cosigner The address of the cosigner to destroy.
+     * @param  signature The signature of the cosigner authorizing the destruction of itself.
+     */
+    function destroyCosigner(address cosigner, SignatureECDSA calldata signature) external {
+        if(cosigner != ECDSA.recover(signedMessageHash, signature.v, signature.r, signature.s)) {
+            revert PaymentProcessor__NotAuthorizedByCosigner();
+        }
+
+        appStorage().destroyedCosigners[cosigner] = true;
+        emit DestroyedCosigner(cosigner);
+    }
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.

@@ -78,6 +78,7 @@ contract ModuleAcceptItemOfferTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {
@@ -180,6 +181,7 @@ contract ModuleAcceptItemOfferTest is PaymentProcessorModuleTest {
             address(0),
             0,
             address(0),
+            false,
             false);
 
         if (params.cosigned) {

@@ -6,6 +6,7 @@ import "forge-std/console.sol";
 import "src/interfaces/IPaymentProcessorEvents.sol";
 import "src/Constants.sol";
 import "src/PaymentProcessor.sol";
+import "src/PaymentProcessorConfiguration.sol";
 import "src/PaymentProcessorEncoder.sol";
 import "src/modules/ModulePaymentSettings.sol";
 import "src/modules/ModuleOnChainCancellation.sol";
@@ -75,6 +76,7 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
     address payable internal cosigner = payable(vm.addr(cosignerPk));
     address payable internal benchmarkFeeRecipient = payable(vm.addr(feePk));
 
+    PaymentProcessorConfiguration public _paymentProcessorConfiguration;
     PaymentProcessor public _paymentProcessor;
     PaymentProcessorEncoder public _paymentProcessorEncoder;
 
@@ -129,6 +131,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         erc1155s = [test1155];
 
+        _paymentProcessorConfiguration = new PaymentProcessorConfiguration(address(this));
+
         forwarderImplementation = address(new TrustedForwarder());
         TrustedForwarder(forwarderImplementation).__TrustedForwarder_init(address(this), address(this));
 
@@ -136,45 +140,30 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         _paymentProcessorEncoder = new PaymentProcessorEncoder();
 
-        DefaultPaymentMethods memory defaultPaymentMethods = DefaultPaymentMethods({
-            defaultPaymentMethod1: address(weth),
-            defaultPaymentMethod2: address(usdc),
-            defaultPaymentMethod3: address(usdt),
-            defaultPaymentMethod4: address(dai)
-        });
-
-        modulePaymentSettings = new ModulePaymentSettings(
+        _paymentProcessorConfiguration.setPaymentProcessorModuleConfiguration(
+            2300,
             address(factory),
-            2300, 
             address(nativeWrapper),
-            defaultPaymentMethods);
+            address(weth),
+            address(usdc),
+            address(usdt),
+            address(dai)
+        );
 
-        moduleOnChainCancellation = new ModuleOnChainCancellation(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
+        modulePaymentSettings = new ModulePaymentSettings(address(_paymentProcessorConfiguration));
+        moduleOnChainCancellation = new ModuleOnChainCancellation(address(_paymentProcessorConfiguration));
+        moduleTrades = new ModuleTrades(address(_paymentProcessorConfiguration));
+        moduleTradesAdvanced = new ModuleTradesAdvanced(address(_paymentProcessorConfiguration));
 
-        moduleTrades = new ModuleTrades(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
+        _paymentProcessorConfiguration.setPaymentProcessorConfiguration(
+            address(this),
+            address(modulePaymentSettings),
+            address(moduleOnChainCancellation),
+            address(moduleTrades),
+            address(moduleTradesAdvanced)
+        );
 
-        moduleTradesAdvanced = new ModuleTradesAdvanced(
-            address(factory),
-            2300, 
-            address(nativeWrapper),
-            defaultPaymentMethods);
-
-        _paymentProcessor = 
-            new PaymentProcessor(
-                address(this),
-                address(modulePaymentSettings),
-                address(moduleOnChainCancellation),
-                address(moduleTrades),
-                address(moduleTradesAdvanced)
-            );
+        _paymentProcessor = new PaymentProcessor(address(_paymentProcessorConfiguration));
 
         vm.label(alice, "alice");
         vm.label(bob, "bob");
@@ -568,6 +557,59 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         return signedOffer;
     }
 
+    function _reassignOwnershipOfPaymentMethodWhitelist(address caller, uint32 id, address newOwner, bytes4 expectedRevertSelector) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeReassignOwnershipOfPaymentMethodWhitelistCalldata(address(_paymentProcessor), id, newOwner);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, true, false, false);
+            emit ReassignedPaymentMethodWhitelistOwnership(id, newOwner);
+        }
+
+        vm.startPrank(caller, caller);
+        _paymentProcessor.reassignOwnershipOfPaymentMethodWhitelist(data);
+        vm.stopPrank();
+    }
+
+    function _renounceOwnershipOfPaymentMethodWhitelist(address caller, uint32 id, bytes4 expectedRevertSelector) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeRenounceOwnershipOfPaymentMethodWhitelistCalldata(address(_paymentProcessor), id);
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, true, false, false);
+            emit ReassignedPaymentMethodWhitelistOwnership(id, address(0));
+        }
+
+        vm.startPrank(caller, caller);
+        _paymentProcessor.renounceOwnershipOfPaymentMethodWhitelist(data);
+        vm.stopPrank();
+    }
+
+    function _destroyCosigner(address caller, uint160 cosignerKey, bytes4 expectedRevertSelector) internal {
+        vm.assume(cosignerKey > 0 && cosignerKey < type(uint160).max);
+        address cosignerAddr = vm.addr(cosignerKey);
+        (uint8 v, bytes32 r, bytes32 s) =
+            vm.sign(cosignerKey, ECDSA.toEthSignedMessageHash(bytes(COSIGNER_SELF_DESTRUCT_MESSAGE_TO_SIGN)));
+
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeDestroyCosignerCalldata(
+                address(_paymentProcessor), 
+                cosignerAddr,
+                SignatureECDSA({v: v, r: r, s: s}));
+
+        if(expectedRevertSelector != bytes4(0x00000000)) {
+            vm.expectRevert(expectedRevertSelector);
+        } else {
+            vm.expectEmit(true, false, false, false);
+            emit DestroyedCosigner(cosignerAddr);
+        }
+
+        vm.prank(caller, caller);
+        _paymentProcessor.destroyCosigner(fnCalldata);
+    }
+
     function _revokeMasterNonce(address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
         if(expectedRevertSelector != bytes4(0x00000000)) {
             vm.expectRevert(expectedRevertSelector);
@@ -578,6 +620,15 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         vm.prank(caller, caller);
         _paymentProcessor.revokeMasterNonce();
+    }
+
+    function _revokeMasterNonce(address channel, address caller, uint256 previousMasterNonce, bytes4 expectedRevertSelector) internal {
+        if(expectedRevertSelector == bytes4(0x00000000)) {
+            vm.expectEmit(true, false, false, true);
+            emit MasterNonceInvalidated(caller, previousMasterNonce);
+        }
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeMasterNonce.selector, "", expectedRevertSelector);
     }
 
     function _revokeSingleNonce(address caller, uint256 nonce, bytes4 expectedRevertSelector) internal {
@@ -597,6 +648,20 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         _paymentProcessor.revokeSingleNonce(fnCalldata);
     }
 
+    function _revokeSingleNonce(address channel, address caller, uint256 nonce, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeRevokeSingleNonceCalldata(
+                address(_paymentProcessor), 
+                nonce);
+
+        if(expectedRevertSelector == bytes4(0x00000000)) {
+            vm.expectEmit(true, true, false, true);
+            emit NonceInvalidated(nonce, caller, true);
+        }
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeSingleNonce.selector, fnCalldata, expectedRevertSelector);
+    }
+
     function _revokeOrderDigest(address caller, bytes32 digest, bytes4 expectedRevertSelector) internal {
         bytes memory fnCalldata = 
             _paymentProcessorEncoder.encodeRevokeOrderDigestCalldata(
@@ -609,6 +674,15 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
 
         vm.prank(caller, caller);
         _paymentProcessor.revokeOrderDigest(fnCalldata);
+    }
+
+    function _revokeOrderDigest(address channel, address caller, bytes32 digest, bytes4 expectedRevertSelector) internal {
+        bytes memory fnCalldata = 
+            _paymentProcessorEncoder.encodeRevokeOrderDigestCalldata(
+                address(_paymentProcessor), 
+                digest);
+
+        _forwardCall(channel, caller, address(_paymentProcessor), 0, _paymentProcessor.revokeOrderDigest.selector, fnCalldata, expectedRevertSelector);
     }
 
     // TODO: Start
@@ -3931,6 +4005,59 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         }
     }
 
+    function _banAccount(address token, address account) internal {
+        bytes memory data = _paymentProcessorEncoder.encodeAddBannedAccountForCollectionCalldata(
+                address(_paymentProcessor), 
+                token, 
+                account);
+
+        _paymentProcessor.addBannedAccountForCollection(data);
+    }
+
+    function _getSetCoollectionPaymentSettingsCalldata(
+        address tokenAddress,
+        address exclusiveBountyReceiver,
+        address royaltyBackfillReceiver,
+        CollectionPaymentSettings memory collectionPaymentSettings
+    ) internal view returns (bytes memory data) {
+        data = _paymentProcessorEncoder.encodeSetCollectionPaymentSettingsCalldata(
+            address(_paymentProcessor), 
+            tokenAddress, 
+            collectionPaymentSettings.paymentSettings, 
+            collectionPaymentSettings.paymentMethodWhitelistId, 
+            collectionPaymentSettings.constrainedPricingPaymentMethod, 
+            collectionPaymentSettings.royaltyBackfillNumerator, 
+            royaltyBackfillReceiver, 
+            collectionPaymentSettings.royaltyBountyNumerator, 
+            exclusiveBountyReceiver,
+            collectionPaymentSettings.blockTradesFromUntrustedChannels,
+            collectionPaymentSettings.blockBannedAccounts);
+    }
+
+    function _pauseCollectionTrading(address tokenAddress) internal {
+        CollectionPaymentSettings memory collectionPaymentSettings = 
+            _paymentProcessor.collectionPaymentSettings(tokenAddress);
+
+        collectionPaymentSettings.paymentSettings = PaymentSettings.Paused;
+
+        (, address exclusiveBountyReceiver) = 
+            _paymentProcessor.collectionBountySettings(tokenAddress);
+
+        (, address royaltyBackfillReceiver) = 
+            _paymentProcessor.collectionRoyaltyBackfillSettings(tokenAddress);
+        
+        vm.startPrank(tokenAddress);
+        _paymentProcessor.setCollectionPaymentSettings(
+            _getSetCoollectionPaymentSettingsCalldata(
+                tokenAddress,
+                exclusiveBountyReceiver,
+                royaltyBackfillReceiver,
+                collectionPaymentSettings
+            )
+        );
+        vm.stopPrank();
+    }
+
     function _setPaymentSettings(
         uint8 paymentSettings,
         uint256 itemPrice,
@@ -3940,7 +4067,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts
     ) internal {
         paymentSettings = paymentSettings % 4;
         PaymentSettings paymentSettingsEnum = PaymentSettings(paymentSettings);
@@ -3956,7 +4084,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.AllowAnyPaymentMethod) {
@@ -3970,7 +4099,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.CustomPaymentMethodWhitelist) {
@@ -3984,7 +4114,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             _paymentProcessor.setCollectionPaymentSettings(data);
         } else if (paymentSettingsEnum == PaymentSettings.PricingConstraints) {
@@ -3998,7 +4129,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
                 royaltyBackfillReceiver, 
                 royaltyBountyNumerator, 
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
 
             bytes memory data2 = _paymentProcessorEncoder.encodeSetCollectionPricingBoundsCalldata(
                 address(_paymentProcessor), 

@@ -47,16 +47,7 @@ import "./PaymentProcessorModule.sol";
 contract ModulePaymentSettings is PaymentProcessorModule {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    constructor(
-        address trustedForwarderFactory_,
-        uint32 defaultPushPaymentGasLimit_,
-        address wrappedNativeCoinAddress_,
-        DefaultPaymentMethods memory defaultPaymentMethods) 
-    PaymentProcessorModule(
-        trustedForwarderFactory_, 
-        defaultPushPaymentGasLimit_, 
-        wrappedNativeCoinAddress_, 
-        defaultPaymentMethods) {}
+    constructor(address configurationContract) PaymentProcessorModule(configurationContract){}
 
     /**
      * @notice Returns an array of the immutable default payment methods specified at deploy time.  
@@ -90,6 +81,42 @@ contract ModulePaymentSettings is PaymentProcessorModule {
     }
 
     /**
+     * @notice Transfer ownership of a payment method whitelist list to a new owner.
+     *
+     * @dev Throws when the new owner is the zero address.
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The payment method whitelist list ownership is transferred to the new owner.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param id       The id of the payment method whitelist.
+     * @param newOwner The address of the new owner.
+     */
+    function reassignOwnershipOfPaymentMethodWhitelist(uint32 id, address newOwner) external {
+        if(newOwner == address(0)) {
+            revert PaymentProcessor__PaymentMethodWhitelistOwnershipCannotBeTransferredToZeroAddress();
+        }
+
+        _reassignOwnershipOfPaymentMethodWhitelist(id, newOwner);
+    }
+
+    /**
+     * @notice Renounce the ownership of a payment method whitelist, rendering the list immutable.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The ownership of the specified payment method whitelist is renounced.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param id The id of the payment method whitelist.
+     */
+    function renounceOwnershipOfPaymentMethodWhitelist(uint32 id) external {
+        _reassignOwnershipOfPaymentMethodWhitelist(id, address(0));
+    }
+
+    /**
      * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
      *
      * @dev    Throws when caller is not the owner of the specified payment method whitelist.
@@ -105,15 +132,11 @@ contract ModulePaymentSettings is PaymentProcessorModule {
     function whitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
-            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
-
-        if (ptrPaymentMethodWhitelist[paymentMethod]) {
+        if (appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].add(paymentMethod)) {
+            emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
+        } else {
             revert PaymentProcessor__PaymentMethodIsAlreadyApproved();
         }
-
-        ptrPaymentMethodWhitelist[paymentMethod] = true;
-        emit PaymentMethodAddedToWhitelist(paymentMethodWhitelistId, paymentMethod);
     }
 
     /**
@@ -127,21 +150,18 @@ contract ModulePaymentSettings is PaymentProcessorModule {
      * @dev    1. `paymentMethod` has been removed from the `paymentMethodWhitelist` mapping.
      * @dev    2. A `PaymentMethodRemovedFromWhitelist` event has been emitted.
      *
-     * @param  paymentMethodWhitelistId The id of the payment method whitelist to update.
-     * @param  paymentMethod                     The address of the payment method to unwhitelist.
+     * @param  paymentMethodWhitelistId  The id of the payment method whitelist to update.
+     * @param  paymentMethod             The address of the payment method to unwhitelist.
      */
     function unwhitelistPaymentMethod(uint32 paymentMethodWhitelistId, address paymentMethod) external {
         _requireCallerOwnsPaymentMethodWhitelist(paymentMethodWhitelistId);
 
-        mapping (address => bool) storage ptrPaymentMethodWhitelist = 
-            appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId];
-
-        if (!ptrPaymentMethodWhitelist[paymentMethod]) {
+        if (appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].remove(paymentMethod)) {
+            emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
+        } else {
             revert PaymentProcessor__CoinIsNotApproved();
         }
-
-        delete ptrPaymentMethodWhitelist[paymentMethod];
-        emit PaymentMethodRemovedFromWhitelist(paymentMethodWhitelistId, paymentMethod);
+        
     }
 
     /**
@@ -162,16 +182,18 @@ contract ModulePaymentSettings is PaymentProcessorModule {
      * @dev    5. The `royaltyBackfillReceiver` for the collection has been set.
      * @dev    6. The `royaltyBountyNumerator` for the collection has been set.
      * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
+     * @dev    8. The `blockTradesFromUntrustedChannels` for the collection has been set.
      * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
      *
-     * @param  tokenAddress                    The smart contract address of the NFT collection.
-     * @param  paymentSettings                 The payment settings for the collection.
-     * @param  paymentMethodWhitelistId        The id of the payment method whitelist to use for the collection.
-     * @param  constrainedPricingPaymentMethod The payment method to use for min/max pricing.
-     * @param  royaltyBackfillNumerator        The royalty backfill numerator for the collection.
-     * @param  royaltyBackfillReceiver         The royalty backfill receiver for the collection.
-     * @param  royaltyBountyNumerator          The royalty bounty numerator for the collection.
-     * @param  exclusiveBountyReceiver         The exclusive bounty receiver for the collection.
+     * @param  tokenAddress                     The smart contract address of the NFT collection.
+     * @param  paymentSettings                  The payment settings for the collection.
+     * @param  paymentMethodWhitelistId         The id of the payment method whitelist to use for the collection.
+     * @param  constrainedPricingPaymentMethod  The payment method to use for min/max pricing.
+     * @param  royaltyBackfillNumerator         The royalty backfill numerator for the collection.
+     * @param  royaltyBackfillReceiver          The royalty backfill receiver for the collection.
+     * @param  royaltyBountyNumerator           The royalty bounty numerator for the collection.
+     * @param  exclusiveBountyReceiver          The exclusive bounty receiver for the collection.
+     * @param  blockTradesFromUntrustedChannels The block trades from untrusted channels flag for the collection.
      */
     function setCollectionPaymentSettings(
         address tokenAddress, 
@@ -182,7 +204,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels) external {
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts) external {
             _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
             if (royaltyBackfillNumerator > FEE_DENOMINATOR) {
@@ -219,7 +242,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 royaltyBackfillNumerator: royaltyBackfillNumerator,
                 royaltyBountyNumerator: royaltyBountyNumerator,
                 isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
-                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels});
+                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels,
+                blockBannedAccounts: blockBannedAccounts});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -230,7 +254,8 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 royaltyBackfillReceiver,
                 royaltyBountyNumerator,
                 exclusiveBountyReceiver,
-                blockTradesFromUntrustedChannels);
+                blockTradesFromUntrustedChannels,
+                blockBannedAccounts);
     }
 
     /**
@@ -365,6 +390,48 @@ contract ModulePaymentSettings is PaymentProcessorModule {
 
         if (appStorage().collectionTrustedChannels[tokenAddress].remove(channel)) {
             emit TrustedChannelRemovedForCollection(tokenAddress, channel);
+        }
+    }
+
+    /**
+     * @notice Allows creator to ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` has been banned from trading on a collection.
+     * @dev    2. A `BannedAccountAddedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to add to the banned list.
+     */
+    function addBannedAccountForCollection(address tokenAddress, address account) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionBannedAccounts[tokenAddress].add(account)) {
+            emit BannedAccountAddedForCollection(tokenAddress, account);
+        }
+    }
+
+    /**
+     * @notice Allows creator to un-ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` ban has been lifted for trades on a collection.
+     * @dev    2. A `BannedAccountRemovedForCollection` event has been emitted.
+     *
+     * @param  tokenAddress The collection.
+     * @param  account      The account to remove from the banned list.
+     */
+    function removeBannedAccountForCollection(address tokenAddress, address account) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (appStorage().collectionBannedAccounts[tokenAddress].remove(account)) {
+            emit BannedAccountRemovedForCollection(tokenAddress, account);
         }
     }
 }

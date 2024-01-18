@@ -3,11 +3,10 @@ pragma solidity 0.8.19;
 
 import "./Constants.sol";
 import "./Errors.sol";
+import "./interfaces/IPaymentProcessorConfiguration.sol";
 import "./interfaces/IPaymentProcessorEvents.sol";
 import "./interfaces/IModuleDefaultPaymentMethods.sol";
 import "./storage/PaymentProcessorStorageAccess.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 
 /*
@@ -51,7 +50,8 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 * @author Limit Break, Inc.
 */ 
 
-contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProcessorEvents {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     /// @dev The Payment Settings module implements of all payment configuration-related functionality.
     address private immutable _modulePaymentSettings;
@@ -65,40 +65,45 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     /// @dev The Trades module implements all advanced trade-related functionality.
     address private immutable _moduleTradesAdvanced;
 
-    constructor(
-        address defaultContractOwner_,
-        address modulePaymentSettings_,
-        address moduleOnChainCancellation_,
-        address moduleTrades_,
-        address moduleTradesAdvanced_) 
-        EIP712("PaymentProcessor", "2") {
+    constructor(address configurationContract) EIP712("PaymentProcessor", "2") {
+        (
+            address defaultContractOwner_,
+            PaymentProcessorModules memory paymentProcessorModules
+        ) = IPaymentProcessorConfiguration(configurationContract).getPaymentProcessorDeploymentParams();
+        
         
         if (defaultContractOwner_ == address(0) ||
-            modulePaymentSettings_ == address(0) ||
-            moduleOnChainCancellation_ == address(0) ||
-            moduleTrades_ == address(0) ||
-            moduleTradesAdvanced_ == address(0)) {
+            paymentProcessorModules.modulePaymentSettings == address(0) ||
+            paymentProcessorModules.moduleOnChainCancellation == address(0) ||
+            paymentProcessorModules.moduleTrades == address(0) ||
+            paymentProcessorModules.moduleTradesAdvanced == address(0)) {
             revert PaymentProcessor__InvalidConstructorArguments();
         }
 
-        _modulePaymentSettings = modulePaymentSettings_;
-        _moduleOnChainCancellation = moduleOnChainCancellation_;
-        _moduleTrades = moduleTrades_;
-        _moduleTradesAdvanced = moduleTradesAdvanced_;
+        _modulePaymentSettings = paymentProcessorModules.modulePaymentSettings;
+        _moduleOnChainCancellation = paymentProcessorModules.moduleOnChainCancellation;
+        _moduleTrades = paymentProcessorModules.moduleTrades;
+        _moduleTradesAdvanced = paymentProcessorModules.moduleTradesAdvanced;
 
         unchecked {
             uint32 paymentMethodWhitelistId = appStorage().lastPaymentMethodWhitelistId++;
             appStorage().paymentMethodWhitelistOwners[paymentMethodWhitelistId] = defaultContractOwner_;
             emit CreatedPaymentMethodWhitelist(paymentMethodWhitelistId, defaultContractOwner_, "Default Payment Methods");
         }
-
-        _transferOwnership(defaultContractOwner_);
     }
 
     /**************************************************************/
     /*                         MODIFIERS                          */
     /**************************************************************/
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` as the calldata
+     * @dev This delegatecall is for functions that do not have parameters. The only calldata added is
+     * @dev the extra calldata from a trusted forwarder, when present.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     */
     modifier delegateCallNoData(address module, bytes4 selector) {
         assembly {
             // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
@@ -107,6 +112,8 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             // 4 bytes for the selector
             let ptr := mload(0x40)
             mstore(ptr, selector)
+            mstore(0x40, add(ptr, calldatasize()))
+            calldatacopy(add(ptr, 0x04), 0x04, sub(calldatasize(), 0x04))
             let result := delegatecall(gas(), module, ptr, add(sub(calldatasize(), 4), 4), 0, 0)
             if iszero(result) {
                 // Call has failed, retrieve the error message and revert
@@ -118,6 +125,15 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         _;
     }
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` and `data` as the 
+     * @dev calldata. This delegatecall is for functions that have parameters but **DO NOT** take domain
+     * @dev separator as a parameter. Additional calldata from a trusted forwarder is appended to the end, when present.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     * @param data The calldata to send to the `module`.
+     */
     modifier delegateCall(address module, bytes4 selector, bytes calldata data) {
         assembly {
             // This protocol is designed to work both via direct calls and calls from a trusted forwarder that
@@ -144,6 +160,17 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         _;
     }
 
+    /**
+     * @dev Function modifier that generates a delegatecall to `module` with `selector` and `data` as the 
+     * @dev calldata. This delegatecall is for functions that have parameters **AND** take domain
+     * @dev separator as the first parameter. Any domain separator that has been included in `data`
+     * @dev will be replaced with the Payment Processor domain separator.  Additional calldata from a 
+     * @dev trusted forwarder is appended to the end, when present.
+     * 
+     * @param module The contract address being called in the delegatecall.
+     * @param selector The 4 byte function selector for the function to call in `module`.
+     * @param data The calldata to send to the `module`.
+     */
     modifier delegateCallReplaceDomainSeparator(address module, bytes4 selector, bytes calldata data) {
         bytes32 domainSeparator = _domainSeparatorV4();
         assembly {
@@ -173,40 +200,6 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     }
 
     /**************************************************************/
-    /*                  CONTRACT OWNER FUNCTIONS                  */
-    /**************************************************************/
-
-    /**
-     * @notice Allows PaymentProcessor contract owner to pause trading on this contract.  This is only to be used
-     *         in case a future vulnerability emerges to allow a migration to an updated contract.
-     *
-     * @dev    Throws when caller is not the contract owner.
-     * @dev    Throws when contract is already paused.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The contract has been placed in the `paused` state.
-     * @dev    2. Trading is frozen.
-     */
-    function pause() external onlyOwner {
-        _pause();
-    }
-
-    /**
-     * @notice Allows PaymentProcessor contract owner to resume trading on this contract.  This is only to be used
-     *         in case a pause was not necessary and trading can safely resume.
-     *
-     * @dev    Throws when caller is not the contract owner.
-     * @dev    Throws when contract is not currently paused.
-     *
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The contract has been placed in the `unpaused` state.
-     * @dev    2. Trading is resumed.
-     */
-    function unpause() external onlyOwner {
-        _unpause();
-    }
-
-    /**************************************************************/
     /*                    READ ONLY ACCESSORS                     */
     /**************************************************************/
 
@@ -229,6 +222,16 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         return appStorage().masterNonces[account];
     }
 
+    /**
+     * @notice Returns true if the nonce for the given account has been used or cancelled. In comparison to a master nonce for
+     *         a user, this nonce value is specific to a single order and may only be used or cancelled a single time.
+     *
+     * @dev    When prompting makers to sign a listing or offer, marketplaces must generate a unique nonce value that
+     *         has not been previously used for filled, unfilled or cancelled orders. User nonces are unique to each
+     *         user but common to that user across all marketplaces that utilize Payment Processor and do not reset
+     *         when the master nonce is incremented. Nonces are stored in a BitMap for gas efficiency so it is recommended
+     *         to utilize sequential numbers that do not overlap with other marketplaces.
+     */
     function isNonceUsed(address account, uint256 nonce) public view returns (bool isUsed) {
         // The following code is equivalent to, but saves gas:
         //
@@ -264,6 +267,8 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @notice royaltyBountyNumerator: The royalty bounty percentage for a given collection.  When set, this percentage
      *         is applied to the creator's royalty amount and paid to the maker marketplace as a bounty.
      * @notice isRoyaltyBountyExclusive: When true, only the designated marketplace is eligible for royalty bounty.
+     * @notice blockTradesFromUntrustedChannels: When true, only transactions from channels that the collection 
+     *         authorizes will be allowed to execute.
      */
     function collectionPaymentSettings(address tokenAddress) external view returns (CollectionPaymentSettings memory) {
         return appStorage().collectionPaymentSettings[tokenAddress];
@@ -323,11 +328,14 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @notice Returns true if the specified payment method is whitelisted for the specified payment method whitelist.
      */
     function isPaymentMethodWhitelisted(uint32 paymentMethodWhitelistId, address paymentMethod) external view returns (bool) {
-        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].contains(paymentMethod);
     }
 
     /**
-     * @notice Returns the floor price for a given collection and token id, when applicable.
+     * @notice Returns the pricing bounds floor price for a given collection and token id, when applicable.
+     *
+     * @dev    The pricing bounds floor price is only enforced when the collection payment settings are set to
+     *         the PricingContraints type.
      */
     function getFloorPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
         PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
@@ -344,7 +352,10 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     }
 
     /**
-     * @notice Returns the ceiling price for a given collection and token id, when applicable.
+     * @notice Returns the pricing bounds ceiling price for a given collection and token id, when applicable.
+     *
+     * @dev    The pricing bounds ceiling price is only enforced when the collection payment settings are set to
+     *         the PricingConstraints type.
      */
     function getCeilingPrice(address tokenAddress, uint256 tokenId) external view returns (uint256) {
         PricingBounds memory tokenLevelPricingBounds = appStorage().tokenPricingBounds[tokenAddress][tokenId];
@@ -358,6 +369,34 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
         }
 
         return type(uint256).max;
+    }
+
+    /**
+     * @notice Returns the last created payment method whitelist id.
+     */
+    function lastPaymentMethodWhitelistId() external view returns (uint32) {
+        return appStorage().lastPaymentMethodWhitelistId;
+    }
+
+    /**
+     * @notice Returns the set of payment methods for a given payment method whitelist.
+     */
+    function getWhitelistedPaymentMethods(uint32 paymentMethodWhitelistId) external view returns (address[] memory) {
+        return appStorage().collectionPaymentMethodWhitelists[paymentMethodWhitelistId].values();
+    }
+
+    /**
+     * @notice Returns the set of trusted channels for a given collection.
+     */
+    function getTrustedChannels(address tokenAddress) external view returns (address[] memory) {
+        return appStorage().collectionTrustedChannels[tokenAddress].values();
+    }
+
+    /**
+     * @notice Returns the set of banned accounts for a given collection.
+     */
+    function getBannedAccounts(address tokenAddress) external view returns (address[] memory) {
+        return appStorage().collectionBannedAccounts[tokenAddress].values();
     }
 
     /**************************************************************/
@@ -382,7 +421,7 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
             }
         }
 
-        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID][paymentMethod];
+        return appStorage().collectionPaymentMethodWhitelists[DEFAULT_PAYMENT_METHOD_WHITELIST_ID].contains(paymentMethod);
     }
 
     /**
@@ -437,6 +476,37 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     }
 
     /**
+     * @notice Transfer ownership of a payment method whitelist list to a new owner.
+     *
+     * @dev Throws when the new owner is the zero address.
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The payment method whitelist list ownership is transferred to the new owner.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `reassignOwnershipOfPaymentMethodWhitelist(uint32 id, address newOwner)`
+     */
+    function reassignOwnershipOfPaymentMethodWhitelist(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REASSIGN_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST, data) {}
+
+    /**
+     * @notice Renounce the ownership of a payment method whitelist, rendering the list immutable.
+     *
+     * @dev Throws when the caller does not own the specified list.
+     *
+     * @dev <h4>Postconditions:</h4>
+     *      1. The ownership of the specified payment method whitelist is renounced.
+     *      2. A `ReassignedPaymentMethodWhitelistOwnership` event is emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `renounceOwnershipOfPaymentMethodWhitelist(uint32 id)`
+     */
+    function renounceOwnershipOfPaymentMethodWhitelist(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_RENOUNCE_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST, data) {}
+
+    /**
      * @notice Allows custom payment method whitelist owners to approve a new coin for use as a payment currency.
      *
      * @dev    Throws when caller is not the owner of the specified payment method whitelist.
@@ -486,7 +556,8 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    5. The `royaltyBackfillReceiver` for the collection has been set.
      * @dev    6. The `royaltyBountyNumerator` for the collection has been set.
      * @dev    7. The `exclusiveBountyReceiver` for the collection has been set.
-     * @dev    8. An `UpdatedCollectionPaymentSettings` event has been emitted.
+     * @dev    8. The `blockTradesFromUntrustedChannels` for the collection has been set.
+     * @dev    9. An `UpdatedCollectionPaymentSettings` event has been emitted.
      *
      * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
      *              `setCollectionPaymentSettings(
@@ -497,7 +568,8 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
                         uint16 royaltyBackfillNumerator,
                         address royaltyBackfillReceiver,
                         uint16 royaltyBountyNumerator,
-                        address exclusiveBountyReceiver)`
+                        address exclusiveBountyReceiver,
+                        bool blockTradesFromUntrustedChannels)`
      */
     function setCollectionPaymentSettings(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS, data) {}
@@ -573,16 +645,70 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
      * @dev    2. A `TrustedChannelRemovedForCollection` event has been emitted.
      *
      * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
-     *              `addTrustedChannelForCollection(
+     *              `removeTrustedChannelForCollection(
      *                  address tokenAddress, 
      *                  address channel)`
      */
     function removeTrustedChannelForCollection(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_TRUSTED_CHANNEL_FOR_COLLECTION, data) {}
 
+    /**
+     * @notice Allows creator to ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` has been banned from trading on a collection.
+     * @dev    2. A `BannedAccountAddedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `addBannedAccountForCollection(
+     *                  address tokenAddress, 
+     *                  address account)`
+     */
+    function addBannedAccountForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_ADD_BANNED_ACCOUNT_FOR_COLLECTION, data) {}
+
+    /**
+     * @notice Allows creator to un-ban accounts from a collection.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. `account` ban has been lifted for trades on a collection.
+     * @dev    2. A `BannedAccountRemovedForCollection` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `removeBannedAccountForCollection(
+     *                  address tokenAddress, 
+     *                  address account)`
+     */
+    function removeBannedAccountForCollection(bytes calldata data) external 
+    delegateCall(_modulePaymentSettings, SELECTOR_REMOVE_BANNED_ACCOUNT_FOR_COLLECTION, data) {}
+
     /**************************************************************/
     /*              ON-CHAIN CANCELLATION OPERATIONS              */
     /**************************************************************/
+
+    /**
+     * @notice Allows a cosigner to destroy itself, never to be used again.  This is a fail-safe in case of a failure
+     *         to secure the co-signer private key in a Web2 co-signing service.  In case of suspected cosigner key
+     *         compromise, or when a co-signer key is rotated, the cosigner MUST destroy itself to prevent past listings 
+     *         that were cancelled off-chain from being used by a malicious actor.
+     *
+     * @dev    Throws when the cosigner did not sign an authorization to self-destruct.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The cosigner can never be used to co-sign orders again.
+     * @dev    2. A `DestroyedCosigner` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `destroyCosigner(address cosigner, SignatureECDSA signature)`
+     */
+    function destroyCosigner(bytes calldata data) external
+    delegateCall(_moduleOnChainCancellation, SELECTOR_DESTROY_COSIGNER, data) {}
 
     /**
      * @notice Allows a maker to revoke/cancel all prior signatures of their listings and offers.
@@ -613,6 +739,20 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     function revokeSingleNonce(bytes calldata data) external 
     delegateCall(_moduleOnChainCancellation, SELECTOR_REVOKE_SINGLE_NONCE, data) {}
 
+    /**
+     * @notice Allows a maker to revoke/cancel a partially fillable order by specifying the order digest hash.
+     *
+     * @dev    Throws when the maker has already revoked the order digest.
+     * @dev    Throws when the order digest was already used by the maker and has been fully filled.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The specified `orderDigest` for the `_msgSender()` has been revoked and can
+     *            no longer be used to execute a sale or purchase.
+     * @dev    2. An `OrderDigestInvalidated` event has been emitted.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `revokeOrderDigest(bytes32 orderDigest)`
+     */
     function revokeOrderDigest(bytes calldata data) external 
     delegateCall(_moduleOnChainCancellation, SELECTOR_REVOKE_ORDER_DIGEST, data) {}
 
@@ -620,23 +760,205 @@ contract PaymentProcessor is EIP712, Ownable, Pausable, PaymentProcessorStorageA
     /*                      TAKER OPERATIONS                      */
     /**************************************************************/
 
+    /**
+     * @notice Executes a buy listing transaction for a single order item.
+     *
+     * @dev    Throws when the maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when the order has expired.
+     * @dev    Throws when the combined marketplace and royalty fee exceeds 100%.
+     * @dev    Throws when the taker fee on top exceeds 100% of the item sale price.
+     * @dev    Throws when the maker's master nonce does not match the order details.
+     * @dev    Throws when the order does not comply with the collection payment settings.
+     * @dev    Throws when the maker's signature is invalid.
+     * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
+     * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
+     * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token no longer owned by maker.
+     * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when the order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
+     * @dev    Throws when the order is an ERC1155_PARTIAL_FILL order and the remaining fillable quantity is less than the requested minimum fill amount.
+     * @dev    Any unused native token payment will be returned to the taker as wrapped native token.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Maker's nonce is marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Maker's partially fillable order state is updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. An `BuyListingERC721` event has been emitted for a ERC721 purchase.
+     * @dev    6. An `BuyListingERC1155` event has been emitted for a ERC1155 purchase.
+     * @dev    7. A `NonceInvalidated` event has been emitted for a ERC721_FILL_OR_KILL or ERC1155_FILL_OR_KILL order.
+     * @dev    8. A `OrderDigestInvalidated` event has been emitted for a ERC1155_PARTIAL_FILL order, if fully filled.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `function buyListing(
+     *                  bytes32 domainSeparator, 
+     *                  Order memory saleDetails, 
+     *                  SignatureECDSA memory sellerSignature,
+     *                  Cosignature memory cosignature,
+     *                  FeeOnTop memory feeOnTop)`
+     */
     function buyListing(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BUY_LISTING, data) {}
 
+    /**
+     * @notice Executes an offer accept transaction for a single order item.
+     *
+     * @dev    Throws when the maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when the order has expired.
+     * @dev    Throws when the combined marketplace and royalty fee exceeds 100%.
+     * @dev    Throws when the taker fee on top exceeds 100% of the item sale price.
+     * @dev    Throws when the maker's master nonce does not match the order details.
+     * @dev    Throws when the order does not comply with the collection payment settings.
+     * @dev    Throws when the maker's signature is invalid.
+     * @dev    Throws when the order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when the maker or taker is a banned account for the collection.
+     * @dev    Throws when the maker does not have sufficient funds to complete the purchase.
+     * @dev    Throws when the token transfer fails for any reason such as lack of approvals or token not owned by the taker.
+     * @dev    Throws when the token the offer is being accepted for does not match the conditions set by the maker.
+     * @dev    Throws when the maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when the order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
+     * @dev    Throws when the order is an ERC1155_PARTIAL_FILL order and the remaining fillable quantity is less than the requested minimum fill amount.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Maker's nonce is marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Maker's partially fillable order state is updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. An `AcceptOfferERC721` event has been emitted for a ERC721 sale.
+     * @dev    6. An `AcceptOfferERC1155` event has been emitted for a ERC1155 sale.
+     * @dev    7. A `NonceInvalidated` event has been emitted for a ERC721_FILL_OR_KILL or ERC1155_FILL_OR_KILL order.
+     * @dev    8. A `OrderDigestInvalidated` event has been emitted for a ERC1155_PARTIAL_FILL order, if fully filled.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `function acceptOffer(
+     *                  bytes32 domainSeparator, 
+     *                  bool isCollectionLevelOffer, 
+     *                  Order memory saleDetails, 
+     *                  SignatureECDSA memory buyerSignature,
+     *                  TokenSetProof memory tokenSetProof,
+     *                  Cosignature memory cosignature,
+     *                  FeeOnTop memory feeOnTop)`
+     */
     function acceptOffer(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_ACCEPT_OFFER, data) {}
 
+    /**
+     * @notice Executes a buy listing transaction for multiple order items.
+     *
+     * @dev    Throws when a maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when any order has expired.
+     * @dev    Throws when any combined marketplace and royalty fee exceeds 100%.
+     * @dev    Throws when any taker fee on top exceeds 100% of the item sale price.
+     * @dev    Throws when a maker's master nonce does not match the order details.
+     * @dev    Throws when an order does not comply with the collection payment settings.
+     * @dev    Throws when a maker's signature is invalid.
+     * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
+     * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
+     * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
+     * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the remaining fillable quantity is less than the requested minimum fill amount.
+     * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
+     * @dev    Any unused native token payment will be returned to the taker as wrapped native token.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Makers nonces are marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Makers partially fillable order states are updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. `BuyListingERC721` events have been emitted for each ERC721 purchase.
+     * @dev    6. `BuyListingERC1155` events have been emitted for each ERC1155 purchase.
+     * @dev    7. A `NonceInvalidated` event has been emitted for each ERC721_FILL_OR_KILL or ERC1155_FILL_OR_KILL order.
+     * @dev    8. A `OrderDigestInvalidated` event has been emitted for each ERC1155_PARTIAL_FILL order, if fully filled.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `function bulkBuyListings(
+     *                  bytes32 domainSeparator, 
+     *                  Order[] calldata saleDetailsArray,
+     *                  SignatureECDSA[] calldata sellerSignatures,
+     *                  Cosignature[] calldata cosignatures,
+     *                  FeeOnTop[] calldata feesOnTop)`
+     */
     function bulkBuyListings(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_BUY_LISTINGS, data) {}
 
+    /**
+     * @notice Executes an accept offer transaction for multiple order items.
+     *
+     * @dev    Throws when a maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when any order has expired.
+     * @dev    Throws when any combined marketplace and royalty fee exceeds 100%.
+     * @dev    Throws when any taker fee on top exceeds 100% of the item sale price.
+     * @dev    Throws when a maker's master nonce does not match the order details.
+     * @dev    Throws when an order does not comply with the collection payment settings.
+     * @dev    Throws when a maker's signature is invalid.
+     * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
+     * @dev    Throws when a maker does not have sufficient funds to complete the purchase.
+     * @dev    Throws when the token an offer is being accepted for does not match the conditions set by the maker.
+     * @dev    Throws when a maker has revoked the order digest on a ERC1155_PARTIAL_FILL order.
+     * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the item price is not evenly divisible by the amount.
+     * @dev    Throws when an order is an ERC1155_PARTIAL_FILL order and the remaining fillable quantity is less than the requested minimum fill amount.
+     * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Makers nonces are marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Makers partially fillable order states are updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. `AcceptOfferERC721` events have been emitted for each ERC721 sale.
+     * @dev    6. `AcceptOfferERC1155` events have been emitted for each ERC1155 sale.
+     * @dev    7. A `NonceInvalidated` event has been emitted for each ERC721_FILL_OR_KILL or ERC1155_FILL_OR_KILL order.
+     * @dev    8. A `OrderDigestInvalidated` event has been emitted for each ERC1155_PARTIAL_FILL order, if fully filled.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `function bulkAcceptOffers(
+     *                  bytes32 domainSeparator, 
+     *                  BulkAcceptOffersParams memory params)`
+     */
     function bulkAcceptOffers(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTrades, SELECTOR_BULK_ACCEPT_OFFERS, data) {}
 
+    /**
+     * @notice Executes a sweep transaction for buying multiple items from the same collection.
+     *
+     * @dev    Throws when the sweep order protocol is ERC1155_PARTIAL_FILL (unsupported).
+     * @dev    Throws when a maker's nonce has already been used or has been cancelled.
+     * @dev    Throws when any order has expired.
+     * @dev    Throws when any combined marketplace and royalty fee exceeds 100%.
+     * @dev    Throws when the taker fee on top exceeds 100% of the combined item sale prices.
+     * @dev    Throws when a maker's master nonce does not match the order details.
+     * @dev    Throws when an order does not comply with the collection payment settings.
+     * @dev    Throws when a maker's signature is invalid.
+     * @dev    Throws when an order is a cosigned order and the cosignature is invalid.
+     * @dev    Throws when the transaction originates from an untrusted channel if untrusted channels are blocked.
+     * @dev    Throws when any maker or taker is a banned account for the collection.
+     * @dev    Throws when the taker does not have or did not send sufficient funds to complete the purchase.
+     * @dev    Will NOT throw when a token fails to transfer but also will not disperse payments for failed items.
+     * @dev    Any unused native token payment will be returned to the taker as wrapped native token.
+     *
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. Payment amounts and fees are sent to their respective recipients.
+     * @dev    2. Purchased tokens are sent to the beneficiary.
+     * @dev    3. Makers nonces are marked as used for ERC721_FILL_OR_KILL and ERC1155_FILL_OR_KILL orders.
+     * @dev    4. Makers partially fillable order states are updated for ERC1155_PARTIAL_FILL orders.
+     * @dev    5. `BuyListingERC721` events have been emitted for each ERC721 purchase.
+     * @dev    6. `BuyListingERC1155` events have been emitted for each ERC1155 purchase.
+     * @dev    7. A `NonceInvalidated` event has been emitted for each ERC721_FILL_OR_KILL or ERC1155_FILL_OR_KILL order.
+     *
+     * @param  data Calldata encoded with PaymentProcessorEncoder.  Matches calldata for:
+     *              `function sweepCollection(
+     *                  bytes32 domainSeparator, 
+     *                  FeeOnTop memory feeOnTop,
+     *                  SweepOrder memory sweepOrder,
+     *                  SweepItem[] calldata items,
+     *                  SignatureECDSA[] calldata signedSellOrders,
+     *                  Cosignature[] memory cosignatures)`
+     */
     function sweepCollection(bytes calldata data) external payable 
-    whenNotPaused 
     delegateCallReplaceDomainSeparator(_moduleTradesAdvanced, SELECTOR_SWEEP_COLLECTION, data) {}
 }

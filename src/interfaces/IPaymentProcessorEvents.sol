@@ -3,8 +3,23 @@ pragma solidity 0.8.19;
 
 import "../DataTypes.sol";
 
+/** 
+* @title Payment Processor
+* @custom:version 2.0.0
+* @author Limit Break, Inc.
+*/ 
 interface IPaymentProcessorEvents {
+    /// @notice Emitted when an account is banned from trading a collection
+    event BannedAccountAddedForCollection(
+        address indexed tokenAddress, 
+        address indexed account);
 
+    /// @notice Emitted when an account ban has been lifted on a collection
+    event BannedAccountRemovedForCollection(
+        address indexed tokenAddress, 
+        address indexed account);
+
+    /// @notice Emitted when an ERC721 listing is purchased.
     event BuyListingERC721(
         address indexed buyer,
         address indexed seller,
@@ -14,6 +29,7 @@ interface IPaymentProcessorEvents {
         uint256 tokenId,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC1155 listing is purchased.
     event BuyListingERC1155(
         address indexed buyer,
         address indexed seller,
@@ -24,6 +40,7 @@ interface IPaymentProcessorEvents {
         uint256 amount,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC721 offer is accepted.
     event AcceptOfferERC721(
         address indexed seller,
         address indexed buyer,
@@ -33,6 +50,7 @@ interface IPaymentProcessorEvents {
         uint256 tokenId,
         uint256 salePrice);
 
+    /// @notice Emitted when an ERC1155 offer is accepted.
     event AcceptOfferERC1155(
         address indexed seller,
         address indexed buyer,
@@ -43,10 +61,14 @@ interface IPaymentProcessorEvents {
         uint256 amount,
         uint256 salePrice);
 
+    /// @notice Emitted when a new payment method whitelist is created.
     event CreatedPaymentMethodWhitelist(
         uint32 indexed paymentMethodWhitelistId, 
         address indexed whitelistOwner,
         string whitelistName);
+
+    /// @notice Emitted when a cosigner destroys itself.
+    event DestroyedCosigner(address indexed cosigner);
 
     /// @notice Emitted when a user revokes all of their existing listings or offers that share the master nonce.
     event MasterNonceInvalidated(address indexed account, uint256 nonce);
@@ -72,6 +94,9 @@ interface IPaymentProcessorEvents {
     event PaymentMethodRemovedFromWhitelist(
         uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
+
+    /// @notice Emitted when a payment method whitelist is reassigned to a new owner
+    event ReassignedPaymentMethodWhitelistOwnership(uint32 indexed id, address indexed newOwner);
 
     /// @notice Emitted when a trusted channel is added for a collection
     event TrustedChannelAddedForCollection(
@@ -99,7 +124,8 @@ interface IPaymentProcessorEvents {
         address royaltyBackfillReceiver,
         uint16 royaltyBountyNumerator,
         address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels);
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts);
 
     /// @notice Emitted whenever pricing bounds change at a token level for price-constrained collections.
     event UpdatedTokenLevelPricingBoundaries(
