@@ -13,7 +13,7 @@ ownerAddress=${ownerAddress:2}
 echo "create2 PaymentProcessorConfiguration START"
 paymentProcessorConfigurationCode="$(forge inspect src/PaymentProcessorConfiguration.sol:PaymentProcessorConfiguration bytecode)"
 paymentProcessorConfigurationInitCode="$paymentProcessorConfigurationCode$ownerAddress"
-cast create2 --starts-with 6ABE00 --case-sensitive --init-code $paymentProcessorConfigurationInitCode
+cast create2 --starts-with 9A1D00 --case-sensitive --init-code $paymentProcessorConfigurationInitCode
 echo "create2 PaymentProcessorConfiguration END"
 echo "-------------------------------------"
 echo ""
