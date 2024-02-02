@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSL-1.1 - Copyright 2024 Limit Break, Inc.
 // OpenZeppelin Contracts (last updated v4.7.0) (token/common/ERC2981.sol)
 
 pragma solidity ^0.8.0;
