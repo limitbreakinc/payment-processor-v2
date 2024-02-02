@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: BSL-1.1 - Copyright 2024 Limit Break, Inc.
+// SPDX-License-Identifier: BSL-1.1
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
