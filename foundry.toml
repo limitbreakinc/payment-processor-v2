@@ -7,6 +7,8 @@ cache_path  = 'forge-cache'
 
 gas_reports = ["PaymentProcessor"]
 
+solc_version = "0.8.19"
+
 optimizer = true
 optimizer_runs = 30000
 
