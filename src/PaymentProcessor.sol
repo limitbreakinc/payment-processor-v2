@@ -289,7 +289,7 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
 
         return (
             collectionPaymentSettings.royaltyBountyNumerator, 
-            collectionPaymentSettings.isRoyaltyBountyExclusive ? 
+            _isFlagSet(collectionPaymentSettings.flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE) ? 
                 appStorage().collectionExclusiveBountyReceivers[tokenAddress] : 
                 address(0));
     }
@@ -961,4 +961,20 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
      */
     function sweepCollection(bytes calldata data) external payable 
     delegateCallReplaceDomainSeparator(_moduleTradesAdvanced, SELECTOR_SWEEP_COLLECTION, data) {}
+
+    /*************************************************************************/
+    /*                             Miscellaneous                             */
+    /*************************************************************************/
+
+    function _isFlagSet(uint8 flagValue, uint8 flag) internal pure returns (bool flagSet) {
+        flagSet = ((flagValue & flag) != 0);
+    }
+
+    function _setFlag(uint8 flagValue, uint8 flag, bool flagSet) internal pure returns (uint8) {
+        if(flagSet) {
+            return (flagValue | flag);
+        } else {
+            return (flagValue & (255 - flag));
+        }
+    }
 }

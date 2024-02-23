@@ -94,6 +94,9 @@ error PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
 /// @dev Thrown when attempting to transfer ownership of a payment method whitelist to the zero address.
 error PaymentProcessor__PaymentMethodWhitelistOwnershipCannotBeTransferredToZeroAddress();
 
+/// @dev Thrown when attempting to override the default push payment gas limit below the default value.
+error PaymentProcessor__PushPaymentGasLimitTooLow();
+
 /// @dev Thrown when distributing payments and fees in native token and the amount remaining is less than the amount to distribute.
 error PaymentProcessor__RanOutOfNativeFunds();
 
@@ -111,6 +114,9 @@ error PaymentProcessor__SalePriceBelowMinimumFloor();
 
 /// @dev Thrown when a maker's nonce has already been used for an executed order or cancelled by the maker.
 error PaymentProcessor__SignatureAlreadyUsedOrRevoked();
+
+/// @dev Thrown when a maker's nonce has not already been used for an executed order but an item with that nonce fails to fill.
+error PaymentProcessor__SignatureNotUsedOrRevoked();
 
 /**
  * @dev Thrown when a collection is set to block untrusted channels and the order execution originates from a channel 

@@ -88,3 +88,12 @@ uint256 constant BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS_PER_ITEM = 1024;
 // | selector | domainSeparator | feeOnTop | sweepOrder | length + offset | items        | length + offset | signedSellOrders | length + offset | cosignatures |
 uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION = 420;
 uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM = 608;
+
+/**************************************************************/
+/*                           FLAGS                            */
+/**************************************************************/
+
+uint8 constant FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE = 1;
+uint8 constant FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS = 2;
+uint8 constant FLAG_BLOCK_BANNED_ACCOUNTS = 4;
+uint8 constant FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT = 8;

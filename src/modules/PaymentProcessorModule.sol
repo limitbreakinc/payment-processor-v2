@@ -74,7 +74,7 @@ abstract contract PaymentProcessorModule is
     // Default Payment Method 4: USDC (Bridged)
 
     /// @dev The amount of gas units to be supplied with native token transfers.
-    uint256 private immutable pushPaymentGasLimit;
+    uint256 internal immutable pushPaymentGasLimit;
 
     /// @dev The address of the ERC20 contract used for wrapped native token.
     address public immutable wrappedNativeCoinAddress;
@@ -416,7 +416,9 @@ abstract contract PaymentProcessorModule is
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
 
-        if (paymentSettingsForCollection.blockBannedAccounts) {
+        uint8 flags = paymentSettingsForCollection.flags;
+
+        if (_isFlagSet(flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
             EnumerableSet.AddressSet storage bannedAccounts = 
                 appStorage().collectionBannedAccounts[saleDetails.tokenAddress];
 
@@ -429,7 +431,7 @@ abstract contract PaymentProcessorModule is
             }
         }
 
-        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+        if (_isFlagSet(flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS)) {
             EnumerableSet.AddressSet storage trustedChannels = 
                 appStorage().collectionTrustedChannels[saleDetails.tokenAddress];
 
@@ -445,9 +447,13 @@ abstract contract PaymentProcessorModule is
                 appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress];
         }
 
-        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+        if (_isFlagSet(flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE)) {
             royaltyBackfillAndBounty.exclusiveMarketplace = 
                 appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress];
+        }
+
+        if(_isFlagSet(flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)) {
+            context.pushPaymentGasLimit = appStorage().collectionPushPaymentGasLimitOverrides[saleDetails.tokenAddress];
         }
         
         if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
@@ -510,7 +516,7 @@ abstract contract PaymentProcessorModule is
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
 
-        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
+        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS)) {
             EnumerableSet.AddressSet storage trustedChannels = 
                 appStorage().collectionTrustedChannels[sweepOrder.tokenAddress];
 
@@ -526,7 +532,7 @@ abstract contract PaymentProcessorModule is
                 appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress];
         }
 
-        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
+        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE)) {
             royaltyBackfillAndBounty.exclusiveMarketplace = 
                 appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress];
         }
@@ -550,7 +556,7 @@ abstract contract PaymentProcessorModule is
         EnumerableSet.AddressSet storage bannedAccounts = 
             appStorage().collectionBannedAccounts[sweepOrder.tokenAddress];
 
-        if (paymentSettingsForCollection.blockBannedAccounts) {
+        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
             if (bannedAccounts.contains(context.taker)) {
                 revert PaymentProcessor__MakerOrTakerIsBannedAccount();
             }
@@ -585,7 +591,7 @@ abstract contract PaymentProcessorModule is
             saleDetailsBatch[i] = saleDetails;
             sumListingPrices += saleDetails.itemPrice;
 
-            if (paymentSettingsForCollection.blockBannedAccounts) {
+            if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
                 if (bannedAccounts.contains(saleDetails.maker)) {
                     revert PaymentProcessor__MakerOrTakerIsBannedAccount();
                 }
@@ -626,6 +632,10 @@ abstract contract PaymentProcessorModule is
 
         if (feeOnTop.amount > sumListingPrices) {
             revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
+        }
+
+        if(_isFlagSet(paymentSettingsForCollection.flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)) {
+            context.pushPaymentGasLimit = appStorage().collectionPushPaymentGasLimitOverrides[sweepOrder.tokenAddress];
         }
     }
 
@@ -734,6 +744,17 @@ abstract contract PaymentProcessorModule is
                 saleDetails.amount)) {
             if (context.disablePartialFill) {
                 revert PaymentProcessor__DispensingTokenWasUnsuccessful();
+            } 
+            else {
+                // Nonce or some amount of fillable quantity was burned during order validation, but the item failed to 
+                // fill.  Since partial fills are allowed, restore the nonce because we can't make assumptions about the
+                // reason the fill failed. Order books should re-simulate there order for removal from order book if it 
+                // failed because a fill is impossible.
+                if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+                    _restoreFillableItems(saleDetails.maker, context.orderDigest, saleDetails.amount);
+                } else {
+                    _restoreNonce(saleDetails.maker, saleDetails.nonce);
+                }
             }
         } else {
             SplitProceeds memory proceeds =
@@ -765,15 +786,15 @@ abstract contract PaymentProcessorModule is
             }
 
             if (proceeds.royaltyProceeds > 0) {
-                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, context.pushPaymentGasLimit);
             }
 
             if (proceeds.marketplaceProceeds > 0) {
-                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, context.pushPaymentGasLimit);
             }
 
             if (proceeds.sellerProceeds > 0) {
-                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
+                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, context.pushPaymentGasLimit);
             }
 
             if (feeOnTopAmount > 0) {
@@ -781,7 +802,7 @@ abstract contract PaymentProcessorModule is
                     revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
                 }
 
-                fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
+                fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, context.pushPaymentGasLimit);
             }
 
             fnPointers.funcEmitOrderExecutionEvent(context, saleDetails);
@@ -826,6 +847,13 @@ abstract contract PaymentProcessorModule is
                     saleDetails.tokenAddress, 
                     saleDetails.tokenId, 
                     saleDetails.amount)) {
+                // Nonce was burned during order validation, but the item failed to fill.  Since partial fills are 
+                // allowed, restore the nonce because we can't make assumptions about the reason the fill failed. 
+                // Order books should re-simulate there order for removal from order book if it failed because a fill 
+                // is impossible.
+                if (saleDetails.protocol != OrderProtocols.ERC1155_FILL_PARTIAL) {
+                    _restoreNonce(saleDetails.maker, saleDetails.nonce);
+                }
             } else {
                 SplitProceeds memory proceeds =
                     _computePaymentSplits(
@@ -851,7 +879,7 @@ abstract contract PaymentProcessorModule is
     
                 if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
                     if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, context.pushPaymentGasLimit);
                     }
     
                     accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
@@ -860,7 +888,7 @@ abstract contract PaymentProcessorModule is
     
                 if (saleDetails.marketplace != accumulator.lastMarketplace) {
                     if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, context.pushPaymentGasLimit);
                     }
     
                     accumulator.lastMarketplace = saleDetails.marketplace;
@@ -869,7 +897,7 @@ abstract contract PaymentProcessorModule is
     
                 if (saleDetails.maker != accumulator.lastSeller) {
                     if(accumulator.accumulatedSellerProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, context.pushPaymentGasLimit);
                     }
     
                     accumulator.lastSeller = saleDetails.maker;
@@ -891,15 +919,15 @@ abstract contract PaymentProcessorModule is
         }
 
         if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, context.pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, context.pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedSellerProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, context.pushPaymentGasLimit);
         }
 
         if (params.feeOnTop.recipient != address(0)) {
@@ -914,7 +942,7 @@ abstract contract PaymentProcessorModule is
                     }
                 }
 
-                params.fnPointers.funcPayout(params.feeOnTop.recipient, context.taker, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
+                params.fnPointers.funcPayout(params.feeOnTop.recipient, context.taker, params.paymentCoin, params.feeOnTop.amount, context.pushPaymentGasLimit);
             }
         }
     }
@@ -1277,6 +1305,41 @@ abstract contract PaymentProcessorModule is
         }
     }
 
+//    /**
+//     * @notice Updates the remaining fillable amount and order status for partially fillable orders.
+//     * @notice Performs checks for minimum fillable amount and order status.
+//     *
+//     * @dev    Throws when the remaining fillable amount is less than the minimum fillable amount requested.
+//     * @dev    Throws when the order status is not open.
+//     *
+//     * @param account             The maker account for the order.
+//     * @param orderDigest         The hash digest of the order execution details.
+//     * @param orderStartAmount    The original amount for the partially fillable order.
+//     * @param requestedFillAmount The amount the taker is requesting to fill.
+//     * @param minimumFillAmount   The minimum amount the taker is willing to fill.
+//     *
+//     * @return quantityToFill     Lesser of remainingFillableAmount and requestedFillAmount.
+//     */
+    function _restoreFillableItems(
+        address account,
+        bytes32 orderDigest, 
+        uint248 unfilledAmount
+    ) private returns (uint248 quantityToFill) {
+        if (unfilledAmount > 0) {
+            PartiallyFillableOrderStatus storage partialFillStatus = 
+                appStorage().partiallyFillableOrderStatuses[account][orderDigest];
+
+            unchecked {
+                partialFillStatus.remainingFillableQuantity += unfilledAmount;
+            }
+
+            if (partialFillStatus.state == PartiallyFillableOrderState.Filled) {
+                partialFillStatus.state = PartiallyFillableOrderState.Open;
+                emit OrderDigestItemsRestored(orderDigest, account, unfilledAmount);
+            }
+        }
+    }
+
     /**
      * @notice Invalidates a maker's nonce and emits a NonceInvalidated event.
      * 
@@ -1319,6 +1382,26 @@ abstract contract PaymentProcessorModule is
         emit NonceInvalidated(nonce, account, wasCancellation);
 
         return appStorage().masterNonces[account];
+    }
+
+    /**
+     * @notice After a maker's nonce is invalidated, should the order item fail to transfer
+     *         we need to restore the nonce so order cannot be griefed.  Emits a NonceRestored event.
+     * 
+     * @dev    Throws when the nonce has already been invalidated.
+     * 
+     * @param account         The maker account to restore `nonce` of.
+     * @param nonce           The nonce to restore.
+     */
+    function _restoreNonce(address account, uint256 nonce) internal {
+        unchecked {
+            if (uint256(appStorage().invalidatedSignatures[account][uint248(nonce >> 8)] ^= (ONE << uint8(nonce))) & 
+                (ONE << uint8(nonce)) != ZERO) {
+                revert PaymentProcessor__SignatureNotUsedOrRevoked();
+            }
+        }
+
+        emit NonceRestored(nonce, account);
     }
 
     /**
@@ -1397,14 +1480,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1461,14 +1547,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1529,14 +1618,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1594,14 +1686,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1802,6 +1897,18 @@ abstract contract PaymentProcessorModule is
 
         if(!callerHasPermissions) {
             revert PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
+        }
+    }
+
+    function _isFlagSet(uint8 flagValue, uint8 flag) internal pure returns (bool flagSet) {
+        flagSet = ((flagValue & flag) != 0);
+    }
+
+    function _setFlag(uint8 flagValue, uint8 flag, bool flagSet) internal pure returns (uint8) {
+        if(flagSet) {
+            return (flagValue | flag);
+        } else {
+            return (flagValue & (255 - flag));       
         }
     }
 }

@@ -241,9 +241,13 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 constrainedPricingPaymentMethod: constrainedPricingPaymentMethod,
                 royaltyBackfillNumerator: royaltyBackfillNumerator,
                 royaltyBountyNumerator: royaltyBountyNumerator,
-                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
-                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels,
-                blockBannedAccounts: blockBannedAccounts});
+                flags: _generateCollectionPaymentSettingsFlags(
+                    tokenAddress, 
+                    exclusiveBountyReceiver, 
+                    blockTradesFromUntrustedChannels, 
+                    blockBannedAccounts
+                )
+            });
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -256,6 +260,24 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 exclusiveBountyReceiver,
                 blockTradesFromUntrustedChannels,
                 blockBannedAccounts);
+    }
+
+    function overridePushPaymentGasLimit(address tokenAddress, uint256 gasLimitOverride) external {
+        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
+
+        if (gasLimitOverride < pushPaymentGasLimit) {
+            revert PaymentProcessor__PushPaymentGasLimitTooLow();
+        }
+
+        appStorage().collectionPaymentSettings[tokenAddress].flags = 
+                _setFlag(
+                    appStorage().collectionPaymentSettings[tokenAddress].flags, 
+                    FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT, 
+                    gasLimitOverride > pushPaymentGasLimit);
+
+        appStorage().collectionPushPaymentGasLimitOverrides[tokenAddress] = gasLimitOverride;
+
+        emit PushPaymentGasLimitOverriddenByCollection(tokenAddress, gasLimitOverride);
     }
 
     /**
@@ -433,5 +455,23 @@ contract ModulePaymentSettings is PaymentProcessorModule {
         if (appStorage().collectionBannedAccounts[tokenAddress].remove(account)) {
             emit BannedAccountRemovedForCollection(tokenAddress, account);
         }
+    }
+
+    function _generateCollectionPaymentSettingsFlags(
+        address tokenAddress,
+        address exclusiveBountyReceiver,
+        bool blockTradesFromUntrustedChannels,
+        bool blockBannedAccounts
+    ) internal view returns (uint8 flags) {
+        flags = _setFlag(0, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE, exclusiveBountyReceiver != address(0));
+        flags = _setFlag(flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS, blockTradesFromUntrustedChannels);
+        flags = _setFlag(flags, FLAG_BLOCK_BANNED_ACCOUNTS, blockBannedAccounts);
+        flags = _setFlag(
+            flags, 
+            FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT, 
+            _isFlagSet(
+                appStorage().collectionPaymentSettings[tokenAddress].flags, 
+                FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)
+            );
     }
 }

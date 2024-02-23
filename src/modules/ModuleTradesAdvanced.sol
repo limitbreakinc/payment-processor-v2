@@ -102,7 +102,9 @@ contract ModuleTradesAdvanced is PaymentProcessorModule {
             domainSeparator: domainSeparator,
             channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
-            disablePartialFill: false
+            disablePartialFill: false,
+            orderDigest: bytes32(0),
+            pushPaymentGasLimit: pushPaymentGasLimit
         });
 
         uint256 remainingNativeProceeds =_executeSweepOrder(

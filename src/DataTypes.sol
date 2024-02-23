@@ -89,9 +89,7 @@ struct CollectionPaymentSettings {
     address constrainedPricingPaymentMethod;
     uint16 royaltyBackfillNumerator;
     uint16 royaltyBountyNumerator;
-    bool isRoyaltyBountyExclusive;
-    bool blockTradesFromUntrustedChannels;
-    bool blockBannedAccounts;
+    uint8 flags;
 }
 
 /**
@@ -360,6 +358,8 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
     address channel;
     address taker;
     bool disablePartialFill;
+    bytes32 orderDigest;
+    uint256 pushPaymentGasLimit;
  }
 
 /**
@@ -431,4 +431,7 @@ struct PaymentProcessorStorage {
 
     /// @dev A mapping of all co-signers that have self-destructed and can never be used as cosigners again.
     mapping (address => bool) destroyedCosigners;
+
+    /// @dev A mapping of token contract address to a push payment gas limit override
+    mapping (address => uint256) collectionPushPaymentGasLimitOverrides;
 }

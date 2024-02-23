@@ -79,11 +79,22 @@ interface IPaymentProcessorEvents {
         address indexed account, 
         bool wasCancellation);
 
+    /// @notice Emitted when a user fills a single listing or offer nonce but item fails to fill.
+    event NonceRestored(
+        uint256 indexed nonce, 
+        address indexed account);
+
     /// @notice Emitted when a user revokes a single listing or offer nonce for a specific marketplace.
     event OrderDigestInvalidated(
         bytes32 indexed orderDigest, 
         address indexed account, 
         bool wasCancellation);
+
+    /// @notice Emitted when a user fills a partially fillable 1155 listing or offer nonce but item fails to fill.
+    event OrderDigestItemsRestored(
+        bytes32 indexed orderDigest, 
+        address indexed account, 
+        uint248 amountRestoredToOrder);
 
     /// @notice Emitted when a coin is added to the approved coins mapping for a security policy
     event PaymentMethodAddedToWhitelist(
@@ -94,6 +105,10 @@ interface IPaymentProcessorEvents {
     event PaymentMethodRemovedFromWhitelist(
         uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
+
+    event PushPaymentGasLimitOverriddenByCollection(
+        address indexed tokenAddress, 
+        uint256 pushPaymentGasLimit);
 
     /// @notice Emitted when a payment method whitelist is reassigned to a new owner
     event ReassignedPaymentMethodWhitelistOwnership(uint32 indexed id, address indexed newOwner);
