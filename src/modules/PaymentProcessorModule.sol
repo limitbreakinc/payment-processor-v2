@@ -452,9 +452,8 @@ abstract contract PaymentProcessorModule is
                 appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress];
         }
 
-        if(_isFlagSet(flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)) {
-            context.pushPaymentGasLimit = appStorage().collectionPushPaymentGasLimitOverrides[saleDetails.tokenAddress];
-        }
+        context.pushPaymentGasLimit = _isFlagSet(flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT) ?
+            appStorage().collectionPushPaymentGasLimitOverrides[saleDetails.tokenAddress] : pushPaymentGasLimit;
         
         if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
@@ -634,9 +633,9 @@ abstract contract PaymentProcessorModule is
             revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
         }
 
-        if(_isFlagSet(paymentSettingsForCollection.flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)) {
-            context.pushPaymentGasLimit = appStorage().collectionPushPaymentGasLimitOverrides[sweepOrder.tokenAddress];
-        }
+        context.pushPaymentGasLimit = 
+            _isFlagSet(paymentSettingsForCollection.flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT) ?
+                appStorage().collectionPushPaymentGasLimitOverrides[sweepOrder.tokenAddress] : pushPaymentGasLimit;
     }
 
     /**
