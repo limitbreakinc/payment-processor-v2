@@ -262,6 +262,27 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 blockBannedAccounts);
     }
 
+    /**
+     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
+     *         override the default push payment gas limit.  This is not generally recommended, but it can be
+     *         used if migration away from a push payment splitter or a royalty receiver that consumes a lot of gas
+     *         is not feasible.
+     *
+     * @dev    Throws when the specified tokenAddress is address(0).
+     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
+     * @dev    Throws when the gasLimitOverride is less than the default.
+     * 
+     * @dev    <h4>Postconditions:</h4>
+     * @dev    1. The push payment gas limit has been overridden if `gasLimitOverride` is greater than the default,
+     *            otherwise not overridden.
+     * @dev    2. An `PushPaymentGasLimitOverriddenByCollection` event has been emitted.
+     *
+     * @dev    Be aware that setting the gasLimitOverride to the default push paymnent gas limit clears the override
+     *         flag.
+     *
+     * @param  tokenAddress                     The smart contract address of the NFT collection.
+     * @param  gasLimitOverride                 The push payment gas limit override for the collection.
+     */
     function overridePushPaymentGasLimit(address tokenAddress, uint256 gasLimitOverride) external {
         _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
 
