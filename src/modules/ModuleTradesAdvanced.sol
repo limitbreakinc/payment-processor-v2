@@ -103,8 +103,7 @@ contract ModuleTradesAdvanced is PaymentProcessorModule {
             channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false,
-            orderDigest: bytes32(0),
-            pushPaymentGasLimit: pushPaymentGasLimit
+            orderDigest: bytes32(0)
         });
 
         uint256 remainingNativeProceeds =_executeSweepOrder(

@@ -94,9 +94,6 @@ error PaymentProcessor__PaymentMethodWhitelistDoesNotExist();
 /// @dev Thrown when attempting to transfer ownership of a payment method whitelist to the zero address.
 error PaymentProcessor__PaymentMethodWhitelistOwnershipCannotBeTransferredToZeroAddress();
 
-/// @dev Thrown when attempting to override the default push payment gas limit below the default value.
-error PaymentProcessor__PushPaymentGasLimitTooLow();
-
 /// @dev Thrown when distributing payments and fees in native token and the amount remaining is less than the amount to distribute.
 error PaymentProcessor__RanOutOfNativeFunds();
 

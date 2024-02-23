@@ -42,7 +42,6 @@ bytes4 constant SELECTOR_RENOUNCE_OWNERSHIP_OF_PAYMENT_METHOD_WHITELIST= hex"088
 bytes4 constant SELECTOR_WHITELIST_PAYMENT_METHOD = hex"bb39ce91";
 bytes4 constant SELECTOR_UNWHITELIST_PAYMENT_METHOD = hex"e9d4c14e";
 bytes4 constant SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS = hex"fc5d8393";
-bytes4 constant SELECTOR_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT = hex"232e398c";
 bytes4 constant SELECTOR_SET_COLLECTION_PRICING_BOUNDS = hex"7141ae10";
 bytes4 constant SELECTOR_SET_TOKEN_PRICING_BOUNDS = hex"22146d70";
 bytes4 constant SELECTOR_ADD_TRUSTED_CHANNEL_FOR_COLLECTION = hex"ab559c14";
@@ -89,12 +88,3 @@ uint256 constant BASE_MSG_LENGTH_BULK_ACCEPT_OFFERS_PER_ITEM = 1024;
 // | selector | domainSeparator | feeOnTop | sweepOrder | length + offset | items        | length + offset | signedSellOrders | length + offset | cosignatures |
 uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION = 420;
 uint256 constant BASE_MSG_LENGTH_SWEEP_COLLECTION_PER_ITEM = 608;
-
-/**************************************************************/
-/*                           FLAGS                            */
-/**************************************************************/
-
-uint8 constant FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE = 1;
-uint8 constant FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS = 2;
-uint8 constant FLAG_BLOCK_BANNED_ACCOUNTS = 4;
-uint8 constant FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT = 8;

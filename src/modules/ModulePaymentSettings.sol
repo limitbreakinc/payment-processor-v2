@@ -241,13 +241,9 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 constrainedPricingPaymentMethod: constrainedPricingPaymentMethod,
                 royaltyBackfillNumerator: royaltyBackfillNumerator,
                 royaltyBountyNumerator: royaltyBountyNumerator,
-                flags: _generateCollectionPaymentSettingsFlags(
-                    tokenAddress, 
-                    exclusiveBountyReceiver, 
-                    blockTradesFromUntrustedChannels, 
-                    blockBannedAccounts
-                )
-            });
+                isRoyaltyBountyExclusive: exclusiveBountyReceiver != address(0),
+                blockTradesFromUntrustedChannels: blockTradesFromUntrustedChannels,
+                blockBannedAccounts: blockBannedAccounts});
 
             emit UpdatedCollectionPaymentSettings(
                 tokenAddress, 
@@ -260,45 +256,6 @@ contract ModulePaymentSettings is PaymentProcessorModule {
                 exclusiveBountyReceiver,
                 blockTradesFromUntrustedChannels,
                 blockBannedAccounts);
-    }
-
-    /**
-     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
-     *         override the default push payment gas limit.  This is not generally recommended, but it can be
-     *         used if migration away from a push payment splitter or a royalty receiver that consumes a lot of gas
-     *         is not feasible.
-     *
-     * @dev    Throws when the specified tokenAddress is address(0).
-     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
-     * @dev    Throws when the gasLimitOverride is less than the default.
-     * 
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The push payment gas limit has been overridden if `gasLimitOverride` is greater than the default,
-     *            otherwise not overridden.
-     * @dev    2. An `PushPaymentGasLimitOverriddenByCollection` event has been emitted.
-     *
-     * @dev    Be aware that setting the gasLimitOverride to the default push paymnent gas limit clears the override
-     *         flag.
-     *
-     * @param  tokenAddress                     The smart contract address of the NFT collection.
-     * @param  gasLimitOverride                 The push payment gas limit override for the collection.
-     */
-    function overridePushPaymentGasLimit(address tokenAddress, uint256 gasLimitOverride) external {
-        _requireCallerIsNFTOrContractOwnerOrAdmin(tokenAddress);
-
-        if (gasLimitOverride < pushPaymentGasLimit) {
-            revert PaymentProcessor__PushPaymentGasLimitTooLow();
-        }
-
-        appStorage().collectionPaymentSettings[tokenAddress].flags = 
-                _setFlag(
-                    appStorage().collectionPaymentSettings[tokenAddress].flags, 
-                    FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT, 
-                    gasLimitOverride > pushPaymentGasLimit);
-
-        appStorage().collectionPushPaymentGasLimitOverrides[tokenAddress] = gasLimitOverride;
-
-        emit PushPaymentGasLimitOverriddenByCollection(tokenAddress, gasLimitOverride);
     }
 
     /**
@@ -476,23 +433,5 @@ contract ModulePaymentSettings is PaymentProcessorModule {
         if (appStorage().collectionBannedAccounts[tokenAddress].remove(account)) {
             emit BannedAccountRemovedForCollection(tokenAddress, account);
         }
-    }
-
-    function _generateCollectionPaymentSettingsFlags(
-        address tokenAddress,
-        address exclusiveBountyReceiver,
-        bool blockTradesFromUntrustedChannels,
-        bool blockBannedAccounts
-    ) internal view returns (uint8 flags) {
-        flags = _setFlag(0, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE, exclusiveBountyReceiver != address(0));
-        flags = _setFlag(flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS, blockTradesFromUntrustedChannels);
-        flags = _setFlag(flags, FLAG_BLOCK_BANNED_ACCOUNTS, blockBannedAccounts);
-        flags = _setFlag(
-            flags, 
-            FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT, 
-            _isFlagSet(
-                appStorage().collectionPaymentSettings[tokenAddress].flags, 
-                FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT)
-            );
     }
 }

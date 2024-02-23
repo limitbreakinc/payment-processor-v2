@@ -101,8 +101,7 @@ contract ModuleTrades is PaymentProcessorModule {
             channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: true,
-            orderDigest: bytes32(0),
-            pushPaymentGasLimit: pushPaymentGasLimit
+            orderDigest: bytes32(0)
         });
 
         uint256 remainingNativeProceeds = 
@@ -183,8 +182,7 @@ contract ModuleTrades is PaymentProcessorModule {
                 channel: msg.sender,
                 taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
                 disablePartialFill: true,
-                orderDigest: bytes32(0),
-                pushPaymentGasLimit: pushPaymentGasLimit
+                orderDigest: bytes32(0)
             }),
             isCollectionLevelOffer, 
             saleDetails, 
@@ -268,8 +266,7 @@ contract ModuleTrades is PaymentProcessorModule {
             channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false,
-            orderDigest: bytes32(0),
-            pushPaymentGasLimit: pushPaymentGasLimit
+            orderDigest: bytes32(0)
         });
 
         Order memory saleDetails;
@@ -387,8 +384,7 @@ contract ModuleTrades is PaymentProcessorModule {
             channel: msg.sender,
             taker: appendedDataLength == 20 ? _msgSender() : msg.sender,
             disablePartialFill: false,
-            orderDigest: bytes32(0),
-            pushPaymentGasLimit: pushPaymentGasLimit
+            orderDigest: bytes32(0)
         });
 
         for (uint256 i = 0; i < params.saleDetailsArray.length;) {

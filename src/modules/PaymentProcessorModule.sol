@@ -74,7 +74,7 @@ abstract contract PaymentProcessorModule is
     // Default Payment Method 4: USDC (Bridged)
 
     /// @dev The amount of gas units to be supplied with native token transfers.
-    uint256 internal immutable pushPaymentGasLimit;
+    uint256 private immutable pushPaymentGasLimit;
 
     /// @dev The address of the ERC20 contract used for wrapped native token.
     address public immutable wrappedNativeCoinAddress;
@@ -416,9 +416,7 @@ abstract contract PaymentProcessorModule is
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
 
-        uint8 flags = paymentSettingsForCollection.flags;
-
-        if (_isFlagSet(flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
+        if (paymentSettingsForCollection.blockBannedAccounts) {
             EnumerableSet.AddressSet storage bannedAccounts = 
                 appStorage().collectionBannedAccounts[saleDetails.tokenAddress];
 
@@ -431,7 +429,7 @@ abstract contract PaymentProcessorModule is
             }
         }
 
-        if (_isFlagSet(flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS)) {
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
             EnumerableSet.AddressSet storage trustedChannels = 
                 appStorage().collectionTrustedChannels[saleDetails.tokenAddress];
 
@@ -447,13 +445,10 @@ abstract contract PaymentProcessorModule is
                 appStorage().collectionRoyaltyBackfillReceivers[saleDetails.tokenAddress];
         }
 
-        if (_isFlagSet(flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE)) {
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
             royaltyBackfillAndBounty.exclusiveMarketplace = 
                 appStorage().collectionExclusiveBountyReceivers[saleDetails.tokenAddress];
         }
-
-        context.pushPaymentGasLimit = _isFlagSet(flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT) ?
-            appStorage().collectionPushPaymentGasLimitOverrides[saleDetails.tokenAddress] : pushPaymentGasLimit;
         
         if (paymentSettings == PaymentSettings.DefaultPaymentMethodWhitelist) {
             if (!_isDefaultPaymentMethod(saleDetails.paymentMethod)) {
@@ -515,7 +510,7 @@ abstract contract PaymentProcessorModule is
         royaltyBackfillAndBounty.backfillNumerator = paymentSettingsForCollection.royaltyBackfillNumerator;
         royaltyBackfillAndBounty.bountyNumerator = paymentSettingsForCollection.royaltyBountyNumerator;
 
-        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS)) {
+        if (paymentSettingsForCollection.blockTradesFromUntrustedChannels) {
             EnumerableSet.AddressSet storage trustedChannels = 
                 appStorage().collectionTrustedChannels[sweepOrder.tokenAddress];
 
@@ -531,7 +526,7 @@ abstract contract PaymentProcessorModule is
                 appStorage().collectionRoyaltyBackfillReceivers[sweepOrder.tokenAddress];
         }
 
-        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE)) {
+        if (paymentSettingsForCollection.isRoyaltyBountyExclusive) {
             royaltyBackfillAndBounty.exclusiveMarketplace = 
                 appStorage().collectionExclusiveBountyReceivers[sweepOrder.tokenAddress];
         }
@@ -555,7 +550,7 @@ abstract contract PaymentProcessorModule is
         EnumerableSet.AddressSet storage bannedAccounts = 
             appStorage().collectionBannedAccounts[sweepOrder.tokenAddress];
 
-        if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
+        if (paymentSettingsForCollection.blockBannedAccounts) {
             if (bannedAccounts.contains(context.taker)) {
                 revert PaymentProcessor__MakerOrTakerIsBannedAccount();
             }
@@ -590,7 +585,7 @@ abstract contract PaymentProcessorModule is
             saleDetailsBatch[i] = saleDetails;
             sumListingPrices += saleDetails.itemPrice;
 
-            if (_isFlagSet(paymentSettingsForCollection.flags, FLAG_BLOCK_BANNED_ACCOUNTS)) {
+            if (paymentSettingsForCollection.blockBannedAccounts) {
                 if (bannedAccounts.contains(saleDetails.maker)) {
                     revert PaymentProcessor__MakerOrTakerIsBannedAccount();
                 }
@@ -632,10 +627,6 @@ abstract contract PaymentProcessorModule is
         if (feeOnTop.amount > sumListingPrices) {
             revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
         }
-
-        context.pushPaymentGasLimit = 
-            _isFlagSet(paymentSettingsForCollection.flags, FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT) ?
-                appStorage().collectionPushPaymentGasLimitOverrides[sweepOrder.tokenAddress] : pushPaymentGasLimit;
     }
 
     /**
@@ -785,15 +776,15 @@ abstract contract PaymentProcessorModule is
             }
 
             if (proceeds.royaltyProceeds > 0) {
-                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, context.pushPaymentGasLimit);
+                fnPointers.funcPayout(proceeds.royaltyRecipient, purchaser, paymentCoin, proceeds.royaltyProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.marketplaceProceeds > 0) {
-                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, context.pushPaymentGasLimit);
+                fnPointers.funcPayout(saleDetails.marketplace, purchaser, paymentCoin, proceeds.marketplaceProceeds, pushPaymentGasLimit);
             }
 
             if (proceeds.sellerProceeds > 0) {
-                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, context.pushPaymentGasLimit);
+                fnPointers.funcPayout(seller, purchaser, paymentCoin, proceeds.sellerProceeds, pushPaymentGasLimit);
             }
 
             if (feeOnTopAmount > 0) {
@@ -801,7 +792,7 @@ abstract contract PaymentProcessorModule is
                     revert PaymentProcessor__FeeOnTopCannotBeGreaterThanItemPrice();
                 }
 
-                fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, context.pushPaymentGasLimit);
+                fnPointers.funcPayout(feeOnTop.recipient, context.taker, paymentCoin, feeOnTop.amount, pushPaymentGasLimit);
             }
 
             fnPointers.funcEmitOrderExecutionEvent(context, saleDetails);
@@ -878,7 +869,7 @@ abstract contract PaymentProcessorModule is
     
                 if (proceeds.royaltyRecipient != accumulator.lastRoyaltyRecipient) {
                     if(accumulator.accumulatedRoyaltyProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, context.pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastRoyaltyRecipient = proceeds.royaltyRecipient;
@@ -887,7 +878,7 @@ abstract contract PaymentProcessorModule is
     
                 if (saleDetails.marketplace != accumulator.lastMarketplace) {
                     if(accumulator.accumulatedMarketplaceProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, context.pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastMarketplace = saleDetails.marketplace;
@@ -896,7 +887,7 @@ abstract contract PaymentProcessorModule is
     
                 if (saleDetails.maker != accumulator.lastSeller) {
                     if(accumulator.accumulatedSellerProceeds > 0) {
-                        params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, context.pushPaymentGasLimit);
+                        params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
                     }
     
                     accumulator.lastSeller = saleDetails.maker;
@@ -918,15 +909,15 @@ abstract contract PaymentProcessorModule is
         }
 
         if(accumulator.accumulatedRoyaltyProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, context.pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastRoyaltyRecipient, context.taker, params.paymentCoin, accumulator.accumulatedRoyaltyProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedMarketplaceProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, context.pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastMarketplace, context.taker, params.paymentCoin, accumulator.accumulatedMarketplaceProceeds, pushPaymentGasLimit);
         }
 
         if(accumulator.accumulatedSellerProceeds > 0) {
-            params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, context.pushPaymentGasLimit);
+            params.fnPointers.funcPayout(accumulator.lastSeller, context.taker, params.paymentCoin, accumulator.accumulatedSellerProceeds, pushPaymentGasLimit);
         }
 
         if (params.feeOnTop.recipient != address(0)) {
@@ -941,7 +932,7 @@ abstract contract PaymentProcessorModule is
                     }
                 }
 
-                params.fnPointers.funcPayout(params.feeOnTop.recipient, context.taker, params.paymentCoin, params.feeOnTop.amount, context.pushPaymentGasLimit);
+                params.fnPointers.funcPayout(params.feeOnTop.recipient, context.taker, params.paymentCoin, params.feeOnTop.amount, pushPaymentGasLimit);
             }
         }
     }
@@ -1896,18 +1887,6 @@ abstract contract PaymentProcessorModule is
 
         if(!callerHasPermissions) {
             revert PaymentProcessor__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
-        }
-    }
-
-    function _isFlagSet(uint8 flagValue, uint8 flag) internal pure returns (bool flagSet) {
-        flagSet = ((flagValue & flag) != 0);
-    }
-
-    function _setFlag(uint8 flagValue, uint8 flag, bool flagSet) internal pure returns (uint8) {
-        if(flagSet) {
-            return (flagValue | flag);
-        } else {
-            return (flagValue & (255 - flag));       
         }
     }
 }

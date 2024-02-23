@@ -274,14 +274,6 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
         return appStorage().collectionPaymentSettings[tokenAddress];
     }
 
-    function getCollectionPushPaymentGasLimitOverride(address tokenAddress) external view returns (uint256) {
-        return 
-            _isFlagSet(
-                appStorage().collectionPaymentSettings[tokenAddress].flags, 
-                FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT
-            ) ? appStorage().collectionPushPaymentGasLimitOverrides[tokenAddress] : 0;
-    }
-
     /**
      * @notice Returns the optional creator-defined royalty bounty settings for a given collection.
      * 
@@ -297,7 +289,7 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
 
         return (
             collectionPaymentSettings.royaltyBountyNumerator, 
-            _isFlagSet(collectionPaymentSettings.flags, FLAG_IS_ROYALTY_BOUNTY_EXCLUSIVE) ? 
+            collectionPaymentSettings.isRoyaltyBountyExclusive ? 
                 appStorage().collectionExclusiveBountyReceivers[tokenAddress] : 
                 address(0));
     }
@@ -581,30 +573,6 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
      */
     function setCollectionPaymentSettings(bytes calldata data) external 
     delegateCall(_modulePaymentSettings, SELECTOR_SET_COLLECTION_PAYMENT_SETTINGS, data) {}
-
-    /**
-     * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
-     *         override the default push payment gas limit.  This is not generally recommended, but it can be
-     *         used if migration away from a push payment splitter or a royalty receiver that consumes a lot of gas
-     *         is not feasible.
-     *
-     * @dev    Throws when the specified tokenAddress is address(0).
-     * @dev    Throws when the caller is not the contract, the owner or the administrator of the specified tokenAddress.
-     * @dev    Throws when the gasLimitOverride is less than the default.
-     * 
-     * @dev    <h4>Postconditions:</h4>
-     * @dev    1. The push payment gas limit has been overridden if `gasLimitOverride` is greater than the default,
-     *            otherwise not overridden.
-     * @dev    2. An `PushPaymentGasLimitOverriddenByCollection` event has been emitted.
-     *
-     * @dev    Be aware that setting the gasLimitOverride to the default push paymnent gas limit clears the override
-     *         flag.
-     *
-     * @param  data Calldata encoded with PaymentProcessorEncoder. Matches calldata for:
-     *              `overridePushPaymentGasLimit(address tokenAddress, uint256 gasLimitOverride)`
-     */
-    function overridePushPaymentGasLimit(bytes calldata data) external 
-    delegateCall(_modulePaymentSettings, SELECTOR_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT, data) {}
 
     /**
      * @notice Allows the smart contract, the contract owner, or the contract admin of any NFT collection to 
@@ -993,20 +961,4 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
      */
     function sweepCollection(bytes calldata data) external payable 
     delegateCallReplaceDomainSeparator(_moduleTradesAdvanced, SELECTOR_SWEEP_COLLECTION, data) {}
-
-    /*************************************************************************/
-    /*                             Miscellaneous                             */
-    /*************************************************************************/
-
-    function _isFlagSet(uint8 flagValue, uint8 flag) internal pure returns (bool flagSet) {
-        flagSet = ((flagValue & flag) != 0);
-    }
-
-    function _setFlag(uint8 flagValue, uint8 flag, bool flagSet) internal pure returns (uint8) {
-        if(flagSet) {
-            return (flagValue | flag);
-        } else {
-            return (flagValue & (255 - flag));
-        }
-    }
 }

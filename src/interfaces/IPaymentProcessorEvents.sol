@@ -106,10 +106,6 @@ interface IPaymentProcessorEvents {
         uint32 indexed paymentMethodWhitelistId, 
         address indexed paymentMethod);
 
-    event PushPaymentGasLimitOverriddenByCollection(
-        address indexed tokenAddress, 
-        uint256 pushPaymentGasLimit);
-
     /// @notice Emitted when a payment method whitelist is reassigned to a new owner
     event ReassignedPaymentMethodWhitelistOwnership(uint32 indexed id, address indexed newOwner);
 

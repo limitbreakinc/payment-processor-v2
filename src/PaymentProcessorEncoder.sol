@@ -195,30 +195,6 @@ contract PaymentProcessorEncoder {
     }
 
     /**
-     * @notice Helper function to encode transaction calldata in the format required for a `overridePushPaymentGasLimit` call.
-     *
-     * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.
-     * @dev    Payment Processor is separated into multiple module contracts due to contract size limitations.
-     * @dev    Calls to the Payment Processor contract are passed along to the corresponding module through a delegate call.
-     * @dev    *Note:* This encoding function should **not** be called on-chain as part of a transaction. It is meant to
-     * @dev    be called off-chain to prepare the transaction data for a call to Payment Processor.
-     *
-     * @param  tokenAddress                     The smart contract address of the NFT collection.
-     * @param  gasLimitOverride                 The push payment gas limit override for the collection.
-     */
-    function encodeOverridePushPaymentGasLimitCalldata(
-        address /*paymentProcessorAddress*/, 
-        address tokenAddress, 
-        uint256 gasLimitOverride
-    ) external view returns (bytes memory) {
-        return _removeFirst4Bytes(
-            abi.encodeWithSignature(
-                "overridePushPaymentGasLimit(address,uint256)",
-                tokenAddress,
-                gasLimitOverride));
-    }
-
-    /**
      * @notice Helper function to encode transaction calldata in the format required for a `setCollectionPricingBounds` call.
      *
      * @dev    Encoding parameters into a bytes array is performed for gas optimization in Payment Processor.

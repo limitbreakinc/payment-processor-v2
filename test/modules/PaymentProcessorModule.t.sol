@@ -4030,8 +4030,8 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
             royaltyBackfillReceiver, 
             collectionPaymentSettings.royaltyBountyNumerator, 
             exclusiveBountyReceiver,
-            _isFlagSet(collectionPaymentSettings.flags, FLAG_BLOCK_TRADES_FROM_UNTRUSTED_CHANNELS),
-            _isFlagSet(collectionPaymentSettings.flags, FLAG_BLOCK_BANNED_ACCOUNTS));
+            collectionPaymentSettings.blockTradesFromUntrustedChannels,
+            collectionPaymentSettings.blockBannedAccounts);
     }
 
     function _pauseCollectionTrading(address tokenAddress) internal {
@@ -4143,18 +4143,6 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
     
             _paymentProcessor.setCollectionPaymentSettings(data1);
             _paymentProcessor.setCollectionPricingBounds(data2);
-        }
-    }
-
-    function _isFlagSet(uint8 flagValue, uint8 flag) internal pure returns (bool flagSet) {
-        flagSet = ((flagValue & flag) != 0);
-    }
-
-    function _setFlag(uint8 flagValue, uint8 flag, bool flagSet) internal pure returns (uint8) {
-        if(flagSet) {
-            return (flagValue | flag);
-        } else {
-            return (flagValue & (255 - flag));
         }
     }
 }
