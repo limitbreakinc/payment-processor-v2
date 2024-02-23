@@ -141,7 +141,7 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         _paymentProcessorEncoder = new PaymentProcessorEncoder();
 
         _paymentProcessorConfiguration.setPaymentProcessorModuleConfiguration(
-            2300,
+            8000,
             address(factory),
             address(nativeWrapper),
             address(weth),

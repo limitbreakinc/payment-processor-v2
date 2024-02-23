@@ -274,6 +274,14 @@ contract PaymentProcessor is EIP712, PaymentProcessorStorageAccess, IPaymentProc
         return appStorage().collectionPaymentSettings[tokenAddress];
     }
 
+    function getCollectionPushPaymentGasLimitOverride(address tokenAddress) external view returns (uint256) {
+        return 
+            _isFlagSet(
+                appStorage().collectionPaymentSettings[tokenAddress].flags, 
+                FLAG_OVERRIDE_PUSH_PAYMENT_GAS_LIMIT
+            ) ? appStorage().collectionPushPaymentGasLimitOverrides[tokenAddress] : 0;
+    }
+
     /**
      * @notice Returns the optional creator-defined royalty bounty settings for a given collection.
      * 

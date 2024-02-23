@@ -14,7 +14,7 @@ optimizer_runs = 30000
 
 [fuzz]
 runs = 200
-max_test_rejects = 2560000
+max_test_rejects = 10240000
 
 [invariant]
 runs = 50
