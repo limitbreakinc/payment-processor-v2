@@ -1272,6 +1272,7 @@ abstract contract PaymentProcessorModule is
         if (partialFillStatus.state == PartiallyFillableOrderState.Open) {
             if (partialFillStatus.remainingFillableQuantity == 0) {
                 partialFillStatus.remainingFillableQuantity = uint248(orderStartAmount);
+                emit OrderDigestOpened(orderDigest, account, orderStartAmount);
             }
 
             if (quantityToFill > partialFillStatus.remainingFillableQuantity) {
@@ -1284,6 +1285,7 @@ abstract contract PaymentProcessorModule is
 
             unchecked {
                 partialFillStatus.remainingFillableQuantity -= quantityToFill;
+                emit OrderDigestItemsFilled(orderDigest, account, quantityToFill);
             }
 
             if (partialFillStatus.remainingFillableQuantity == 0) {
@@ -1295,26 +1297,15 @@ abstract contract PaymentProcessorModule is
         }
     }
 
-//    /**
-//     * @notice Updates the remaining fillable amount and order status for partially fillable orders.
-//     * @notice Performs checks for minimum fillable amount and order status.
-//     *
-//     * @dev    Throws when the remaining fillable amount is less than the minimum fillable amount requested.
-//     * @dev    Throws when the order status is not open.
-//     *
-//     * @param account             The maker account for the order.
-//     * @param orderDigest         The hash digest of the order execution details.
-//     * @param orderStartAmount    The original amount for the partially fillable order.
-//     * @param requestedFillAmount The amount the taker is requesting to fill.
-//     * @param minimumFillAmount   The minimum amount the taker is willing to fill.
-//     *
-//     * @return quantityToFill     Lesser of remainingFillableAmount and requestedFillAmount.
-//     */
-    function _restoreFillableItems(
-        address account,
-        bytes32 orderDigest, 
-        uint248 unfilledAmount
-    ) private returns (uint248 quantityToFill) {
+    /**
+     * @notice Restored items to a partially fillable order when the items failed to dispense in a bulk order fill.
+     *
+     * @param account             The maker account for the order.
+     * @param orderDigest         The hash digest of the order execution details.
+     * @param unfilledAmount      The amount that was subtracted from the order that needs to be added back.
+     *
+     */
+    function _restoreFillableItems(address account, bytes32 orderDigest, uint248 unfilledAmount) private {
         if (unfilledAmount > 0) {
             PartiallyFillableOrderStatus storage partialFillStatus = 
                 appStorage().partiallyFillableOrderStatuses[account][orderDigest];
@@ -1323,10 +1314,9 @@ abstract contract PaymentProcessorModule is
                 partialFillStatus.remainingFillableQuantity += unfilledAmount;
             }
 
-            if (partialFillStatus.state == PartiallyFillableOrderState.Filled) {
-                partialFillStatus.state = PartiallyFillableOrderState.Open;
-                emit OrderDigestItemsRestored(orderDigest, account, unfilledAmount);
-            }
+            partialFillStatus.state = PartiallyFillableOrderState.Open;
+
+            emit OrderDigestItemsRestored(orderDigest, account, unfilledAmount);
         }
     }
 
