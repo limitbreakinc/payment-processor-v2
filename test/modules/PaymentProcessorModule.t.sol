@@ -486,6 +486,40 @@ contract PaymentProcessorModuleTest is Test, IPaymentProcessorEvents {
         return signedOffer;
     }
 
+    function _getSignedItemOfferAndDigest(uint256 buyerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory signedOffer, bytes32 offerDigest) {
+        offerDigest = 
+            ECDSA.toTypedDataHash(
+                _paymentProcessor.getDomainSeparator(), 
+                keccak256(
+                    bytes.concat(
+                        abi.encode(
+                            ITEM_OFFER_APPROVAL_HASH,
+                            uint8(saleDetails.protocol),
+                            address(0),
+                            saleDetails.maker,
+                            saleDetails.beneficiary,
+                            saleDetails.marketplace,
+                            saleDetails.fallbackRoyaltyRecipient,
+                            saleDetails.paymentMethod,
+                            saleDetails.tokenAddress
+                        ),
+                        abi.encode(
+                            saleDetails.tokenId,
+                            saleDetails.amount,
+                            saleDetails.itemPrice,
+                            saleDetails.expiration,
+                            saleDetails.marketplaceFeeNumerator,
+                            saleDetails.nonce,
+                            _paymentProcessor.masterNonces(saleDetails.maker)
+                        )
+                    )
+                )
+            );
+    
+        (uint8 offerV, bytes32 offerR, bytes32 offerS) = vm.sign(buyerKey_, offerDigest);
+        signedOffer = SignatureECDSA({v: offerV, r: offerR, s: offerS});
+    }
+
     function _getSignedCollectionOffer(uint256 buyerKey_, Order memory saleDetails) internal view returns (SignatureECDSA memory) {
         bytes32 offerDigest = 
             ECDSA.toTypedDataHash(
