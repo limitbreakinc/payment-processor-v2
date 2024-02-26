@@ -360,6 +360,7 @@ struct SweepCollectionComputeAndDistributeProceedsParams {
     address channel;
     address taker;
     bool disablePartialFill;
+    bytes32 orderDigest;
  }
 
 /**

@@ -112,6 +112,9 @@ error PaymentProcessor__SalePriceBelowMinimumFloor();
 /// @dev Thrown when a maker's nonce has already been used for an executed order or cancelled by the maker.
 error PaymentProcessor__SignatureAlreadyUsedOrRevoked();
 
+/// @dev Thrown when a maker's nonce has not already been used for an executed order but an item with that nonce fails to fill.
+error PaymentProcessor__SignatureNotUsedOrRevoked();
+
 /**
  * @dev Thrown when a collection is set to block untrusted channels and the order execution originates from a channel 
  * @dev that is not in the collection's trusted channel list.

@@ -734,6 +734,17 @@ abstract contract PaymentProcessorModule is
                 saleDetails.amount)) {
             if (context.disablePartialFill) {
                 revert PaymentProcessor__DispensingTokenWasUnsuccessful();
+            } 
+            else {
+                // Nonce or some amount of fillable quantity was burned during order validation, but the item failed to 
+                // fill.  Since partial fills are allowed, restore the nonce because we can't make assumptions about the
+                // reason the fill failed. Order books should re-simulate there order for removal from order book if it 
+                // failed because a fill is impossible.
+                if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+                    _restoreFillableItems(saleDetails.maker, context.orderDigest, saleDetails.amount);
+                } else {
+                    _restoreNonce(saleDetails.maker, saleDetails.nonce);
+                }
             }
         } else {
             SplitProceeds memory proceeds =
@@ -826,6 +837,13 @@ abstract contract PaymentProcessorModule is
                     saleDetails.tokenAddress, 
                     saleDetails.tokenId, 
                     saleDetails.amount)) {
+                // Nonce was burned during order validation, but the item failed to fill.  Since partial fills are 
+                // allowed, restore the nonce because we can't make assumptions about the reason the fill failed. 
+                // Order books should re-simulate there order for removal from order book if it failed because a fill 
+                // is impossible.
+                if (saleDetails.protocol != OrderProtocols.ERC1155_FILL_PARTIAL) {
+                    _restoreNonce(saleDetails.maker, saleDetails.nonce);
+                }
             } else {
                 SplitProceeds memory proceeds =
                     _computePaymentSplits(
@@ -1254,6 +1272,7 @@ abstract contract PaymentProcessorModule is
         if (partialFillStatus.state == PartiallyFillableOrderState.Open) {
             if (partialFillStatus.remainingFillableQuantity == 0) {
                 partialFillStatus.remainingFillableQuantity = uint248(orderStartAmount);
+                emit OrderDigestOpened(orderDigest, account, orderStartAmount);
             }
 
             if (quantityToFill > partialFillStatus.remainingFillableQuantity) {
@@ -1266,6 +1285,7 @@ abstract contract PaymentProcessorModule is
 
             unchecked {
                 partialFillStatus.remainingFillableQuantity -= quantityToFill;
+                emit OrderDigestItemsFilled(orderDigest, account, quantityToFill);
             }
 
             if (partialFillStatus.remainingFillableQuantity == 0) {
@@ -1274,6 +1294,29 @@ abstract contract PaymentProcessorModule is
             }
         } else {
             revert PaymentProcessor__OrderIsEitherCancelledOrFilled();
+        }
+    }
+
+    /**
+     * @notice Restored items to a partially fillable order when the items failed to dispense in a bulk order fill.
+     *
+     * @param account             The maker account for the order.
+     * @param orderDigest         The hash digest of the order execution details.
+     * @param unfilledAmount      The amount that was subtracted from the order that needs to be added back.
+     *
+     */
+    function _restoreFillableItems(address account, bytes32 orderDigest, uint248 unfilledAmount) private {
+        if (unfilledAmount > 0) {
+            PartiallyFillableOrderStatus storage partialFillStatus = 
+                appStorage().partiallyFillableOrderStatuses[account][orderDigest];
+
+            unchecked {
+                partialFillStatus.remainingFillableQuantity += unfilledAmount;
+            }
+
+            partialFillStatus.state = PartiallyFillableOrderState.Open;
+
+            emit OrderDigestItemsRestored(orderDigest, account, unfilledAmount);
         }
     }
 
@@ -1319,6 +1362,26 @@ abstract contract PaymentProcessorModule is
         emit NonceInvalidated(nonce, account, wasCancellation);
 
         return appStorage().masterNonces[account];
+    }
+
+    /**
+     * @notice After a maker's nonce is invalidated, should the order item fail to transfer
+     *         we need to restore the nonce so order cannot be griefed.  Emits a NonceRestored event.
+     * 
+     * @dev    Throws when the nonce has already been invalidated.
+     * 
+     * @param account         The maker account to restore `nonce` of.
+     * @param nonce           The nonce to restore.
+     */
+    function _restoreNonce(address account, uint256 nonce) internal {
+        unchecked {
+            if (uint256(appStorage().invalidatedSignatures[account][uint248(nonce >> 8)] ^= (ONE << uint8(nonce))) & 
+                (ONE << uint8(nonce)) != ZERO) {
+                revert PaymentProcessor__SignatureNotUsedOrRevoked();
+            }
+        }
+
+        emit NonceRestored(nonce, account);
     }
 
     /**
@@ -1397,14 +1460,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1461,14 +1527,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1529,14 +1598,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
@@ -1594,14 +1666,17 @@ abstract contract PaymentProcessorModule is
 
         _verifyMakerSignature(saleDetails.maker, signature, orderDigest);
 
-        quantityToFill = saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL ? 
-            _checkAndUpdateRemainingFillableItems(
+        if (saleDetails.protocol == OrderProtocols.ERC1155_FILL_PARTIAL) {
+            quantityToFill = _checkAndUpdateRemainingFillableItems(
                 saleDetails.maker, 
                 orderDigest, 
                 saleDetails.amount, 
                 saleDetails.requestedFillAmount,
-                saleDetails.minimumFillAmount) :
-            saleDetails.amount;
+                saleDetails.minimumFillAmount);
+            context.orderDigest = orderDigest;
+        } else {
+            quantityToFill = saleDetails.amount;
+        }
     }
 
     /**
